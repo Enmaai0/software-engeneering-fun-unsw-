@@ -1,6 +1,5 @@
 ```javascript
 let data = {
-
   users: [
     {
       userId: 'integer',
