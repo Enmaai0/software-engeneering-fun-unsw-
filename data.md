@@ -25,28 +25,28 @@ let data = {
       channelName: 'string',
       ownerUserId: '[integer, integer, ...]',
       memberUserIds: '[integer, integer, ...]',
-      /**
-       * Perhaps some method of storing a dataset of all messages sent
-       * within this channel. Following the data structure of:
-       * 
-       * messages: [
-       *   {
-       *     messageId: 'integer',
-       *     senderId: 'integer',
-       *     message: 'string',
-       *     timeSent: 'integer', (most likely in 24 hour format)
-       *   },
-       * ]
-       * 
-       * Not sure if this method of storing data works
-       * 
-       */
+      messages: [
+        {
+          messageId: 'integer',
+          senderId: 'integer',
+          message: 'string',
+          timeSent: 'integer',
+        },
+      ]
     },
     {
       channelId: '1',
       channelName: 'exampleChannelData',
       ownerUserId: '[1, 3]',
       memberUserIds: '[1, 2, 3, 4, 9]',
+      messages: [
+        {
+          messageId: '1',
+          senderId: '3',
+          message: 'this is an example message',
+          timeSent: '20230221132405',
+        },
+      ]
     },
   ]
 }
@@ -55,3 +55,7 @@ let data = {
 [Optional] short description: 
             This files contains the design of the datastore
             being used to store information within 'Memes'.
+
+            For timeSent, format follows: yyyymmddhhmmss
+            (year - month - day - hour- minutes - seconds)
+            20230221132405 = 2023 - 02 - 21 - 13 - 24 - 05
