@@ -3,17 +3,17 @@ let data = {
   users: [
     {
       userId: 'integer',
-      userHandle: 'string',
+      email: 'string',
       password: 'string',
       nameFirst: 'string',
       nameLast: 'string',
-      email: 'string',
+      userHandle: 'string',
     },
     {
       userId: 1,
       email: 'example@gmail.com',
       password: 'example123',
-      nameFirst: 'example;,
+      nameFirst: 'example',
       nameLast: 'user_data',
       userHandle: 'userDataExample123',
     },
