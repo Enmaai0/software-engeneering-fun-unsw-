@@ -4,7 +4,6 @@
  * Contains the stub code functions of all channel* functions.
  */
 
-
 function channelDetailsV1(authUserId, channelId) {
   return {
     name: 'Hayden',
@@ -26,15 +25,15 @@ function channelDetailsV1(authUserId, channelId) {
         handleStr: 'haydenjacobs',
       }
     ],
-  }
+  };
 }
 
 function channelJoinV1(authUserId, channelId) {
-  return {}
+  return {};
 }
 
 function channelInviteV1(authUserId, channelId, uId) {
-  return {}
+  return {};
 }
 
 function channelMessagesV1(authUserId, channelId, start) {
@@ -49,6 +48,6 @@ function channelMessagesV1(authUserId, channelId, start) {
     ],
     start: 0,
     end: 50,
-  }
+  };
 }
     
