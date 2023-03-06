@@ -66,7 +66,7 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
   // Sets the first empty array index to an object
   // containing all information about the user.
   data.users[data.users.length] = {
-    authUserId: data.users.length,
+    uId: data.users.length,
     email: email,
     password: password,
     nameFirst: nameFirst,
@@ -78,7 +78,7 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
   setData(data);
 
   return {
-    authUserId: data.users[data.users.length].authUserId
+    uId: data.users[data.users.length].uId
   };
 }
 

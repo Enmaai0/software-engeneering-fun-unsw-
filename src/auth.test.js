@@ -109,7 +109,7 @@ describe('authRegisterV1: authUserId Testing', () => {
   });
 });
 
-describe('authRegisterV1: userHandle Testing', () => {
+describe('authRegisterV1: userHandle & permissionId Testing', () => {
   beforeEach(() => {
     let user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot');
     let user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot');
@@ -123,6 +123,7 @@ describe('authRegisterV1: userHandle Testing', () => {
         nameFirst: 'Test',
         nameLast: 'Bot I',
         handleStr: 'testbot',
+        permissionId: 1,
       }
     });
   });
@@ -135,6 +136,7 @@ describe('authRegisterV1: userHandle Testing', () => {
         nameFirst: 'Test',
         nameLast: 'Bot',
         handleStr: 'testbot0',
+        permissionId: 2,
       }
     });
   });
