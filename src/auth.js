@@ -5,6 +5,7 @@
  */
 
 import { getData, setData } from './dataStore.js'
+import validator from 'validator'
 
 function authLoginV1(email, password) {
   return {
@@ -39,7 +40,7 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     return { error: "Invalid Email (Email Already in Use)"}
   };
 
-  if (password.length) {
+  if (password.length < 6) {
     return { error: "Invalid Password (Minimum 6 Characters)"}
   };
 
@@ -78,7 +79,7 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
   setData(data);
 
   return {
-    uId: data.users[data.users.length].uId
+    authUserId: data.users.length
   };
 }
 
@@ -122,11 +123,13 @@ function generateUserHandle(nameFirst, nameLast) {
     string = string.slice(0, 19);
   }
 
+  let originalStringLength = string.length;
+
   // While the userHandle is already taken, increments the concatNum
   // to add to the end until a unique string is generated
   let concatNum = 0;
   while (isUserHandleTaken(string)) { 
-    string = string.slice(0, 19);
+    string = string.slice(0, string.length);
     string = string.concat(concatNum);
     concatNum++;
   }
@@ -152,3 +155,5 @@ function isUserHandleTaken(userHandle) {
   }
   return false;
 }
+
+export { authLoginV1, authRegisterV1 }
