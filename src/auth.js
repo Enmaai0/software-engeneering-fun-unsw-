@@ -53,6 +53,16 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
 
   const data = getData();
 
+  // permissionId refers to the global permissions of
+  // the users within teams
+  // 1 = Owner, 2 = Member
+  let permissionId
+  if (data.users.length === 0) {
+    permissionId = 1;
+  } else {
+    permissionId = 2
+  }
+
   // Sets the first empty array index to an object
   // containing all information about the user.
   data.users[data.users.length] = {
@@ -62,6 +72,7 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     nameFirst: nameFirst,
     nameLast: nameLast,
     userHandle: generateUserHandle(nameFirst, nameLast),
+    permissionId: permissionId,
   };
 
   setData(data);
