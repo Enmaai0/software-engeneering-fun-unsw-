@@ -53,14 +53,23 @@ describe('channelDetails with no error', () => {
             isPublic: true,
             ownerMembers: [{
                 userId: user1.authUserId,
-                name: 'First1 Last',
+                email: 'user1Email@gmail.com',
+                nameFirst: 'First1',
+                nameLast: 'Last1',
+                handleStr: 'First1Last1',
             }],
             allMembers: [{
                 userId: user1.authUserId,
-                name: 'First1 Last1',
+                email: 'user1Email@gmail.com',
+                nameFirst: 'First1',
+                nameLast: 'Last1',
+                handleStr: 'First1Last1',
             }, {
                 userId: user2.authUserId,
-                name: 'First2 Last2',
+                email: 'user2Email@gmail.com',
+                nameFirst: 'First2',
+                nameLast: 'Last2',
+                handleStr: 'First2Last2',
             }]
         })
     })
