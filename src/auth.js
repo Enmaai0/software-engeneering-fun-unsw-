@@ -6,10 +6,57 @@
 
 import { getData, setData } from './dataStore.js'
 
+/**
+ * authLoginV1
+ * 
+ * Takes in an email and password, if the email and password
+ * both match the same user, the user 'logs in' and the 
+ * function returns the authUserId of the associated user
+ * 
+ * Errors return { error: "error" } on incorrect or
+ * invalid input.
+ * 
+ * @param {string} email
+ * @param {string} password
+ * @return {{ authUserId: number }}
+ */
 function authLoginV1(email, password) {
-  return {
-    authUserId: 1
+  if (!isRegisteredEmail(email)) {
+    return { error: "Invalid Email (No existing user with that email)" }
   };
+
+  let data = getData();
+  let userIndex = emailToUserIndex(email);
+
+  if (data.users[userIndex].password === password) {
+    return { authUserId: userIndex }
+  }
+
+  return { error: "Incorrect Password" }
+}
+
+/**
+ * emailToUserIndex
+ * 
+ * Given an email, returns the index of the user
+ * with that email.
+ * 
+ * Returns 0 on email not being in dataStore
+ * (Should not occur due to error check)
+ * 
+ * @param {string} email
+ * @return { number }
+ */
+function emailToUserIndex(email) {
+  let data = getData();
+
+  for (const users of data.users) {
+    if (user.email === email) {
+      return user.authUserId;
+    }
+  }
+
+  return 0;
 }
 
 /**
@@ -32,23 +79,23 @@ function authLoginV1(email, password) {
  */
 function authRegisterV1(email, password, nameFirst, nameLast) {
   if (!validator.isEmail(email)) {
-    return { error: "Invalid Email (Enter a Valid Email)"}
+    return { error: "Invalid Email (Enter a Valid Email)" }
   };
 
   if (isRegisteredEmail(email)) {
-    return { error: "Invalid Email (Email Already in Use)"}
+    return { error: "Invalid Email (Email Already in Use)" }
   };
 
   if (password.length) {
-    return { error: "Invalid Password (Minimum 6 Characters)"}
+    return { error: "Invalid Password (Minimum 6 Characters)" }
   };
 
   if (nameFirst.length < 1 || nameLast.length < 1) {
-    return { error: "Invalid Name (Name Cannot be Empty)"}
+    return { error: "Invalid Name (Name Cannot be Empty)" }
   };
 
   if (nameFirst.length > 50 || nameLast.length > 50) {
-    return { error: "Invalid Name (Maximum 50 Characters)"}
+    return { error: "Invalid Name (Maximum 50 Characters)" }
   };
 
   const data = getData();
@@ -141,3 +188,5 @@ function isUserHandleTaken(userHandle) {
   }
   return false;
 }
+
+export { authLoginV1, authRegisterV1}
