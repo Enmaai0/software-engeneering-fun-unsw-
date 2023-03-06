@@ -1,5 +1,20 @@
-// YOU SHOULD MODIFY THIS OBJECT BELOW
-let data = {};
+/**
+ * 'data' stores the user and channel data under 
+ * 'users: []' and 'channels: []' respectively.
+ * 
+ * Data is stored within 'data' through an array
+ * of objects. The objects contains details about
+ * the user/channel and appear under their 
+ * respective area
+ */
+let data = {
+  users: [
+
+  ],
+  channels: [
+
+  ]
+};
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1
 
