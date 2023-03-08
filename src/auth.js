@@ -127,9 +127,11 @@ function generateUserHandle(nameFirst, nameLast) {
 
   // While the userHandle is already taken, increments the concatNum
   // to add to the end until a unique string is generated
+  // originalStringLength - 1 is used as indexes begins at 0, otherwise
+  // would be character too long.
   let concatNum = 0;
   while (isUserHandleTaken(string)) { 
-    string = string.slice(0, originalStringLength);
+    string = string.slice(0, originalStringLength - 1);
     string = string.concat(concatNum);
     concatNum++;
   }
