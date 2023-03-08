@@ -23,8 +23,8 @@ function clearV1(){
     users: [],
     channels: [],
   }
-  
+
   setData(data);
 }
-  
+
 export { clearV1 }
