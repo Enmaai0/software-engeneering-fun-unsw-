@@ -119,7 +119,7 @@ describe('repeat join',() => {
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
     channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
-    expect(channelJoinV1(user.authUserId, channel,channelId)).toStrictEqual({error: expect.any(String)});
+    expect(channelJoinV1(user.authUserId, channel.channelId)).toStrictEqual({error: expect.any(String)});
   });
 });
 
@@ -131,6 +131,6 @@ describe('fail to join private channel',() => {
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
     channel = channelsCreateV1(user1.authUserId, 'firstChannel', false);
 
-    expect(channelJoinV1(user2.authUserId, channel,channelId)).toStrictEqual({error: expect.any(String)});
+    expect(channelJoinV1(user2.authUserId, channel.channelId)).toStrictEqual({error: expect.any(String)});
   });
 });
