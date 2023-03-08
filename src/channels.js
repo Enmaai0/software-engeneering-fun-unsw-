@@ -27,7 +27,7 @@ let dataStore = getData();
     }
 
   // Check if the authUserId is valid
-  if (typeof authUserId !== 'string') {
+  if (typeof authUserId == 'string') {
     return { error: 'error' };
   }
   
