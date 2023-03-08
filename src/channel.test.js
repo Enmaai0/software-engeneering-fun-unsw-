@@ -23,6 +23,81 @@ beforeEach(() => {
 
 /////////////// channelInviteV1 Function ///////////////
 
+describe('channelInviteV1: Error Testing', () => {
+  beforeEach(() => {
+    let user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
+    let channel1 = channelsCreateV1(user1.authUserId, 'channel1', true);
+  });
+
+  test('authUserId: Invalid User Id', () => {
+    expect(channelInviteV1(user1.authUserId + 1, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
+  });
+
+  beforeEach(() => {
+    channelJoinV1(user1.authUserId, channel1.channelId);
+  });
+
+  test('uId: Invalid User2 Id', () => {
+    expect(channelInviteV1(user1.authUserId, channel1.channelId, user1.authUserId + 1)).toStrictEqual(ERROR);
+  });
+
+  test('Invalid Self Inivite: User In Channel', () => {
+    expect(channelInviteV1(user1.authUserId, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
+  });
+
+  beforeEach(() => {
+    let user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+  });
+
+  test('channelId: Invalid channelId', () => {
+    expect(channelInviteV1(user1.authUserId, channel1.channelId + 1, user2.authUserId)).toStrictEqual(ERROR);
+  });
+
+  test('Invalid Invite: Member Not in Channel', () => {
+    expect(channelInviteV1(user2.authUserId, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
+  });
+
+  beforeEach(() => {
+    channelJoinV1(user2.authUserId, channel1.channelId);
+  });
+
+  test('Invalid Inivite: User In Channel', () => {
+    expect(channelInviteV1(user1.authUserId, channel1.channelId, user2.authUserId)).toStrictEqual(ERROR);
+  });
+});
+
+describe('channelInviteV1: Correct Return Testing', () => {
+  beforeEach(() => {
+    let user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
+    let channel1 = channelsCreateV1(user1.authUserId, 'channel1', true);
+    let user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    channelJoinV1(user1.authUserId, channel1.channelId);
+  });
+
+  test('Correct Return: Empty Object', () => {
+    expect(channelInviteV1(user1.authUserId, channel1.channelId, user2.authUserId)).toStrictEqual({});
+  });
+});
+
+describe('channelInviteV1: Invite Testing', () => {
+  beforeEach(() => {
+    let user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
+    let channel1 = channelsCreateV1(user1.authUserId, 'channel1', true);
+    let user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    channelInviteV1(user1.authUserId, channel1.channelId, user2.authUserId);
+    user1_profile = userProfileV1(user1.authUserId, user1.authUserId);
+    user2_profile = userProfileV1(user2.authUserId, user2.authUserId);
+  });
+
+  test('Correct Invite: Invited User ', () => {
+    expect(channelDetailsV1(user1.authUserId, channel1.channelId)).toStrictEqual({ 
+      name: 'channel1',
+      isPublic: true,
+      ownerMembers: [user1_profile],
+      allMembers: [user1_profile, user2_profile],
+     });
+  });
+});
 
 /////////////// channelMessagesV1 Function ///////////////
 
