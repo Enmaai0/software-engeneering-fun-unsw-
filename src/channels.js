@@ -26,7 +26,7 @@ let dataStore = getData();
     if (user.authUserId === authUserId) {
         let channelobj = {
           name:name,
-          isPublic,
+          isPublic: isPublic,
           owner: [authUserId],
           allMembers: [authUserId],
           messages: [],
@@ -40,7 +40,6 @@ let dataStore = getData();
 
         return {channelId : channelId};
     }
-
   }
   return {error : 'User is not valid'}
 }
