@@ -1,7 +1,7 @@
 /**
  * auth.js
  * 
- * Contains the  functions of all auth* functions.
+ * Contains the functions of all auth* functions.
  */
 
 import { getData, setData } from './dataStore.js'
@@ -51,9 +51,9 @@ function authLoginV1(email, password) {
 function emailToUserIndex(email) {
   let data = getData();
 
-  for (const users of data.users) {
+  for (const user of data.users) {
     if (user.email === email) {
-      return user.authUserId;
+      return user.uId;
     }
   }
 
@@ -87,13 +87,8 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     return { error: "Invalid Email (Email Already in Use)" }
   };
 
-<<<<<<< HEAD
-  if (password.length) {
-    return { error: "Invalid Password (Minimum 6 Characters)" }
-=======
   if (password.length < 6) {
     return { error: "Invalid Password (Minimum 6 Characters)"}
->>>>>>> 7dda40778010fb5844eac5900be99648fe85c854
   };
 
   if (nameFirst.length < 1 || nameLast.length < 1) {
@@ -210,8 +205,4 @@ function isUserHandleTaken(userHandle) {
   return false;
 }
 
-<<<<<<< HEAD
-export { authLoginV1, authRegisterV1}
-=======
 export { authLoginV1, authRegisterV1 }
->>>>>>> 7dda40778010fb5844eac5900be99648fe85c854
