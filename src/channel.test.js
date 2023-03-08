@@ -8,10 +8,14 @@ import { channelsCreateV1 } from './channels.js';
 import { channelJoinV1, channelDetailsV1 } from './channel.js';
 import { clearV1 } from './other.js';
 
+import { authRegisterV1,authLoginV1 } from './auth.js';
+import { channelsCreateV1 } from './channels.js';
+import { channelDetailsV1, channelJoinV1 } from './channel.js';
+import { clearV1 } from './other.js';
+
 beforeEach(() => {
   clearV1();
 });
-
 
 /////////////// channelDetailsV1 Function ///////////////
 describe('userId error',() => {
