@@ -44,16 +44,31 @@ let dataStore = getData();
   return {error : 'User is not valid'}
 }
 
-function channelsListAllV1(authUserId) { 
-  return {
-    channels: [
-      {
-        channelId: 1,
-        name: 'My Channel',
+/**
+ * Provides an array of all channels, including private channels (and their associated details)
+ * @param {number} authUserId 
+ * @returns object or string
+ */
+export function channelsListAllV1(authUserId) {
+  let dataStore = getData();
+  let channelArray = [];
+
+  for(let user of dataStore.users){
+    if(user.authUserId === authUserId) {
+      for (let channel of dataStore.channels) {
+        let obj = {
+          channelId: channel.channelId,
+          name: channel.name,
+        }
+        channelArray.push(obj);
       }
-    ],
-  };
+      return channelArray;
+    }
+  }
+  return {error: 'User not valid'}; 
 }
+
+
 
 function channelsListV1(authUserId) {
   return {
