@@ -16,7 +16,7 @@ function channelsCreateV1(authUserId, name, isPublic) {
 // Check if the channel name is valid
   if (name.length < 1 || name.length > 20) {
     return { error:'Name is too short.'};
-    }
+  }
 
   // Check if the authUserId is valid
   if (typeof authUserId !== 'string') {
