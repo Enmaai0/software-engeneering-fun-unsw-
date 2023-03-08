@@ -12,7 +12,6 @@ beforeEach(() => {
   clearV1();
 });
 
-
 /////////////// channelDetailsV1 Function ///////////////
 describe('userId error',() => {
   test('not a valid userId',() => {
