@@ -6,7 +6,7 @@
 
 import { channelInviteV1, channelJoinV1, channelMessagesV1, channelDetailsV1 } from './channel.js';
 import { authLoginV1, authRegisterV1 } from './auth.js'
-import { channelsCreateV1 } from './auth.js'
+import { channelsCreateV1 } from './channels.js'
 import { userProfileV1 } from './users.js'
 import { clearV1 } from './other.js';
 
@@ -152,7 +152,7 @@ describe('userId error',() => {
     user = authLoginV1('userEmail@gmail.com', 'password');
     channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
-    expect(channelDetailsV1(user.authUserId + 1, channel.channelId)).toStrictEqual({error: expect.any(String)});
+    expect(channelDetailsV1(user.authUserId + 1, channel.channelId)).toStrictEqual(ERROR);
   });
 });
 
@@ -162,7 +162,7 @@ describe('channelId error',() => {
     user = authLoginV1('userEmail@gmail.com', 'password');
     channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
-    expect(channelDetailsV1(user.authUserId, channel.channelId + 1)).toStrictEqual({error: expect.any(String)});
+    expect(channelDetailsV1(user.authUserId, channel.channelId + 1)).toStrictEqual(ERROR);
   });
 });
 describe('member error', () => {
@@ -178,7 +178,7 @@ describe('member error', () => {
   })
 
   test('the user is not a member of this channel', () => {
-    expect(channelDetailsV1(user2.authUserId, channel.channelId)).toStrictEqual({error: expect.any(String)});
+    expect(channelDetailsV1(user2.authUserId, channel.channelId)).toStrictEqual(ERROR);
   })
 })
 
@@ -228,7 +228,7 @@ describe('userId error',() => {
     channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
   });
 
-  expect(channelJoinV1(user2.authUserId + 1, channel.channelId)).toStrictEqual(expect.any(String));
+  expect(channelJoinV1(user2.authUserId + 1, channel.channelId)).toStrictEqual(ERROR);
 });
 
 describe('channelId error',() => {
@@ -239,7 +239,7 @@ describe('channelId error',() => {
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
     channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
-    expect(channelJoinV1(user2.authUserId, channel.channelId + 1)).toStrictEqual({error: expect.any(String)});
+    expect(channelJoinV1(user2.authUserId, channel.channelId + 1)).toStrictEqual(ERROR);
   });
 });
 
@@ -251,7 +251,7 @@ describe('repeat join',() => {
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
     channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
-    expect(channelJoinV1(user.authUserId, channel.channelId)).toStrictEqual({error: expect.any(String)});
+    expect(channelJoinV1(user.authUserId, channel.channelId)).toStrictEqual(ERROR);
   });
 });
 
@@ -263,6 +263,6 @@ describe('fail to join private channel',() => {
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
     channel = channelsCreateV1(user1.authUserId, 'firstChannel', false);
 
-    expect(channelJoinV1(user2.authUserId, channel.channelId)).toStrictEqual({error: expect.any(String)});
+    expect(channelJoinV1(user2.authUserId, channel.channelId)).toStrictEqual(ERROR);
   });
 });
