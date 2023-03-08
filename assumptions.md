@@ -1,8 +1,4 @@
-1) Only characters encoded in valid US-ASCII will be inputted into the functions contained within the backend 
-   of UNSW Memes. That is characters that are encoded through Unicode (UTF-8, UTF-16, UTF-32), and other 
-   similar encoding types will not inputted into any of the functions. Therefore accounting for these types 
-   of characters in the functions is irrelevant, and errors caused by these characters being inputted can be
-   ignored. 
+1) All valid unicode values are allowed to be entered into any input that is of form 'string'. That is passwords, names, etc can contain characters encoded in the unicode format such as emojis, foreing characters, etc.
 
 2) We aren't limited in the implementation of our project by barriers such as time complexity (big O notation) 
    and memory storage. That is we have no restraints in regards to how long it takes for our functions and execute
