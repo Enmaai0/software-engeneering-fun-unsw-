@@ -5,6 +5,7 @@
  */
 
 import { getData, setData } from './dataStore.js'
+import validator from 'validator'
 
 /**
  * authLoginV1
@@ -86,8 +87,13 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     return { error: "Invalid Email (Email Already in Use)" }
   };
 
+<<<<<<< HEAD
   if (password.length) {
     return { error: "Invalid Password (Minimum 6 Characters)" }
+=======
+  if (password.length < 6) {
+    return { error: "Invalid Password (Minimum 6 Characters)"}
+>>>>>>> 7dda40778010fb5844eac5900be99648fe85c854
   };
 
   if (nameFirst.length < 1 || nameLast.length < 1) {
@@ -100,21 +106,32 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
 
   const data = getData();
 
+  // permissionId refers to the global permissions of
+  // the users within teams
+  // 1 = Owner, 2 = Member
+  let permissionId
+  if (data.users.length === 0) {
+    permissionId = 1;
+  } else {
+    permissionId = 2
+  }
+
   // Sets the first empty array index to an object
   // containing all information about the user.
   data.users[data.users.length] = {
-    authUserId: data.users.length,
+    uId: data.users.length,
     email: email,
     password: password,
     nameFirst: nameFirst,
     nameLast: nameLast,
     userHandle: generateUserHandle(nameFirst, nameLast),
+    permissionId: permissionId,
   };
 
   setData(data);
 
   return {
-    authUserId: data.users[data.users.length].authUserId
+    authUserId: data.users.length
   };
 }
 
@@ -158,11 +175,15 @@ function generateUserHandle(nameFirst, nameLast) {
     string = string.slice(0, 19);
   }
 
+  let originalStringLength = string.length;
+
   // While the userHandle is already taken, increments the concatNum
   // to add to the end until a unique string is generated
+  // originalStringLength - 1 is used as indexes begins at 0, otherwise
+  // would be character too long.
   let concatNum = 0;
   while (isUserHandleTaken(string)) { 
-    string = string.slice(0, 19);
+    string = string.slice(0, originalStringLength - 1);
     string = string.concat(concatNum);
     concatNum++;
   }
@@ -189,4 +210,8 @@ function isUserHandleTaken(userHandle) {
   return false;
 }
 
+<<<<<<< HEAD
 export { authLoginV1, authRegisterV1}
+=======
+export { authLoginV1, authRegisterV1 }
+>>>>>>> 7dda40778010fb5844eac5900be99648fe85c854
