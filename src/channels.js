@@ -25,11 +25,6 @@ let dataStore = getData();
   if (name.length < 1 || name.length > 20) {
     return { error:'Name is too short.'};
     }
-
-  // Check if the authUserId is valid
-  if (typeof authUserId == 'string') {
-    return { error: 'error' };
-  }
   
   for (let user of dataStore.users) {
     if (user.authUserId === authUserId) {
@@ -78,8 +73,6 @@ export function channelsListAllV1(authUserId) {
   return {error: 'User not valid'}; 
 }
 
-
-
 /**
  * 
  * @param {*} authUserId - UserID 
@@ -97,7 +90,8 @@ export function channelsListV1 (authUserId) {
   for (let user of dataStore.users) {
     while (i < dataStore.channels.length) {
       while (j < dataStore.channels[i].allMembers.length) {
-        if (dataStore.channels[i].allMembers[j] === authUserId && dataStore.channels[i].isPublic === true) {
+        if (dataStore.channels[i].allMembers[j] === authUserId &&
+            dataStore.channels[i].isPublic === true) {
           let channel = {
             name: dataStore.channels[i].name,
             channelId: dataStore.channels[i].channelId
@@ -114,5 +108,4 @@ export function channelsListV1 (authUserId) {
   
 
   return {error: 'User is not valid'}
-
 }
