@@ -9,6 +9,15 @@ import { getData, setData } from "./dataStore.js";
 
 //Creates a new channel with the given name, that is either a public or private channel.
 //The user who created it automatically joins the channel.
+/**
+ * Function below creates a channel given that the inputs are valid 
+ * If input is invalid, appropriate error messages are returned
+ * @param {authUserId}authUserId 
+ * @param {name}name 
+ * @param {isPublic}isPublic 
+ * @returns {channelId: channelid} Object containing the channelId
+ */
+
 function channelsCreateV1(authUserId, name, isPublic) {
 let dataStore = getData();
 
@@ -49,6 +58,7 @@ let dataStore = getData();
  * @param {number} authUserId 
  * @returns object or string
  */
+ 
 export function channelsListAllV1(authUserId) {
   let dataStore = getData();
   let channelArray = [];
@@ -70,13 +80,39 @@ export function channelsListAllV1(authUserId) {
 
 
 
-function channelsListV1(authUserId) {
-  return {
-    channels: [
-      {
-        channelId: 1,
-        name: 'My Channel',
+/**
+ * 
+ * @param {*} authUserId - UserID 
+ * @returns {( resultChannels )}
+ */
+
+// Lists all public channels a user is a part of
+export function channelsListV1 (authUserId) {
+
+  let dataStore = getData();
+  let resultChannels = [];
+  let i = 0;
+  let j = 0;
+
+  for (let user of dataStore.users) {
+    while (i < dataStore.channels.length) {
+      while (j < dataStore.channels[i].allMembers.length) {
+        if (dataStore.channels[i].allMembers[j] === authUserId && dataStore.channels[i].isPublic === true) {
+          let channel = {
+            name: dataStore.channels[i].name,
+            channelId: dataStore.channels[i].channelId
+          }
+          resultChannels.push(channel)
+        }
+        j++;
       }
-    ],
-  };
+      j = 0;
+      i++;
+    }
+    return { resultChannels }
+  }
+  
+
+  return {error: 'User is not valid'}
+
 }
