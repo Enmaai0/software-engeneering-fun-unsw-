@@ -1,3 +1,6 @@
+import { authRegisterV1 } from "./auth.js";
+import { getData, setData } from "./dataStore.js";
+
 /**
  * channels.js
  * 
@@ -9,7 +12,7 @@
 //The user who created it automatically joins the channel.
 function channelsCreateV1(authUserId, name, isPublic) {
   let dataStore = getData();
-  
+
 // Check if the channel name is valid
   if (name.length < 1 || name.length > 20) {
     return { error:'Name is too short.'};
