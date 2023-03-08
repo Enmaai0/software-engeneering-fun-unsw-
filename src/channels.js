@@ -8,21 +8,23 @@
 //Creates a new channel with the given name, that is either a public or private channel.
 //The user who created it automatically joins the channel.
 function channelsCreateV1(authUserId, name, isPublic) {
+  let dataStore = getData();
+  
 // Check if the channel name is valid
   if (name.length < 1 || name.length > 20) {
     return { error:'Name is too short.'};
     }
 
   // Check if the authUserId is valid
-  if (typeof authUserId !== 'string' || authUserId.trim().length === 0) {
+  if (typeof authUserId !== 'string') {
     return { error: 'error' };
   }
   
   for (let user of dataStore.users) {
     if (user.authUserId === authUserId) {
         let channelobj = {
-          name,
-          isPublic,
+          name: name,
+          isPublic: isPublic,
           owner: [authUserId],
           allMembers: [authUserId],
           messages: [],
