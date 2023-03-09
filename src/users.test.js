@@ -4,10 +4,11 @@
  * Contains the jest testing designed for user.js
  */
 
-import { userProfileV1 } from './users.js';
-import { authRegisterV1 } from './auth.js';
+import { userProfileV1 } from './users.js'
+import { authRegisterV1 } from './auth.js'
+import { clearV1 } from './other.js'
 
-const ERROR = { error: expect.any(String) };
+const ERROR = { error: expect.any(String) }
 
 /**
  * Clears the dataStore before each test is ran. Ensures that
@@ -19,23 +20,27 @@ beforeEach(() => {
 });
 
 describe('usersProfileV1: Error Testing', () => {
+  let user1;
   beforeEach(() => {
-    let user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
+    user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
   });
 
-  test('Correct Return: First User', () => {
+  test('AuthUserId: Invalid authUserId', () => {
     expect(userProfileV1(user1.authUserId + 1, user1.authUserId)).toStrictEqual(ERROR);
   });
 
-  test('Correct Return: Second User', () => {
+  test('uId: Invalid uId', () => {
     expect(userProfileV1(user1.authUserId, user1.authUserId + 1)).toStrictEqual(ERROR);
   });
+
+  clearV1();
 });
 
 describe('usersProfileV1: Return Testing', () => {
+  let user1, user2;
   beforeEach(() => {
-    let user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
-    let user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot');
   });
 
   test('Correct Return: First User', () => {
@@ -44,7 +49,7 @@ describe('usersProfileV1: Return Testing', () => {
         uId: user1.authUserId,
         email: 'email@gmail.com',
         nameFirst: 'Test',
-        nameLast: 'Bot I',
+        nameLast: 'Bot',
         handleStr: 'testbot',
       }
     });
@@ -56,7 +61,7 @@ describe('usersProfileV1: Return Testing', () => {
         uId: user2.authUserId,
         email: 'email2@gmail.com',
         nameFirst: 'Test',
-        nameLast: 'Bot II',
+        nameLast: 'Bot',
         handleStr: 'testbot0',
       }
     });
