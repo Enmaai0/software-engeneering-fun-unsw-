@@ -4,7 +4,10 @@
  * Contains the stub code functions of all channel* functions.
  */
 
-import { getData } from "./dataStore"
+import { getData, setData } from "./dataStore"
+
+const NO_MORE_MESSAGES = -1
+const FIFTY_MESSAGES = 50
 
 function channelDetailsV1(authUserId, channelId) {
   return {
@@ -35,7 +38,7 @@ function channelJoinV1(authUserId, channelId) {
 }
 
 function channelInviteV1(authUserId, channelId, uId) {
-  const data = getData();
+  let data = getData();
 
   if (channelId <= data.channels.length) {
     return {error: 'Invalid channelId'};
@@ -73,22 +76,11 @@ function channelInviteV1(authUserId, channelId, uId) {
 
   data.channels[channelId].allMembers.push(uId);
 
+  setData(data);
+
   return {};
 }
 
-function channelMessagesV1(authUserId, channelId, start) {
-  return {
-    messages: [
-      {
-        messageId: 1,
-        uId: 1,
-        message: 'Hello world',
-        timeSent: 1582426789,
-      }
-    ],
-    start: 0,
-    end: 50,
-  };
-}
+
     
 export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 }
