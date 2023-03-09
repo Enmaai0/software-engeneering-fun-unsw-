@@ -3,8 +3,24 @@
  * 
  * Contains the stub code functions of all channel* functions.
  */
+import { getData } from "./dataStore"
 
-function channelDetailsV1(authUserId, channelId) {
+export function channelDetailsV1(authUserId, channelId) {
+  //error checking
+  let channel = {};
+  
+  if (is_Valid_userId(authUserId, channelId) === false || is_Valid_ChannelId(authUserId, channelId) === false) {
+    return {error: 'Id error'};
+  }
+
+  //function
+  for (const i of data.channels) {
+    if (i.channelId === channelId) {
+      return i;
+    }
+  }
+}
+/*
   return {
     name: 'Hayden',
     ownerMembers: [
@@ -27,9 +43,9 @@ function channelDetailsV1(authUserId, channelId) {
     ],
   };
 }
-
+*/
 function channelJoinV1(authUserId, channelId) {
-  return {};
+
 }
 
 function channelInviteV1(authUserId, channelId, uId) {
@@ -51,3 +67,34 @@ function channelMessagesV1(authUserId, channelId, start) {
   };
 }
     
+function  is_Valid_userId(authUserId, channelId) {
+  let valid_userId = false;
+  const data = getData();
+
+  for (const i of data.users) {
+    if (i.authUserId === authUserId) {
+      valid_userId = true;
+    }
+  }
+  if (!valid_userId) {
+    return false;
+  }else {
+    return true;
+  }
+}
+
+function is_Valid_ChannelId(authUserId, channelId) {
+  let valid_channelId = false;
+  const data = getData();
+
+  for (const i of data.channels) {
+    if (i.channelId === channelId) {
+      valid_channelId = true;
+    }
+  }
+  if (!valid_channelId) {
+    return false;
+  }else {
+    return true;
+  }
+}_
