@@ -11,16 +11,16 @@ const FIFTY_MESSAGES = 50
 
 function channelDetailsV1(authUserId, channelId) {
   //error checking
-  let channel = {};
+  let data = getData();
   
   if (isUserId(authUserId, channelId) === false || isChannelId(authUserId, channelId) === false) {
     return {error: 'Id error'};
   }
 
   //function
-  for (const i of data.channels) {
-    if (i.channelId === channelId) {
-      return i;
+  for (const channel of data.channels) {
+    if (channel.channelId === channelId) {
+      return channel;
     }
   }
 }
@@ -49,9 +49,40 @@ function channelDetailsV1(authUserId, channelId) {
 }
 */
 function channelJoinV1(authUserId, channelId) {
+  let data = getData();
+  //error checking
+  if (is_Valid_userId(authUserId) === false || is_Valid_ChannelId(channelId) === false) {
+    return {error: 'Id error'};
+  }
+
+  //check whether is already a member
+  if (check_allMembers(authUserId, channelId) === false) {
+    return {error: 'already a member'};
+  }
+  
+  //fail to join a private channel
+  for (const channel of data.channels) {
+    if (channel.channelId === channelId && i.is_Public === false) {
+      return {error: 'no permission to join the channel'};
+    }
+  }
+
+  //start to join
+  let the_channel = {};
+  let the_user = {};
+  for (const user of data.users) {
+    if (user.authUserId === authUserId) {
+      the_user = user;
+    }
+  }
+  for (const channel of data.channels) {
+    if (channel.channelId === channelId) {
+      the_channel = channel;
+    }
+  }
+  the_channel.allMembers.push(the_user);
 
 }
-
 function channelInviteV1(authUserId, channelId, uId) {
   const data = getData();
 
@@ -81,7 +112,6 @@ function channelInviteV1(authUserId, channelId, uId) {
 
   return {};
 }
-
 function channelMessagesV1(authUserId, channelId, start) {
 
   const data = getData();
