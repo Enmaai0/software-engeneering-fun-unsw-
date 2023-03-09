@@ -3,6 +3,7 @@
  * 
  * Contains the stub code functions of all channel* functions.
  */
+import { getData } from "./dataStore"
 
 import { getData, setData } from "./dataStore"
 
