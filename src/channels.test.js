@@ -15,6 +15,8 @@ beforeEach(() => {
   clearV1();
 });
 
+/////////////// channelsCreateV1 ///////////////
+
 describe('channelsCreateV1: Error Testing', () => {
   let user1;
   beforeEach(() => {
@@ -55,6 +57,8 @@ describe('channelsCreateV1: channelId Testing', () => {
   });
 });
 
+/////////////// channelsListAllV1 ///////////////
+
 describe('channelsListAllV1: Error Testing', () => {
   test('authUserId: Invalid authUserId', () => {
     let user1 = authRegisterV1('validemail@gmail.com', 'pass1234','Jake', 'Renzella')
@@ -79,6 +83,8 @@ describe('channelsListAllV1: Return List Testing', () => {
     ]);
   });
 })
+
+/////////////// channelsListV1 ///////////////
 
 describe('channelsListV1" Error Testing', () => {
   test('authUserId is invalid', () => {

@@ -19,6 +19,8 @@ beforeEach(() => {
   clearV1();
 });
 
+/////////////// UserProfileV1 Function ///////////////
+
 describe('usersProfileV1: Error Testing', () => {
   let user1;
   beforeEach(() => {
