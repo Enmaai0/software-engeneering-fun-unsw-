@@ -55,12 +55,14 @@ function channelJoinV1(authUserId, channelId) {
   if (check_allMembers(authUserId, channelId) === false) {
     return {error: 'already a member'};
   }
+  
   //fail to join a private channel
   for (const channel of data.channels) {
     if (channel.channelId === channelId && i.is_Public === false) {
       return {error: 'no permission to join the channel'};
     }
   }
+
   //start to join
   let the_channel = {};
   let the_user = {};
