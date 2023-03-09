@@ -13,7 +13,7 @@ function channelDetailsV1(authUserId, channelId) {
   //error checking
   let channel = {};
   
-  if (is_Valid_userId(authUserId, channelId) === false || is_Valid_ChannelId(authUserId, channelId) === false) {
+  if (isUserId(authUserId, channelId) === false || isChannelId(authUserId, channelId) === false) {
     return {error: 'Id error'};
   }
 
@@ -55,23 +55,23 @@ function channelJoinV1(authUserId, channelId) {
 function channelInviteV1(authUserId, channelId, uId) {
   const data = getData();
 
-  if (is_Valid_channelId(channelId)) {
+  if (isChannelId(channelId)) {
     return {error: 'Invalid channelId'};
   }
 
-  if (is_Valid_userId(authUserId)) {
+  if (isUserId(authUserId)) {
     return {error: 'Invalid authUserId'};
   }
 
-  if (is_Valid_userId(uId)) {
+  if (isUserId(uId)) {
     return {error: 'Invalid uId'};
   }
 
-  if (!check_allMembers(authUserId, channelId)) {
+  if (!isMember(authUserId, channelId)) {
     return  {error: 'authUserId does not have permission'};
   }
 
-  if (check_allMembers(uId, channelId)) {
+  if (isMember(uId, channelId)) {
     return  {error: 'user already in channel'};
   }
 
@@ -86,15 +86,15 @@ function channelMessagesV1(authUserId, channelId, start) {
 
   const data = getData();
 
-  if (is_Valid_channelId(channelId)) {
+  if (isChannelId(channelId)) {
     return {error: 'Invalid channelId'};
   }
 
-  if (is_Valid_userId(authUserId)) {
+  if (isUserId(authUserId)) {
     return {error: 'Invalid authUserId'};
   }
 
-  if (!check_allMembers(authUserId, channelId)) {
+  if (!isMember(authUserId, channelId)) {
     return {error: 'authUserId does not have permission'};
   }
 
@@ -125,7 +125,7 @@ function channelMessagesV1(authUserId, channelId, start) {
   };
 }
     
-function is_Valid_userId(authUserId) {
+function isUserId(authUserId) {
   let valid_userId = false;
   const data = getData();
 
@@ -141,7 +141,7 @@ function is_Valid_userId(authUserId) {
   }
 }
 
-function is_Valid_ChannelId(channelId) {
+function isChannelId(channelId) {
   let valid_channelId = false;
   const data = getData();
 
@@ -165,7 +165,7 @@ function is_Valid_ChannelId(channelId) {
  * @param { number } channelId
  * @return { boolean } 
  */
-function check_allMembers(authUserId, channelId) {
+function isMember(authUserId, channelId) {
   const data = getData();
 
   const member_array = data.channels[channelId].allMembers;
