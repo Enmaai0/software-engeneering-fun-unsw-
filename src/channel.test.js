@@ -150,7 +150,7 @@ describe('userId error',() => {
   test('not a valid userId',() => {
     let user = authRegisterV1('userEmail@gmail.com', 'password', 'First', 'Last');
     user = authLoginV1('userEmail@gmail.com', 'password');
-    channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
+    let channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
     expect(channelDetailsV1(user.authUserId + 1, channel.channelId)).toStrictEqual(ERROR);
   });
@@ -160,7 +160,7 @@ describe('channelId error',() => {
   test('not a valid channelId',() => {
     let user = authRegisterV1('userEmail@gmail.com', 'password', 'First', 'Last');
     user = authLoginV1('userEmail@gmail.com', 'password');
-    channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
+    let channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
     expect(channelDetailsV1(user.authUserId, channel.channelId + 1)).toStrictEqual(ERROR);
   });
@@ -174,7 +174,7 @@ describe('member error', () => {
     user2 = authRegisterV1('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     user1 = authLoginV1('user1Email@gmail.com', 'password1');
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
-    channel = channelsCreateV1(user1.authUserId, 'firstChannel', true);
+    let channel = channelsCreateV1(user1.authUserId, 'firstChannel', true);
   })
 
   test('the user is not a member of this channel', () => {
@@ -188,7 +188,7 @@ describe('channelDetails with no error', () => {
     let user2 = authRegisterV1('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     user1 = authLoginV1('user1Email@gmail.com', 'password1');
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
-    channel = channelsCreateV1(user1.authUserId, 'firstChannel', true);
+    let channel = channelsCreateV1(user1.authUserId, 'firstChannel', true);
     channelJoinV1(user2.authUserId, channel.channelId);
 
     expect(channelDetailsV1(user1.authUserId, channel.channelId)).toStrictEqual({
@@ -225,7 +225,7 @@ describe('userId error',() => {
     let user2 = authRegisterV1('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     user = authLoginV1('userEmail@gmail.com', 'password');
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
-    channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
+    let channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
     expect(channelJoinV1(user2.authUserId + 1, channel.channelId)).toStrictEqual(ERROR);
   });
@@ -237,7 +237,7 @@ describe('channelId error',() => {
     let user2 = authRegisterV1('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     user = authLoginV1('userEmail@gmail.com', 'password');
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
-    channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
+    let channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
     expect(channelJoinV1(user2.authUserId, channel.channelId + 1)).toStrictEqual(ERROR);
   });
@@ -249,7 +249,7 @@ describe('repeat join',() => {
     let user2 = authRegisterV1('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     user = authLoginV1('userEmail@gmail.com', 'password');
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
-    channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
+    let channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
 
     expect(channelJoinV1(user.authUserId, channel.channelId)).toStrictEqual(ERROR);
   });
@@ -261,7 +261,7 @@ describe('fail to join private channel',() => {
     let user2 = authRegisterV1('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     user1 = authLoginV1('user1Email@gmail.com', 'password1');
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
-    channel = channelsCreateV1(user1.authUserId, 'firstChannel', false);
+    let channel = channelsCreateV1(user1.authUserId, 'firstChannel', false);
 
     expect(channelJoinV1(user2.authUserId, channel.channelId)).toStrictEqual(ERROR);
   });
