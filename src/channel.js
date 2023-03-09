@@ -52,7 +52,7 @@ function channelDetailsV1(authUserId, channelId) {
 function channelJoinV1(authUserId, channelId) {
   let data = getData();
   //error checking
-  if (is_Valid_userId(authUserId) === false || is_Valid_ChannelId(channelId) === false) {
+  if (isUserId(authUserId) === false || isChannelId(channelId) === false) {
     return {error: 'Id error'};
   }
 
