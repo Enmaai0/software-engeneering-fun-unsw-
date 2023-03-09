@@ -1,76 +1,74 @@
-import { authRegisterV1 } from "./auth.js";
-import { getData, setData } from "./dataStore.js";
 /**
  * channels.js
  * 
  * Contains the stub code functions of all channels* functions.
  */
 
+import { authRegisterV1 } from "./auth.js";
+import { getData, setData } from "./dataStore.js";
 
 //Creates a new channel with the given name, that is either a public or private channel.
 //The user who created it automatically joins the channel.
 /**
  * Function below creates a channel given that the inputs are valid 
  * If input is invalid, appropriate error messages are returned
- * @param {authUserId}authUserId 
- * @param {name}name 
- * @param {isPublic}isPublic 
- * @returns {channelId: channelid} Object containing the channelId
+ * @param {authUserId} authUserId 
+ * @param {name} name 
+ * @param {isPublic} isPublic 
+ * @returns {{ channelId: channelid} }
  */
 
 function channelsCreateV1(authUserId, name, isPublic) {
-let dataStore = getData();
+  if (!isValidUserId) {
+      return {error: 'User is not valid'}
+  }
 
 // Check if the channel name is valid
   if (name.length < 1 || name.length > 20) {
-    return { error:'Name is too short.'};
-    }
-  
-  for (let user of dataStore.users) {
-    if (user.authUserId === authUserId) {
-        let channelobj = {
-          name:name,
-          isPublic: isPublic,
-          owner: [authUserId],
-          allMembers: [authUserId],
-          messages: [],
-          channelId: dataStore.channels.length,
-        }
-
-        const channelId = dataStore.channels.length;
-
-        dataStore.channels.push(channelobj);
-        setData(dataStore);
-
-        return {channelId : channelId};
-    }
+    return { error: 'Name is too short'};
   }
-  return {error : 'User is not valid'}
+
+  let dataStore = getData();
+  
+  let channelobj = {
+    name: name,
+    isPublic: isPublic,
+    owner: [authUserId],
+    allMembers: [authUserId],
+    messages: [],
+    channelId: dataStore.channels.length,
+  }
+
+  const channelId = dataStore.channels.length;
+
+  dataStore.channels.push(channelobj);
+  setData(dataStore);
+
+  return { channelId : channelId };
 }
 
 /**
  * Provides an array of all channels, including private channels (and their associated details)
  * @param {number} authUserId 
- * @returns object or string
+ * @returns { channels[] }
  */
  
 export function channelsListAllV1(authUserId) {
+  if (!isValidUserId) {
+      return {error: 'User is not valid'}
+  }
+
   let dataStore = getData();
   let channelArray = [];
 
-  for(let user of dataStore.users){
-    if(user.authUserId === authUserId) {
-      for (let channel of dataStore.channels) {
-        let obj = {
-          channelId: channel.channelId,
-          name: channel.name,
-        }
-        channelArray.push(obj);
-      }
-      return channelArray;
+  for (let channel of dataStore.channels) {
+    let obj = {
+      channelId: channel.channelId,
+      name: channel.name,
     }
+    channelArray.push(obj);
   }
-  return {error: 'User not valid'}; 
+  return channelArray;
 }
 
 /**
@@ -81,6 +79,9 @@ export function channelsListAllV1(authUserId) {
 
 // Lists all public channels a user is a part of
 export function channelsListV1 (authUserId) {
+  if (!isValidUserId) {
+      return {error: 'User is not valid'}
+  }
 
   let dataStore = getData();
   let resultChannels = [];
@@ -96,7 +97,7 @@ export function channelsListV1 (authUserId) {
             name: dataStore.channels[i].name,
             channelId: dataStore.channels[i].channelId
           }
-          resultChannels.push(channel)
+          resultChannels.push(channel);
         }
         j++;
       }
@@ -105,7 +106,13 @@ export function channelsListV1 (authUserId) {
     }
     return { resultChannels }
   }
-  
-
-  return {error: 'User is not valid'}
 }
+
+function isValidUserId(id) {
+  for (const user in getData().users) {
+    if (user.uId === id) {
+      return true;
+    }
+  }
+  return false;
+} 
