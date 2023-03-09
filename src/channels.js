@@ -1,118 +1,129 @@
 /**
  * channels.js
  * 
- * Contains the stub code functions of all channels* functions.
+ * Contains the function implementations of all channels* functions.
  */
 
 import { authRegisterV1 } from "./auth.js";
 import { getData, setData } from "./dataStore.js";
 
-//Creates a new channel with the given name, that is either a public or private channel.
-//The user who created it automatically joins the channel.
 /**
- * Function below creates a channel given that the inputs are valid 
- * If input is invalid, appropriate error messages are returned
- * @param {authUserId} authUserId 
- * @param {name} name 
- * @param {isPublic} isPublic 
- * @returns {{ channelId: channelid} }
+ * channelsCreateV1
+ * 
+ * Creates a channel given a valid authUserId and 
+ * creates either a public or private channel based 
+ * on isPublic with a given name. 
+ * 
+ * @param { authUserId } authUserId 
+ * @param { name } name 
+ * @param { isPublic } isPublic 
+ * @returns {{ channelId: channelid }}
  */
 
 function channelsCreateV1(authUserId, name, isPublic) {
-  if (!isValidUserId) {
-      return {error: 'User is not valid'}
+  if (!isValidUserId(authUserId)) {
+      return { error: 'Invalid User (User does not exist)' }
   }
 
-// Check if the channel name is valid
   if (name.length < 1 || name.length > 20) {
-    return { error: 'Name is too short'};
+    return { error: 'Invalid Name (Name must be 1 - 20 characters long)' };
   }
 
-  let dataStore = getData();
-  
-  let channelobj = {
+  let data = getData();
+  const channelId = data.channels.length;
+
+  let channel = {
+    channelId: channelId,
     name: name,
     isPublic: isPublic,
-    owner: [authUserId],
+    owners: [authUserId],
     allMembers: [authUserId],
     messages: [],
-    channelId: dataStore.channels.length,
   }
 
-  const channelId = dataStore.channels.length;
-
-  dataStore.channels.push(channelobj);
-  setData(dataStore);
+  data.channels.push(channel);
+  setData(data);
 
   return { channelId : channelId };
 }
 
 /**
- * Provides an array of all channels, including private channels (and their associated details)
- * @param {number} authUserId 
- * @returns { channels[] }
+ * channelsListAllV1
+ * 
+ * Given a valid authUserId, provides an array of all channels,
+ * including private channels containing their channelId and name
+ * 
+ * @param { number } authUserId 
+ * @returns { channels }
  */
  
-export function channelsListAllV1(authUserId) {
-  if (!isValidUserId) {
-      return {error: 'User is not valid'}
+function channelsListAllV1(authUserId) {
+  if (!isValidUserId(authUserId)) {
+    return { error: 'Invalid User (User does not exist)' }
   }
 
-  let dataStore = getData();
+  let data = getData();
   let channelArray = [];
 
-  for (let channel of dataStore.channels) {
-    let obj = {
+  for (const channel of data.channels) {
+    let channelDetails = {
       channelId: channel.channelId,
       name: channel.name,
     }
-    channelArray.push(obj);
+    channelArray.push(channelDetails);
+  }
+
+  return channelArray;
+}
+
+/**
+ * channelsListV1
+ * 
+ * Given a valid authUserId, returns an array of all 
+ * channels that the inputted authUserId is a part of
+ * 
+ * @param { number } authUserId
+ * @returns { channels }
+ */
+function channelsListV1 (authUserId) {
+  if (!isValidUserId(authUserId)) {
+    return { error: 'Invalid User (User does not exist)' }
+  }
+
+  let data = getData();
+  let channelArray = [];
+  const userId = authUserId;
+
+  for (const channel of data.channels) {
+    for (const user of channel.allMembers) {
+      if (user === authUserId) {
+        let channelDetails = {
+          name: channel.name,
+          channelId: channel.channelId
+        }
+        channelArray.push(channelDetails);
+      }
+    }
   }
   return channelArray;
 }
 
 /**
+ * isValidUserId
  * 
- * @param {*} authUserId - UserID 
- * @returns {( resultChannels )}
+ * Given a id of a user, returns whether that
+ * id exists within the dataStore. 
+ * 
+ * @param { number } id
+ * @returns { boolean }
  */
-
-// Lists all public channels a user is a part of
-export function channelsListV1 (authUserId) {
-  if (!isValidUserId) {
-      return {error: 'User is not valid'}
-  }
-
-  let dataStore = getData();
-  let resultChannels = [];
-  let i = 0;
-  let j = 0;
-
-  for (let user of dataStore.users) {
-    while (i < dataStore.channels.length) {
-      while (j < dataStore.channels[i].allMembers.length) {
-        if (dataStore.channels[i].allMembers[j] === authUserId &&
-            dataStore.channels[i].isPublic === true) {
-          let channel = {
-            name: dataStore.channels[i].name,
-            channelId: dataStore.channels[i].channelId
-          }
-          resultChannels.push(channel);
-        }
-        j++;
-      }
-      j = 0;
-      i++;
-    }
-    return { resultChannels }
-  }
-}
-
 function isValidUserId(id) {
-  for (const user in getData().users) {
-    if (user.uId === id) {
-      return true;
-    }
+  const data = getData();
+
+  if (id >= data.users.length) {
+    return false;
   }
-  return false;
+  return true;
 } 
+
+export { channelsCreateV1, channelsListAllV1, channelsListV1 }
