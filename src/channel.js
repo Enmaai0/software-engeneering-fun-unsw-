@@ -56,7 +56,7 @@ function channelJoinV1(authUserId, channelId) {
   }
 
   //check whether is already a member
-  if (check_allMembers(authUserId, channelId) === false) {
+  if (isMember(authUserId, channelId) === false) {
     return {error: 'already a member'};
   }
   
