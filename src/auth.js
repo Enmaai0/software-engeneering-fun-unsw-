@@ -111,10 +111,12 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     permissionId = 2
   }
 
+  const newUserIndex = data.users.length;
+
   // Sets the first empty array index to an object
   // containing all information about the user.
-  data.users[data.users.length] = {
-    uId: data.users.length,
+  data.users[newUserIndex] = {
+    uId: newUserIndex,
     email: email,
     password: password,
     nameFirst: nameFirst,
@@ -126,7 +128,7 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
   setData(data);
 
   return {
-    authUserId: data.users.length
+    authUserId: newUserIndex
   };
 }
 
@@ -167,7 +169,7 @@ function generateUserHandle(nameFirst, nameLast) {
   string = string.replace(/\W/g, "");
 
   if (string.length > 20) {
-    string = string.slice(0, 19);
+    string = string.slice(0, 20);
   }
 
   let originalStringLength = string.length;
@@ -178,7 +180,7 @@ function generateUserHandle(nameFirst, nameLast) {
   // would be character too long.
   let concatNum = 0;
   while (isUserHandleTaken(string)) { 
-    string = string.slice(0, originalStringLength - 1);
+    string = string.slice(0, originalStringLength);
     string = string.concat(concatNum);
     concatNum++;
   }

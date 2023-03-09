@@ -115,39 +115,47 @@ describe('authRegisterV1: authUserId Testing', () => {
 describe('authRegisterV1: userHandle Testing', () => {
   let user1;
   let user2;
+  let user3;
   let userProfile1;
   let userProfile2;
+  let userProfile3;
   beforeEach(() => {
     user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot');
     user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    user3 = authRegisterV1('email3@gmail.com', 'pass1234', 'Test', 'Bot');
     userProfile1 = userProfileV1(user1.authUserId, user1.authUserId);
     userProfile2 = userProfileV1(user2.authUserId, user2.authUserId);
+    userProfile3 = userProfileV1(user3.authUserId, user3.authUserId);
   });
 
   test('Correct Return: First User', () => {
-    expect(userProfile1.handleStr).toStrictEqual('testbot');
+    expect(userProfile1.user.handleStr).toStrictEqual('testbot');
   });
 
   test('Correct Return: Second User', () => {
-    expect(userProfile2.handleStr).toStrictEqual('testbot0');
+    expect(userProfile2.user.handleStr).toStrictEqual('testbot0');
   });
 
-  let user3; 
-  let user4;
-  let userProfile3;
+  test('Correct Return: Third User', () => {
+    expect(userProfile3.user.handleStr).toStrictEqual('testbot1');
+  });
+
+  let user4; 
+  let user5;
   let userProfile4;
+  let userProfile5;
   beforeEach(() => {
-    user3 = authRegisterV1('email3@gmail.com', 'pass1234', '1234567891011', '1213141516117181920');
     user4 = authRegisterV1('email4@gmail.com', 'pass1234', '1234567891011', '1213141516117181920');
-    userProfile3 = userProfileV1(user3.authUserId, user3.authUserId);
+    user5 = authRegisterV1('email5@gmail.com', 'pass1234', '1234567891011', '1213141516117181920');
     userProfile4 = userProfileV1(user4.authUserId, user4.authUserId);
+    userProfile5 = userProfileV1(user5.authUserId, user5.authUserId);
   });
 
-  test('Correct Return: Long Name', () => {
-    expect(userProfile3.handleStr).toStrictEqual('12345678910111213141');
+  test('Correct Return: First Long Name', () => {
+    expect(userProfile4.user.handleStr).toStrictEqual('12345678910111213141');
   });
 
-  test('Correct Return: Long Name Second', () => {
-    expect(userProfile3.handleStr).toStrictEqual('123456789101112131410');
+  test('Correct Return: Second Long Name', () => {
+    expect(userProfile5.user.handleStr).toStrictEqual('123456789101112131410');
   });
 });

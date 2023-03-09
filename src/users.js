@@ -18,11 +18,17 @@ function userProfileV1(authUserId, uId) {
     return { error: "Invalid user (uId not exist)" };
   }
 
-  let userProfile = data.users[uId];
+  let userProfile = {
+    uId: data.users[uId].uId,
+    email: data.users[uId].email,
+    nameFirst: data.users[uId].nameFirst,
+    nameLast: data.users[uId].nameLast,
+    handleStr: data.users[uId].userHandle
+  }
 
   return {
     user: userProfile
-  };
+  }
 }
 
-export { userProfileV1 } from "./users.js"
+export { userProfileV1 }
