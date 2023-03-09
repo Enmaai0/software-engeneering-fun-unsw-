@@ -10,6 +10,21 @@ const NO_MORE_MESSAGES = -1
 const FIFTY_MESSAGES = 50
 
 function channelDetailsV1(authUserId, channelId) {
+  //error checking
+  let channel = {};
+  
+  if (is_Valid_userId(authUserId, channelId) === false || is_Valid_ChannelId(authUserId, channelId) === false) {
+    return {error: 'Id error'};
+  }
+
+  //function
+  for (const i of data.channels) {
+    if (i.channelId === channelId) {
+      return i;
+    }
+  }
+}
+/*
   return {
     name: 'Hayden',
     ownerMembers: [
@@ -32,45 +47,31 @@ function channelDetailsV1(authUserId, channelId) {
     ],
   };
 }
-
+*/
 function channelJoinV1(authUserId, channelId) {
-  return {};
+
 }
 
 function channelInviteV1(authUserId, channelId, uId) {
-  let data = getData();
+  const data = getData();
 
-  if (channelId <= data.channels.length) {
+  if (is_Valid_channelId(channelId)) {
     return {error: 'Invalid channelId'};
   }
 
-  if (authUserId <= data.authUserId.length) {
+  if (is_Valid_userId(authUserId)) {
     return {error: 'Invalid authUserId'};
   }
 
-  if (uId <= data.users.length) {
+  if (is_Valid_userId(uId)) {
     return {error: 'Invalid uId'};
   }
 
-  let check_authUserId = false;
-  for (const a of data.channels[channelId].allMembers) {
-    if (a.authUserId === authUserId) {
-      check_authUserId = true;
-    }
-  }
-
-  if (!check_authUserId) {
+  if (!check_allMembers(authUserId, channelId)) {
     return  {error: 'authUserId does not have permission'};
   }
 
-  let check_uId = false;
-  for (const a of data.channels[channelId].allMembers) {
-    if (a.authUserId === authUserId) {
-      check_uId = true;
-    }
-  }
-
-  if (check_uId) {
+  if (check_allMembers(uId, channelId)) {
     return  {error: 'user already in channel'};
   }
 
@@ -83,32 +84,26 @@ function channelInviteV1(authUserId, channelId, uId) {
 
 function channelMessagesV1(authUserId, channelId, start) {
 
-  let data = getData();
+  const data = getData();
 
-  if (channelId <= data.channels.length) {
+  if (is_Valid_channelId(channelId)) {
     return {error: 'Invalid channelId'};
   }
 
-  if (authUserId <= data.authUserId.length) {
+  if (is_Valid_userId(authUserId)) {
     return {error: 'Invalid authUserId'};
   }
 
-  let check_authUserId = false;
-  for (const a of data.channels[channelId].allMembers) {
-    if (a.authUserId === authUserId) {
-      check_authUserId = true;
-    }
-  }
-
-  if (!check_authUserId) {
+  if (!check_allMembers(authUserId, channelId)) {
     return {error: 'authUserId does not have permission'};
   }
 
-  if (start > data.channels.messages.length) {
+  const message_array = data.channels[channelId].messages;
+
+  if (start > message_array.length) {
     return {error: 'Not a valid start'};
   }
 
-  const message_array = data.channels[channelId].messages;
   let return_messages = [];
   let end;
   if (start + FIFTY_MESSAGES > message_array.length) {
@@ -130,4 +125,57 @@ function channelMessagesV1(authUserId, channelId, start) {
   };
 }
     
+function is_Valid_userId(authUserId) {
+  let valid_userId = false;
+  const data = getData();
+
+  for (const i of data.users) {
+    if (i.authUserId === authUserId) {
+      valid_userId = true;
+    }
+  }
+  if (!valid_userId) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+function is_Valid_ChannelId(channelId) {
+  let valid_channelId = false;
+  const data = getData();
+
+  for (const i of data.channels) {
+    if (i.channelId === channelId) {
+      valid_channelId = true;
+    }
+  }
+  if (!valid_channelId) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+/* WARNING: 
+ * check_allMembers() require a valid input of both authUserId and channelId,
+ * Please ensure to check valid brefore use this function.
+ * 
+ * @param { number } authUserId
+ * @param { number } channelId
+ * @return { boolean } 
+ */
+function check_allMembers(authUserId, channelId) {
+  const data = getData();
+
+  const member_array = data.channels[channelId].allMembers;
+  for (const member of member_array) {
+    if (member.authUserId === authUserId) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 }
