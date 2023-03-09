@@ -226,9 +226,9 @@ describe('userId error',() => {
     user = authLoginV1('userEmail@gmail.com', 'password');
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
     channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
-  });
 
-  expect(channelJoinV1(user2.authUserId + 1, channel.channelId)).toStrictEqual(ERROR);
+    expect(channelJoinV1(user2.authUserId + 1, channel.channelId)).toStrictEqual(ERROR);
+  });
 });
 
 describe('channelId error',() => {
