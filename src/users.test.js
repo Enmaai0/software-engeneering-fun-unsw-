@@ -25,11 +25,11 @@ describe('usersProfileV1: Error Testing', () => {
     user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
   });
 
-  test('Correct Return: First User', () => {
+  test('AuthUserId: Invalid authUserId', () => {
     expect(userProfileV1(user1.authUserId + 1, user1.authUserId)).toStrictEqual(ERROR);
   });
 
-  test('Correct Return: Second User', () => {
+  test('uId: Invalid uId', () => {
     expect(userProfileV1(user1.authUserId, user1.authUserId + 1)).toStrictEqual(ERROR);
   });
 
@@ -37,8 +37,7 @@ describe('usersProfileV1: Error Testing', () => {
 });
 
 describe('usersProfileV1: Return Testing', () => {
-  let user1;
-  let user2;
+  let user1, user2;
   beforeEach(() => {
     user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot');
     user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot');
