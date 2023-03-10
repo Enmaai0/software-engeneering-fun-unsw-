@@ -4,7 +4,7 @@
  * Contains the stub code functions of all channel* functions.
  */
 
-import { getData, setData } from "./dataStore.js"
+import { getData, setData } from './dataStore.js'
 
 const NO_MORE_MESSAGES = -1
 const FIFTY_MESSAGES = 50
@@ -25,11 +25,11 @@ function channelDetailsV1(authUserId, channelId) {
   }
 
   if (!isChannelId(channelId)) {
-    return { error: "Invalid channelId (No channel with that id)" }
+    return { error: 'Invalid channelId (No channel with that id)' };
   }
 
   if (!isMember(authUserId, channelId)) {
-    return {error: 'Error: User is not a member'};
+    return { error: 'Error: User is not a member' };
   }
 
   let data = getData();
@@ -63,7 +63,7 @@ function channelJoinV1(authUserId, channelId) {
   }
 
   if (isMember(authUserId, channelId)) {
-    return {error: 'Error: User already a member'};
+    return { error: 'Error: User already a member' };
   }
   
   let data = getData();
@@ -82,10 +82,11 @@ function channelJoinV1(authUserId, channelId) {
     channel.allMembers.push(userObject);
   
     setData(data);
+
     return {};
   }
 
-  return {error: 'Error: No permission to join the channel'};
+  return { error: 'Error: No permission to join the channel' };
 }
 
 /**
@@ -143,18 +144,18 @@ function channelMessagesV1(authUserId, channelId, start) {
   }
 
   if (!isChannelId(channelId)) {
-    return { error: "Invalid channelId (No channel with that id)" }
+    return { error: 'Invalid channelId (No channel with that id)' };
   }
 
   if (!isMember(authUserId, channelId)) {
-    return  {error: 'Invalid authUserId (User does not have permission)'};
+    return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
   const data = getData();
   const messageArray = data.channels[channelId].messages;
 
   if (start > messageArray.length) {
-    return {error: 'Invalid Start (Start is greater than total messages)'};
+    return { error: 'Invalid Start (Start is greater than total messages)' };
   }
 
   let returnMessages = [];

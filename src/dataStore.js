@@ -7,13 +7,32 @@
  * the user/channel and appear under their 
  * respective area
  */
+
+/**
+ * Users Object =
+ * {
+ *  uId: number,
+ *  email: string,
+ *  password: string,
+ *  nameFirst: string,
+ *  nameLast: string,
+ *  userHandle: string,
+ *  permissionId: number,
+ * }
+ * 
+ * Channels Object = 
+ * {
+ *  channelId: number,
+ *  name: string,
+ *  isPublic: boolean,
+ *  owners: array,
+ *  allMembers: array,
+ *  messages: array,
+ * }
+ */
 let data = {
-  users: [
-
-  ],
-  channels: [
-
-  ]
+  users: [],
+  channels: []
 };
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1

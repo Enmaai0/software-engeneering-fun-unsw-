@@ -4,7 +4,7 @@
  * Contains the stub code functions of all users* functions.
  */
 
-import { getData } from "./dataStore"
+import { getData } from './dataStore'
 
 function userProfileV1(authUserId, uId) {
 
@@ -26,9 +26,7 @@ function userProfileV1(authUserId, uId) {
     handleStr: data.users[uId].userHandle
   }
 
-  return {
-    user: userProfile
-  }
+  return { user: userProfile };
 }
 
 export { userProfileV1 }

@@ -7,10 +7,17 @@
 
 import { channelsListAllV1, channelsCreateV1 } from './channels.js'
 import { authRegisterV1 } from './auth.js'
-import { userProfileV1 } from "./users.js"
+import { userProfileV1 } from './users.js'
 import { getData } from './dataStore.js'
 import { clearV1 } from './other.js'
 
+const ERROR = { error: expect.any(String) };
+
+/**
+ * Clears the dataStore before each test is ran. Ensures that
+ * tests do not rely on the results of others to ensure full 
+ * functionality and correct implementation.
+*/
 beforeEach(() => {
   clearV1();
 });
@@ -21,7 +28,7 @@ describe('clearV1: Tests',() => {
   test('Check Users no Longer Exists', () => {
     let user = authRegisterV1('userEmail@gmail.com', 'password', 'First', 'Last');
     clearV1();
-    expect(userProfileV1(user.authUserId, user.authUserId)).toStrictEqual({error: expect.any(String)});
+    expect(userProfileV1(user.authUserId, user.authUserId)).toStrictEqual(ERROR);
   });
 
   test('Check Channel no Longer Exists', () => {
