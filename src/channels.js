@@ -31,20 +31,49 @@ function channelsCreateV1(authUserId, name, isPublic) {
 
   let data = getData();
   const channelId = data.channels.length;
+  const userObject = createUserObject(authUserId);
 
   let channel = {
     channelId: channelId,
     name: name,
     isPublic: isPublic,
-    owners: [authUserId],
-    allMembers: [authUserId],
+    owners: [userObject],
+    allMembers: [userObject],
     messages: [],
   }
 
   data.channels.push(channel);
   setData(data);
 
-  return { channelId : channelId };
+  return { 
+    channelId: channelId 
+  }
+}
+
+/**
+ * createUserObject
+ * 
+ * Given a valid authUserId, returns an object that
+ * contains all information to be stored in either
+ * channel.owners or channel.allMembers.
+ * 
+ * @param { number } authUserId 
+ * @returns { channels }
+ */
+function createUserObject(userId) {
+  const data = getData();
+
+  const user = data.users[userId];
+
+  let userObject = {
+    uId: userId,
+    email: user.email,
+    nameFirst: user.nameFirst,
+    nameLast: user.nameLast,
+    handleStr: user.userHandle
+  }
+
+  return userObject;
 }
 
 /**
@@ -56,7 +85,6 @@ function channelsCreateV1(authUserId, name, isPublic) {
  * @param { number } authUserId 
  * @returns { channels }
  */
- 
 function channelsListAllV1(authUserId) {
   if (!isValidUserId(authUserId)) {
     return { error: 'Invalid User (User does not exist)' }
@@ -73,7 +101,9 @@ function channelsListAllV1(authUserId) {
     channelArray.push(channelDetails);
   }
 
-  return channelArray;
+  return {
+    channels: channelArray
+  }
 }
 
 /**
@@ -96,7 +126,7 @@ function channelsListV1 (authUserId) {
 
   for (const channel of data.channels) {
     for (const user of channel.allMembers) {
-      if (user === authUserId) {
+      if (user.uId === authUserId) {
         let channelDetails = {
           name: channel.name,
           channelId: channel.channelId
@@ -105,7 +135,9 @@ function channelsListV1 (authUserId) {
       }
     }
   }
-  return channelArray;
+  return {
+    channels: channelArray
+  }
 }
 
 /**
