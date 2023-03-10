@@ -4,7 +4,7 @@
  * Contains the stub code functions of all channel* functions.
  */
 
-import { getData, setData } from "./dataStore"
+import { getData, setData } from "./dataStore.js"
 
 const NO_MORE_MESSAGES = -1
 const FIFTY_MESSAGES = 50
