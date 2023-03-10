@@ -28,6 +28,10 @@ function channelDetailsV1(authUserId, channelId) {
     return { error: "Invalid channelId (No channel with that id)" }
   }
 
+  if (!isMember(authUserId, channelId)) {
+    return {error: 'Error: User is not a member'};
+  }
+
   let data = getData();
   const channel = data.channels[channelId];
 
