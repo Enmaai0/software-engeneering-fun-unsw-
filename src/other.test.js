@@ -29,6 +29,6 @@ describe('clearV1: Tests',() => {
     let channel = channelsCreateV1(user.authUserId, 'firstChannel', true);
     clearV1();
     let user1 = authRegisterV1('user1Email@gmail.com', 'password', 'First', 'Last');
-    expect(channelsListAllV1(user1.authUserId)).toStrictEqual([]);
+    expect(channelsListAllV1(user1.authUserId)).toStrictEqual({ channels: [] });
   });
 })
