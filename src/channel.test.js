@@ -23,23 +23,26 @@ beforeEach(() => {
 
 /////////////// channelInviteV1 Function ///////////////
 
-describe('channelInviteV1: Error Testing', () => {
+describe('channelInviteV1: Error Testing 1', () => {
+
+  test('authUserId: Invalid User Id', () => {
+    let user1;
+    let channel1;
+    user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
+    channel1 = channelsCreateV1(user1.authUserId, 'channel1', true);
+
+    expect(channelInviteV1(user1.authUserId + 1, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
+  });
+});
+
+describe('channelInviteV1: Error Testing 2', () => {
 
   let user1;
   let channel1;
-  let user2;
 
   beforeEach(() => {
     user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
     channel1 = channelsCreateV1(user1.authUserId, 'channel1', true);
-  });
-
-  test('authUserId: Invalid User Id', () => {
-    expect(channelInviteV1(user1.authUserId + 1, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
-  });
-
-  beforeEach(() => {
-    channelJoinV1(user1.authUserId, channel1.channelId);
   });
 
   test('uId: Invalid User2 Id', () => {
@@ -49,20 +52,39 @@ describe('channelInviteV1: Error Testing', () => {
   test('Invalid Self Inivite: User In Channel', () => {
     expect(channelInviteV1(user1.authUserId, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
   });
+});
+
+describe('channelInviteV1: Error Testing 3', () => {
+
+  let user1;
+  let channel1;
+  let user2;
 
   beforeEach(() => {
+    user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
+    channel1 = channelsCreateV1(user1.authUserId, 'channel1', true);
     user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
   });
-
+  
   test('channelId: Invalid channelId', () => {
     expect(channelInviteV1(user1.authUserId, channel1.channelId + 1, user2.authUserId)).toStrictEqual(ERROR);
   });
-
+  
   test('Invalid Invite: Member Not in Channel', () => {
     expect(channelInviteV1(user2.authUserId, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
   });
+});
+
+describe('channelInviteV1: Error Testing 4', () => {
+
+  let user1;
+  let channel1;
+  let user2;
 
   beforeEach(() => {
+    user1 = authRegisterV1('email@gmail.com', 'pass1234', 'Test', 'Bot I');
+    channel1 = channelsCreateV1(user1.authUserId, 'channel1', true);
+    user2 = authRegisterV1('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
     channelJoinV1(user2.authUserId, channel1.channelId);
   });
 

@@ -20,11 +20,11 @@ const FIFTY_MESSAGES = 50
  * @return { channelObject } 
  */
 function channelDetailsV1(authUserId, channelId) {
-  if (!isUserId(authUserId, channelId)) {
+  if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
-  if (!isChannelId(authUserId, channelId)) {
+  if (!isChannelId(channelId)) {
     return { error: "Invalid channelId (No channel with that id)" }
   }
 
@@ -35,7 +35,7 @@ function channelDetailsV1(authUserId, channelId) {
     name: channel.name,
     isPublic: channel.isPublic,
     ownerMembers: channel.owners,
-    members: channel.allMembers
+    allMembers: channel.allMembers
   };
 }
 
@@ -81,6 +81,8 @@ function channelJoinV1(authUserId, channelId) {
   channel.allMembers.push(userObject);
 
   setData(data);
+
+  return {};
 }
 
 /**
@@ -95,11 +97,12 @@ function channelJoinV1(authUserId, channelId) {
  * @return {  } 
  */
 function channelInviteV1(authUserId, channelId, uId) {
-  if (!isUserId(authUserId, channelId)) {
+
+  if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
-  if (!isChannelId(authUserId, channelId)) {
+  if (!isChannelId(channelId)) {
     return { error: "Invalid channelId (No channel with that id)" }
   }
 
@@ -115,7 +118,7 @@ function channelInviteV1(authUserId, channelId, uId) {
     return  {error: 'Invalid User (User already in channel)'};
   }
 
-  const data = getData();
+  const data = getData();  
   const channel = data.channels[channelId];
   const user = data.users[uId];
 
@@ -127,9 +130,11 @@ function channelInviteV1(authUserId, channelId, uId) {
     handleStr: user.userHandle
   }
 
-  data.channel.allMembers.push(userObject);
+  channel.allMembers.push(userObject);
 
   setData(data);
+
+  return {};
 }
 
 /**
@@ -145,11 +150,11 @@ function channelInviteV1(authUserId, channelId, uId) {
  * @return { messages } 
  */
 function channelMessagesV1(authUserId, channelId, start) {
-  if (!isUserId(authUserId, channelId)) {
+  if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
-  if (!isChannelId(authUserId, channelId)) {
+  if (!isChannelId(channelId)) {
     return { error: "Invalid channelId (No channel with that id)" }
   }
 
@@ -160,7 +165,7 @@ function channelMessagesV1(authUserId, channelId, start) {
   const data = getData();
   const messageArray = data.channels[channelId].messages;
 
-  if (start > message_array.length) {
+  if (start > messageArray.length) {
     return {error: 'Invalid Start (Start is greater than total messages)'};
   }
 
