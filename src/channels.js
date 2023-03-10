@@ -4,8 +4,8 @@
  * Contains the function implementations of all channels* functions.
  */
 
-import { authRegisterV1 } from "./auth.js";
-import { getData, setData } from "./dataStore.js";
+import { authRegisterV1 } from './auth.js';
+import { getData, setData } from './dataStore.js';
 
 /**
  * channelsCreateV1
@@ -19,10 +19,9 @@ import { getData, setData } from "./dataStore.js";
  * @param { isPublic } isPublic 
  * @returns {{ channelId: channelid }}
  */
-
 function channelsCreateV1(authUserId, name, isPublic) {
   if (!isValidUserId(authUserId)) {
-      return { error: 'Invalid User (User does not exist)' }
+      return { error: 'Invalid User (User does not exist)' };
   }
 
   if (name.length < 1 || name.length > 20) {
@@ -40,14 +39,12 @@ function channelsCreateV1(authUserId, name, isPublic) {
     owners: [userObject],
     allMembers: [userObject],
     messages: [],
-  }
+  };
 
   data.channels.push(channel);
   setData(data);
 
-  return { 
-    channelId: channelId 
-  }
+  return { channelId: channelId };
 }
 
 /**
@@ -87,7 +84,7 @@ function createUserObject(userId) {
  */
 function channelsListAllV1(authUserId) {
   if (!isValidUserId(authUserId)) {
-    return { error: 'Invalid User (User does not exist)' }
+    return { error: 'Invalid User (User does not exist)' };
   }
 
   let data = getData();
@@ -101,9 +98,7 @@ function channelsListAllV1(authUserId) {
     channelArray.push(channelDetails);
   }
 
-  return {
-    channels: channelArray
-  }
+  return { channels: channelArray };
 }
 
 /**
@@ -117,7 +112,7 @@ function channelsListAllV1(authUserId) {
  */
 function channelsListV1 (authUserId) {
   if (!isValidUserId(authUserId)) {
-    return { error: 'Invalid User (User does not exist)' }
+    return { error: 'Invalid User (User does not exist)' };
   }
 
   let data = getData();
@@ -135,9 +130,8 @@ function channelsListV1 (authUserId) {
       }
     }
   }
-  return {
-    channels: channelArray
-  }
+
+  return { channels: channelArray };
 }
 
 /**
@@ -155,6 +149,7 @@ function isValidUserId(id) {
   if (id >= data.users.length) {
     return false;
   }
+
   return true;
 } 
 

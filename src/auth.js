@@ -23,17 +23,17 @@ import validator from 'validator'
  */
 function authLoginV1(email, password) {
   if (!isRegisteredEmail(email)) {
-    return { error: "Invalid Email (No existing user with that email)" }
-  };
+    return { error: 'Invalid Email (No existing user with that email)' };
+  }
 
   let data = getData();
   let userIndex = emailToUserIndex(email);
 
   if (data.users[userIndex].password === password) {
-    return { authUserId: userIndex }
+    return { authUserId: userIndex };
   }
 
-  return { error: "Incorrect Password" }
+  return { error: 'Incorrect Password' };
 }
 
 /**
@@ -80,23 +80,23 @@ function emailToUserIndex(email) {
  */
 function authRegisterV1(email, password, nameFirst, nameLast) {
   if (!validator.isEmail(email)) {
-    return { error: "Invalid Email (Enter a Valid Email)" }
+    return { error: 'Invalid Email (Enter a Valid Email)' };
   };
 
   if (isRegisteredEmail(email)) {
-    return { error: "Invalid Email (Email Already in Use)" }
+    return { error: 'Invalid Email (Email Already in Use)' };
   };
 
   if (password.length < 6) {
-    return { error: "Invalid Password (Minimum 6 Characters)"}
+    return { error: 'Invalid Password (Minimum 6 Characters)' };
   };
 
   if (nameFirst.length < 1 || nameLast.length < 1) {
-    return { error: "Invalid Name (Name Cannot be Empty)" }
+    return { error: 'Invalid Name (Name Cannot be Empty)' };
   };
 
   if (nameFirst.length > 50 || nameLast.length > 50) {
-    return { error: "Invalid Name (Maximum 50 Characters)" }
+    return { error: 'Invalid Name (Maximum 50 Characters)' };
   };
 
   const data = getData();
@@ -104,7 +104,7 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
   // permissionId refers to the global permissions of
   // the users within teams
   // 1 = Owner, 2 = Member
-  let permissionId
+  let permissionId;
   if (data.users.length === 0) {
     permissionId = 1;
   } else {
@@ -127,9 +127,7 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
 
   setData(data);
 
-  return {
-    authUserId: newUserIndex
-  };
+  return { authUserId: newUserIndex };
 }
 
 /**
@@ -148,6 +146,7 @@ function isRegisteredEmail(email) {
       return true;
     }
   }
+
   return false;
 }
 
@@ -204,6 +203,7 @@ function isUserHandleTaken(userHandle) {
       return true;
     }
   }
+
   return false;
 }
 

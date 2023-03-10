@@ -4,9 +4,9 @@
  * Contains the jest testing designed for auth.js
  */
 
-import { authLoginV1, authRegisterV1 } from './auth.js';
+import { authLoginV1, authRegisterV1 } from './auth.js'
 import { userProfileV1 } from './users.js'
-import { clearV1 } from './other.js';
+import { clearV1 } from './other.js'
 
 const ERROR = { error: expect.any(String) };
 

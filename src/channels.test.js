@@ -7,10 +7,15 @@
 import { authRegisterV1 } from './auth.js'
 import { channelsListAllV1, channelsListV1, channelsCreateV1 } from './channels.js'
 import { clearV1 } from './other.js'
-import { getData, setData } from "./dataStore.js"
+import { getData, setData } from './dataStore.js'
 
-const ERROR = { error: expect.any(String) }
+const ERROR = { error: expect.any(String) };
 
+/**
+ * Clears the dataStore before each test is ran. Ensures that
+ * tests do not rely on the results of others to ensure full 
+ * functionality and correct implementation.
+*/
 beforeEach(() => {
   clearV1();
 });

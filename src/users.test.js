@@ -8,7 +8,7 @@ import { userProfileV1 } from './users.js'
 import { authRegisterV1 } from './auth.js'
 import { clearV1 } from './other.js'
 
-const ERROR = { error: expect.any(String) }
+const ERROR = { error: expect.any(String) };
 
 /**
  * Clears the dataStore before each test is ran. Ensures that
