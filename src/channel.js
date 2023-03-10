@@ -58,8 +58,8 @@ function channelJoinV1(authUserId, channelId) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
-  if (!isChannelId(authUserId, channelId)) {
-    return { error: "Invalid channelId (No channel with that id)" }
+  if (!isChannelId(channelId)) {
+    return { error: 'Invalid channelId (No channel with that id)' };
   }
 
   if (isMember(authUserId, channelId)) {
@@ -67,26 +67,25 @@ function channelJoinV1(authUserId, channelId) {
   }
   
   let data = getData();
-  const channel = data.channels[channelId];
+  let channel = data.channels[channelId];
   const user = data.users[authUserId];
 
-  if (channel.isPublic === false && user.permissionId === 2) {
-    return {error: 'Error: No permission to join the channel'};
+  if (channel.isPublic === true || user.permissionId === 1) {
+    const userObject = {
+      uId: user.uId,
+      email: user.email,
+      nameFirst: user.nameFirst,
+      nameLast: user.nameLast,
+      handleStr: user.userHandle
+    }
+  
+    channel.allMembers.push(userObject);
+  
+    setData(data);
+    return {};
   }
 
-  const userObject = {
-    uId: user.uId,
-    email: user.email,
-    nameFirst: user.nameFirst,
-    nameLast: user.nameLast,
-    handleStr: user.userHandle
-  }
-
-  channel.allMembers.push(userObject);
-
-  setData(data);
-
-  return {};
+  return {error: 'Error: No permission to join the channel'};
 }
 
 /**
@@ -101,42 +100,27 @@ function channelJoinV1(authUserId, channelId) {
  * @return {  } 
  */
 function channelInviteV1(authUserId, channelId, uId) {
-
   if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
   if (!isChannelId(channelId)) {
-    return { error: "Invalid channelId (No channel with that id)" }
+    return { error: 'Invalid channelId (No channel with that id)' };
   }
 
   if (!isUserId(uId)) {
-    return {error: 'Invalid uId (No user with that Id)'};
+    return { error: 'Invalid uId (No user with that Id)' };
   }
 
   if (!isMember(authUserId, channelId)) {
-    return  {error: 'Invalid authUserId (User does not have permission)'};
+    return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
   if (isMember(uId, channelId)) {
-    return  {error: 'Invalid User (User already in channel)'};
+    return { error: 'Invalid User (User already in channel)' };
   }
 
-  const data = getData();  
-  const channel = data.channels[channelId];
-  const user = data.users[uId];
-
-  const userObject = {
-    uId: user.uId,
-    email: user.email,
-    nameFirst: user.nameFirst,
-    nameLast: user.nameLast,
-    handleStr: user.userHandle
-  }
-
-  channel.allMembers.push(userObject);
-
-  setData(data);
+  channelJoinV1(uId, channelId);
 
   return {};
 }
@@ -240,18 +224,19 @@ function isChannelId(channelId) {
 /**
  * isMember
  * 
- * Given a authUserId and channelId, checks if a user
- * with the authUserId is a part of the channel
+ * Given an id and channelId, checks if a user
+ * with the id is a part of the channel
  * 
- * @param { number } authUserId
+ * @param { number } id
  * @param { number } channelId
  * @return { boolean } 
  */
-function isMember(authUserId, channelId) {
+function isMember(id, channelId) {
   const data = getData();
+  const members = data.channels[channelId].allMembers;
 
-  for (const member of data.channels[channelId].allMembers) {
-    if (member.uId === authUserId) {
+  for (const member of members) {
+    if (member.uId === id) {
       return true;
     }
   }
