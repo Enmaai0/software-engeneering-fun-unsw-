@@ -202,7 +202,7 @@ describe('member error', () => {
     user2 = authRegisterV1('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     user1 = authLoginV1('user1Email@gmail.com', 'password1');
     user2 = authLoginV1('user2Email@gmail.com', 'password2');
-    channel = channelsCreateV1(user1.authUserId, 'firstChannel', true);
+    let channel = channelsCreateV1(user1.authUserId, 'firstChannel', true);
   })
 
   test('the user is not a member of this channel', () => {
