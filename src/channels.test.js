@@ -71,16 +71,18 @@ describe('channelsListAllV1: Return List Testing', () => {
     let user1 = authRegisterV1('validemail@gmail.com', '123abc!@#','jake', 'Renzella');
     channelsCreateV1(user1.authUserId, 'Channel1', true);
     channelsCreateV1(user1.authUserId, 'Channel2', false);
-    expect(channelsListAllV1(user1)).toStrictEqual([
-      {
-        channelId: expect.any(Number),
-        name: 'Channel1'
-      },
-      {
-        channelId: expect.any(Number),
-        name: 'Channel2'
-      }
-    ]);
+    expect(channelsListAllV1(user1)).toStrictEqual({
+      channels: [
+        {
+          channelId: expect.any(Number),
+          name: 'Channel1'
+        },
+        {
+          channelId: expect.any(Number),
+          name: 'Channel2'
+        }
+      ]
+    });
   });
 })
 
@@ -98,16 +100,18 @@ describe('channelsListV1: Return List Testing', () => {
     const user1 = authRegisterV1('validemail@gmail.com', '123abc!@#','jake', 'Renzella').authUserId
     channelsCreateV1(user1, 'Channel1', true);
     channelsCreateV1(user1, 'Channel2', true);
-    expect(channelsListV1(user1)).toStrictEqual([
-      {
-        channelId: expect.any(Number),
-        name: 'Channel1'
-      },
-      {
-        channelId: expect.any(Number),
-        name: 'Channel2'
-      }
-    ]);
+    expect(channelsListV1(user1)).toStrictEqual({
+      channels: [
+        {
+          channelId: expect.any(Number),
+          name: 'Channel1'
+        },
+        {
+          channelId: expect.any(Number),
+          name: 'Channel2'
+        }
+      ]
+    });
   });
 
   test('Testing User is in Public & Private Channels', () => {
@@ -115,19 +119,21 @@ describe('channelsListV1: Return List Testing', () => {
     channelsCreateV1(user1, 'Channel1', true);
     channelsCreateV1(user1, 'Channel2', true);
     channelsCreateV1(user1, 'Channel3', false);
-    expect(channelsListV1(user1)).toStrictEqual([
-      {
-        channelId: expect.any(Number),
-        name: 'Channel1'
-      },
-      {
-        channelId: expect.any(Number),
-        name: 'Channel2'
-      },
-      {
-        channelId: expect.any(Number),
-        name: 'Channel3'
-      }
-    ]);
+    expect(channelsListV1(user1)).toStrictEqual({
+      channels: [
+        {
+          channelId: expect.any(Number),
+          name: 'Channel1'
+        },
+        {
+          channelId: expect.any(Number),
+          name: 'Channel2'
+        },
+        {
+          channelId: expect.any(Number),
+          name: 'Channel3'
+        }
+      ]
+    });
   });
 });

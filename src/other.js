@@ -5,7 +5,7 @@
  * functions that are uncategorized.
  */
 
-import { getData, setData } from "./dataStore"
+import { getData, setData } from "./dataStore.js"
 
 /**
  * clearV1
