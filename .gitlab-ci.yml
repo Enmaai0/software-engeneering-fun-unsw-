@@ -11,8 +11,6 @@ linting:
   stage: linting
   script: 
     - npm run lint
-  only:
-    - master
 
 tests:
   stage: checks
@@ -24,5 +22,3 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
-  only:
-    - master
