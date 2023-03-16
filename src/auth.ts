@@ -110,8 +110,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   const data = getData();
 
   // permissionId refers to the global permissions of
-  // the users within teams
-  // 1 = Owner, 2 = Member
+  // the users within teams (1 = Owner, 2 = Member)
   let permissionId;
   if (data.users.length === 0) {
     permissionId = 1;
@@ -120,10 +119,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   }
 
   const newUserIndex = data.users.length;
-
-  // Sets the first empty array index to an object
-  // containing all information about the user.
-  data.users[newUserIndex] = {
+  const userObject = {
     uId: newUserIndex,
     email: email,
     password: password,
@@ -133,6 +129,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     permissionId: permissionId,
   };
 
+  data.users.push(userObject);
   setData(data);
 
   return { authUserId: newUserIndex };
@@ -149,7 +146,9 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
  * @return { boolean }
  */
 function isRegisteredEmail(email: string): boolean {
-  for (const user of getData().users) {
+  const data = getData();
+
+  for (const user of data.users) {
     if (user.email === email) {
       return true;
     }
@@ -190,7 +189,7 @@ function generateUserHandle(nameFirst: string, nameLast: string): string {
     string = string.concat(concatNum.toString());
     concatNum++;
   }
-
+  
   return string;
 }
 
@@ -205,12 +204,13 @@ function generateUserHandle(nameFirst: string, nameLast: string): string {
  * @return { boolean }
  */
 function isUserHandleTaken(userHandle: string): boolean {
-  for (const user of getData().users) {
+  const data = getData();
+
+  for (const user of data.users) {
     if (user.userHandle === userHandle) {
       return true;
     }
   }
-
   return false;
 }
 

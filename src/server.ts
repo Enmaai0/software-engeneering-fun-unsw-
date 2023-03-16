@@ -45,6 +45,6 @@ app.post('/auth/register/v2', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body
   const returnMessage = authRegisterV1(email, password, nameFirst, nameLast);
 
-  console.log('Registering New User:', nameFirst, nameLast);
+  console.log('Registering New User:', nameFirst, nameLast, "with email:", email);
   res.json(returnMessage);
 });
