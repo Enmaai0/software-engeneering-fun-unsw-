@@ -10,11 +10,11 @@ function userProfileV1(authUserId, uId) {
 
   const data = getData();
 
-  if (authUserId >= data.users.length) {
+  if (authUserId >= data.users.length || authUserId < 0) {
     return { error: "Invalid user (authUserId not exist)" };
   }
 
-  if (uId >= data.users.length) {
+  if (uId >= data.users.length || authUserId < 0) {
     return { error: "Invalid user (uId not exist)" };
   }
 
