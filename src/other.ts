@@ -5,7 +5,7 @@
  * functions that are uncategorized.
  */
 
-import { getData, setData } from './dataStore.js'
+import { getData, setData } from './dataStore'
 
 /**
  * clearV1
@@ -15,8 +15,9 @@ import { getData, setData } from './dataStore.js'
  * channel array (default state)
  * 
  * @param null
+ * @returns { {} }
  */
-function clearV1(){
+function clearV1() {
   let data = getData();
 
   data = {
