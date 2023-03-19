@@ -8,29 +8,41 @@
  * respective area
  */
 
-/**
- * Users Object =
- * {
- *  uId: number,
- *  email: string,
- *  password: string,
- *  nameFirst: string,
- *  nameLast: string,
- *  userHandle: string,
- *  permissionId: number,
- * }
- * 
- * Channels Object = 
- * {
- *  channelId: number,
- *  name: string,
- *  isPublic: boolean,
- *  owners: array,
- *  allMembers: array,
- *  messages: array,
- * }
- */
-let data = {
+interface Data {
+  users: User[],
+  channels: Channel[],
+}
+
+interface User {
+  uId: number,
+  email: string,
+  password: string,
+  nameFirst: string,
+  nameLast: string,
+  userHandle: string,
+  permissionId: number,
+  tokens: string[],
+  tokenCounter: number,
+}
+
+interface Channel {
+  channelId: number,
+  name: string,
+  isPublic: boolean,
+  owners: Users[],
+  allMembers: Users[],
+  messages: string[],
+}
+
+interface Users {
+  uId: number,
+  email: string,
+  nameFirst: string,
+  nameLast: string,
+  handleStr: string,
+}
+
+let data: Data = {
   users: [],
   channels: []
 };
@@ -52,7 +64,7 @@ Example usage
 */
 
 // Use get() to access the data
-function getData() {
+function getData(): Data {
   return data;
 }
 
@@ -60,7 +72,7 @@ function getData() {
 // - Only needs to be used if you replace the data store entirely
 // - Javascript uses pass-by-reference for objects... read more here: https://stackoverflow.com/questions/13104494/does-javascript-pass-by-reference
 // Hint: this function might be useful to edit in iteration 2
-function setData(newData) {
+function setData(newData: Data) {
   data = newData;
 }
 

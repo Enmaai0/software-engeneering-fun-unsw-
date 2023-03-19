@@ -17,7 +17,7 @@ import { getData, setData } from './dataStore'
  * @param null
  * @returns { {} }
  */
-function clearV1() {
+function clearV1(): {} {
   let data = getData();
 
   data = {
@@ -26,6 +26,8 @@ function clearV1() {
   }
 
   setData(data);
+
+  return {};
 }
 
 export { clearV1 }
