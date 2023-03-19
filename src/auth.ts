@@ -189,7 +189,6 @@ function generateUserHandle(nameFirst: string, nameLast: string): string {
     string = string.concat(concatNum.toString());
     concatNum++;
   }
-  
   return string;
 }
 

@@ -37,14 +37,13 @@ process.on('SIGINT', () => {
 /** Server Routes Implementation **/
 
 app.post('/auth/login/v2', (req: Request, res: Response) => {
-
   res.json();
 });
 
 app.post('/auth/register/v2', (req: Request, res: Response) => {
-  const { email, password, nameFirst, nameLast } = req.body
+  const { email, password, nameFirst, nameLast } = req.body;
   const returnMessage = authRegisterV1(email, password, nameFirst, nameLast);
 
-  console.log('Registering New User:', nameFirst, nameLast, "with email:", email);
+  console.log('Registering New User:', nameFirst, nameLast, 'with email:', email);
   res.json(returnMessage);
 });

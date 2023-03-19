@@ -1,6 +1,5 @@
 /**
  * auth.test.ts
- * 
  * Contains the jest testing designed for auth.ts that utelises
  * the HTTP routes created to test functionality
  */
@@ -26,13 +25,12 @@ beforeEach(() => {
 
 /** /auth/login/v2 Testing **/
 
-
 /** /auth/register/v2 Testing **/
 
 function testAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {
   const res = request(
     'POST',
-    url + '/auth/register/v2',
+    `${url}:${port}/auth/register/v2`,
     {
       json: {
         email,
@@ -42,6 +40,7 @@ function testAuthRegister(email: string, password: string, nameFirst: string, na
       }
     }
   );
+  expect(res.statusCode).toBe(OK);
   return JSON.parse(res.getBody() as string);
 }
 
@@ -110,15 +109,15 @@ describe('/auth/register: Return Testing', () => {
     });
 
     test('Correct Return: First User Short Name no Concat', () => {
-      expect(grabUserHandle(user1.authUserId)).toStrictEqual({ userHandle: 'testbot' })
+      expect(grabUserHandle(user1.authUserId)).toStrictEqual({ userHandle: 'testbot' });
     });
 
     test('Correct Return: Second User Short Name with Concat', () => {
-      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 'testbot0' })
+      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 'testbot0' });
     });
 
     test('Correct Return: Second User Short Name with Concat', () => {
-      expect(grabPermissionId(user3.authUserId)).toStrictEqual({ permissionId: 'testbot1' })
+      expect(grabPermissionId(user3.authUserId)).toStrictEqual({ permissionId: 'testbot1' });
     });
   });
 
@@ -129,17 +128,17 @@ describe('/auth/register: Return Testing', () => {
       user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'ThisIsALong', 'NameForTests');
       user3 = testAuthRegister('email3@gmail.com', 'pass1234', 'ThisIsALong', 'NameForTests');
     });
-  
+
     test('Correct Return: First User Long Name no Concat', () => {
-      expect(grabUserHandle(user1.authUserId)).toStrictEqual({ userHandle: 'thisisalongnameforte' })
+      expect(grabUserHandle(user1.authUserId)).toStrictEqual({ userHandle: 'thisisalongnameforte' });
     });
 
     test('Correct Return: Second User Long Name with Concat', () => {
-      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 'thisisalongnameforte0' })
+      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 'thisisalongnameforte0' });
     });
 
     test('Correct Return: Third User Long Name with Concat', () => {
-      expect(grabPermissionId(user3.authUserId)).toStrictEqual({ permissionId: 'thisisalongnameforte1' })
+      expect(grabPermissionId(user3.authUserId)).toStrictEqual({ permissionId: 'thisisalongnameforte1' });
     });
   });
 
@@ -151,11 +150,11 @@ describe('/auth/register: Return Testing', () => {
     });
 
     test('Correct Return: First User is Owner', () => {
-      expect(grabPermissionId(user1.authUserId)).toStrictEqual({ permissionId: 1 })
+      expect(grabPermissionId(user1.authUserId)).toStrictEqual({ permissionId: 1 });
     });
 
     test('Correct Return: Second User is Member', () => {
-      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 2 })
+      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 2 });
     });
   });
 });
@@ -164,9 +163,7 @@ describe('/auth/register: Return Testing', () => {
 
 /**
  * grabUserHandle
- * 
  * Given a users id, returns their associated userHandle
- * 
  * @param {id} number
  * @returns { userHandle: string }
  */
@@ -177,9 +174,7 @@ function grabUserHandle(id: number): { userHandle: string } {
 
 /**
  * grabPermissionId
- * 
  * Given a users id, returns their associated permissionId value
- * 
  * @param {id} number
  * @returns { permissionId: number }
  */
