@@ -4,7 +4,7 @@
  * Contains the functions of all auth* functions.
  */
 
-import { getData, setData } from './dataStore.js';
+import { getData, setData } from './dataStore';
 import validator from 'validator';
 
 interface Error {
@@ -23,7 +23,7 @@ const MAXTOKEN = 10000000;
  *
  * Takes in an email and password, if the email and password
  * both match the same user, the user 'logs in' and the
- * function returns the authUserId of the associated user
+ * function returns the authUserId of the associated user.
  *
  * Errors return { error: "error" } on incorrect or
  * invalid input.
@@ -105,7 +105,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   const data = getData();
 
   // permissionId refers to the global permissions of
-  // the users within teams (1 = Owner, 2 = Member)
+  // the users within teams (1 = Owner, 2 = Member).
   let permissionId;
   if (data.users.length === 0) {
     permissionId = 1;
@@ -142,7 +142,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
  * with that email.
  *
  * Returns 0 on email not being in dataStore
- * (Should not occur due to error check)
+ * (Should not occur due to error check).
  *
  * @param {string} email
  * @return { number }
@@ -203,9 +203,7 @@ function generateUserHandle(nameFirst: string, nameLast: string): string {
   const originalStringLength = string.length;
 
   // While the userHandle is already taken, increments the concatNum
-  // to add to the end until a unique string is generated
-  // originalStringLength - 1 is used as indexes begins at 0, otherwise
-  // would be character too long.
+  // to add to the end until a unique string is generated.
   let concatNum = 0;
   while (isUserHandleTaken(string)) {
     string = string.slice(0, originalStringLength);
@@ -240,7 +238,7 @@ function isUserHandleTaken(userHandle: string): boolean {
  * generateToken
  *
  * Generates a random number (between 0 - 9999999) converted
- * into a string to be used as the users current token
+ * into a string to be used as the users current token.
  *
  * @param {} N.A
  * @returns { string }
