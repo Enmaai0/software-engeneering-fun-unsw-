@@ -7,13 +7,13 @@ stages:
 before_script:
   - npm install
 
-Linting:
-  stage: linting
+linting:
+  stage: Linting
   script: 
     - npm run lint
 
-Tests:
-  stage: checks
+tests:
+  stage: Checks
   script:
     - SERVER_LOG=$(mktemp)
     - npm run start >& $SERVER_LOG &
