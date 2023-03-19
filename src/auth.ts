@@ -11,9 +11,12 @@ interface Error {
   error: string;
 }
 
-interface AuthUserId {
+interface AuthReturn {
+  token: string;
   authUserId: number;
 }
+
+const MAXTOKEN = 10000000;
 
 /**
  * authLoginV1
@@ -29,7 +32,7 @@ interface AuthUserId {
  * @param {string} password
  * @return {{ authUserId: number }}
  */
-function authLoginV1(email: string, password: string): Error | AuthUserId {
+function authLoginV1(email: string, password: string): Error | AuthReturn {
   if (!isRegisteredEmail(email)) {
     return { error: 'Invalid Email (No existing user with that email)' };
   }
@@ -38,34 +41,26 @@ function authLoginV1(email: string, password: string): Error | AuthUserId {
   const userIndex = emailToUserIndex(email);
 
   if (data.users[userIndex].password === password) {
-    return { authUserId: userIndex };
+    return { 
+      token: 'placeholder string',
+      authUserId: userIndex
+    };
   }
 
   return { error: 'Incorrect Password' };
 }
 
 /**
- * emailToUserIndex
+ * authLogoutV1
  *
- * Given an email, returns the index of the user
- * with that email.
+ * Given an active token, invalidates the token to log
+ * the user out.
  *
- * Returns 0 on email not being in dataStore
- * (Should not occur due to error check)
- *
- * @param {string} email
- * @return { number }
+ * @param {string} token
+ * @returns {}
  */
-function emailToUserIndex(email: string): number {
-  const data = getData();
-
-  for (const user of data.users) {
-    if (user.email === email) {
-      return user.uId;
-    }
-  }
-
-  return 0;
+function authLogoutV1(token: string): {} {
+  return {};
 }
 
 /**
@@ -75,7 +70,7 @@ function emailToUserIndex(email: string): number {
  * and creates a user profile if all inputs are valid.
  * Creates an object to be stored into the dataStore
  * that contains the given information as well as an
- * authUserId and userHandle.
+ * authUserId, userHandle and the users current active tokens.
  *
  * Errors return { error: "error" } on incorrect or
  * invalid input.
@@ -86,7 +81,7 @@ function emailToUserIndex(email: string): number {
  * @param {string} nameLast
  * @return {{ authUserId: number }}
  */
-function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): Error | AuthUserId {
+function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): Error | AuthReturn {
   if (!validator.isEmail(email)) {
     return { error: 'Invalid Email (Enter a Valid Email)' };
   }
@@ -127,12 +122,40 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     nameLast: nameLast,
     userHandle: generateUserHandle(nameFirst, nameLast),
     permissionId: permissionId,
+    tokens: [generateToken()],
+    tokenCounter: 0,
   };
 
   data.users.push(userObject);
   setData(data);
 
-  return { authUserId: newUserIndex };
+  return { 
+    token: userObject.tokens[0],
+    authUserId: newUserIndex
+  };
+}
+
+/**
+ * emailToUserIndex
+ *
+ * Given an email, returns the index of the user
+ * with that email.
+ *
+ * Returns 0 on email not being in dataStore
+ * (Should not occur due to error check)
+ *
+ * @param {string} email
+ * @return { number }
+ */
+function emailToUserIndex(email: string): number {
+  const data = getData();
+
+  for (const user of data.users) {
+    if (user.email === email) {
+      return user.uId;
+    }
+  }
+  return 0;
 }
 
 /**
@@ -213,4 +236,19 @@ function isUserHandleTaken(userHandle: string): boolean {
   return false;
 }
 
-export { authLoginV1, authRegisterV1 };
+/**
+ * generateToken
+ *
+ * Generates a random number (between 0 - 9999999) converted
+ * into a string to be used as the users current token
+ *
+ * @param {} N.A
+ * @returns { string }
+ */
+function generateToken(): string {
+  const numToken = Math.floor(Math.random() * MAXTOKEN);
+  const strToken = numToken.toString();
+  return strToken;
+}
+
+export { authLoginV1, authRegisterV1, authLogoutV1 };
