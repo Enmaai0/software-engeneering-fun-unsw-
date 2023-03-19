@@ -3,6 +3,7 @@ import { echo } from './echo';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
+import { clearV1 } from './other';
 
 // Set up web app
 const app = express();
@@ -31,4 +32,12 @@ const server = app.listen(PORT, HOST, () => {
 // For coverage, handle Ctrl+C gracefully
 process.on('SIGINT', () => {
   server.close(() => console.log('Shutting down server gracefully.'));
+});
+
+/** Server Routes Implementation **/
+
+app.delete('/clear/v1', (req: Request, res: Response) => {
+  const returnMessage = clearV1();
+  console.log('Clearing Server Data');
+  res.json(returnMessage);
 });
