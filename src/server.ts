@@ -3,6 +3,7 @@ import { echo } from './echo';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
+import { authRegisterV1 } from './auth';
 
 // Set up web app
 const app = express();
@@ -31,4 +32,18 @@ const server = app.listen(PORT, HOST, () => {
 // For coverage, handle Ctrl+C gracefully
 process.on('SIGINT', () => {
   server.close(() => console.log('Shutting down server gracefully.'));
+});
+
+/** Server Routes Implementation **/
+
+app.post('/auth/login/v2', (req: Request, res: Response) => {
+  res.json();
+});
+
+app.post('/auth/register/v2', (req: Request, res: Response) => {
+  const { email, password, nameFirst, nameLast } = req.body;
+  const returnMessage = authRegisterV1(email, password, nameFirst, nameLast);
+
+  console.log('Registering New User:', nameFirst, nameLast, 'with email:', email);
+  res.json(returnMessage);
 });
