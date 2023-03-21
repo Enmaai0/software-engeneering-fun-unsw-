@@ -38,25 +38,24 @@ function testAuthLogin(email: string, password: string) {
     }
   );
   expect(res.statusCode).toBe(OK);
-  return JSON.parse(res.getBody() as string)
+  return JSON.parse(res.getBody() as string);
 }
 
 describe('/auth/login: Error Testing', () => {
-  let user1: AuthReturn;
   beforeEach(() => {
-    let user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
   });
 
   test('Email: Invalid Email', () => {
-    expect(testAuthLogin('invalidEmail','pass1234')).toStrictEqual(ERROR);
+    expect(testAuthLogin('invalidEmail', 'pass1234')).toStrictEqual(ERROR);
   });
 
   test('Email: No User with Email', () => {
-    expect(testAuthLogin('nonExistantEmail@gmail.com','pass1234')).toStrictEqual(ERROR);
+    expect(testAuthLogin('nonExistantEmail@gmail.com', 'pass1234')).toStrictEqual(ERROR);
   });
 
   test('Password: Incorrect Password', () => {
-    expect(testAuthLogin('email@gmail.com','1234pass')).toStrictEqual(ERROR);
+    expect(testAuthLogin('email@gmail.com', '1234pass')).toStrictEqual(ERROR);
   });
 });
 
@@ -65,8 +64,8 @@ describe('/auth/login: Return Testing', () => {
   beforeEach(() => {
     testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
     testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    user1 = testAuthLogin('email@gmail.com','pass1234');
-    user2 = testAuthLogin('email2@gmail.com','pass1234');
+    user1 = testAuthLogin('email@gmail.com', 'pass1234');
+    user2 = testAuthLogin('email2@gmail.com', 'pass1234');
   });
 
   test('Correct Return: First User', () => {

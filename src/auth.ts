@@ -41,7 +41,7 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
   const userIndex = emailToUserIndex(email);
 
   if (data.users[userIndex].password === password) {
-    return { 
+    return {
       token: data.users[userIndex].tokens[data.users[userIndex].tokenCounter],
       authUserId: userIndex
     };
@@ -129,7 +129,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   data.users.push(userObject);
   setData(data);
 
-  return { 
+  return {
     token: userObject.tokens[0],
     authUserId: newUserIndex
   };
