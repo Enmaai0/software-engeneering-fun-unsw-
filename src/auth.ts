@@ -42,7 +42,7 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
 
   if (data.users[userIndex].password === password) {
     return { 
-      token: 'placeholder string',
+      token: data.users[userIndex].tokens[data.users[userIndex].tokenCounter],
       authUserId: userIndex
     };
   }

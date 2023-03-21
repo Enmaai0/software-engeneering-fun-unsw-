@@ -15,7 +15,8 @@ const url = config.url;
 
 const ERROR = { error: expect.any(String) };
 
-interface AuthUserId {
+interface AuthReturn {
+  token: string;
   authUserId: number;
 }
 
@@ -24,6 +25,64 @@ beforeEach(() => {
 });
 
 /** /auth/login/v2 Testing **/
+
+function testAuthLogin(email: string, password: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/auth/login/v2`,
+    {
+      qs: {
+        email,
+        password
+      }
+    }
+  );
+  expect(res.statusCode).toBe(OK);
+  return JSON.parse(res.getBody() as string)
+}
+
+describe('/auth/login: Error Testing', () => {
+  let user1: AuthReturn;
+  beforeEach(() => {
+    let user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
+
+  test('Email: Invalid Email', () => {
+    expect(testAuthLogin('invalidEmail','pass1234')).toStrictEqual(ERROR);
+  });
+
+  test('Email: No User with Email', () => {
+    expect(testAuthLogin('nonExistantEmail@gmail.com','pass1234')).toStrictEqual(ERROR);
+  });
+
+  test('Password: Incorrect Password', () => {
+    expect(testAuthLogin('email@gmail.com','1234pass')).toStrictEqual(ERROR);
+  });
+});
+
+describe('/auth/login: Return Testing', () => {
+  let user1: AuthReturn, user2: AuthReturn;
+  beforeEach(() => {
+    testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    user1 = testAuthLogin('email@gmail.com','pass1234');
+    user2 = testAuthLogin('email2@gmail.com','pass1234');
+  });
+
+  test('Correct Return: First User', () => {
+    expect(user1.authUserId).toStrictEqual(expect.any(Number));
+    expect(user1.token).toStrictEqual(expect.any(String));
+  });
+
+  test('Correct Return: Second User', () => {
+    expect(user2.authUserId).toStrictEqual(expect.any(Number));
+    expect(user2.token).toStrictEqual(expect.any(String));
+  });
+
+  test('Correct Return: Check Unique authUserId', () => {
+    expect(user1).not.toMatchObject(user2);
+  });
+});
 
 /** /auth/register/v2 Testing **/
 
@@ -81,7 +140,7 @@ describe('/auth/register: Error Testing', () => {
 
 describe('/auth/register: Return Testing', () => {
   describe('authUserId Testing', () => {
-    let user1: AuthUserId, user2: AuthUserId;
+    let user1: AuthReturn, user2: AuthReturn;
     beforeEach(() => {
       user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
       user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
@@ -101,7 +160,7 @@ describe('/auth/register: Return Testing', () => {
   });
 
   describe('Short userHandle Testing', () => {
-    let user1: AuthUserId, user2: AuthUserId, user3: AuthUserId;
+    let user1: AuthReturn, user2: AuthReturn, user3: AuthReturn;
     beforeEach(() => {
       user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot');
       user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
@@ -122,7 +181,7 @@ describe('/auth/register: Return Testing', () => {
   });
 
   describe('Long userHandle Testing', () => {
-    let user1: AuthUserId, user2: AuthUserId, user3: AuthUserId;
+    let user1: AuthReturn, user2: AuthReturn, user3: AuthReturn;
     beforeEach(() => {
       user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'ThisIsALong', 'NameForTests');
       user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'ThisIsALong', 'NameForTests');
@@ -143,7 +202,7 @@ describe('/auth/register: Return Testing', () => {
   });
 
   describe('permissionId Testing', () => {
-    let user1: AuthUserId, user2: AuthUserId;
+    let user1: AuthReturn, user2: AuthReturn;
     beforeEach(() => {
       user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
       user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
