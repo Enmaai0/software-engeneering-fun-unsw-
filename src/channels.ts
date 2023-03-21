@@ -4,17 +4,17 @@
  * Contains the function implementations of all channels* functions.
  */
 
-import { authRegisterV1 } from './auth.js';
-import { getData, setData } from './dataStore.js';
+import { authRegisterV1 } from './auth.ts';
+import { getData, setData } from './dataStore.ts';
 
 /**
  * channelsCreateV1
  * 
- * Creates a channel given a valid authUserId and 
+ * Creates a channel given a valid token and 
  * creates either a public or private channel based 
  * on isPublic with a given name. 
  * 
- * @param { authUserId } authUserId 
+ * @param { token } token 
  * @param { name } name 
  * @param { isPublic } isPublic 
  * @returns {{ channelId: channelid }}
@@ -34,8 +34,16 @@ interface Channel {
   messages: string[];
 }
 
-function channelsCreateV1(authUserId: string, name: string, isPublic: boolean): { channelId: number } | { error: string } {
-  if (!isValidUserId(authUserId)) {
+interface UserObject {
+  uId: number;
+  email: string;
+  nameFirst: string;
+  nameLast: string;
+  handleStr: string;
+}
+
+function channelsCreateV1(token: string, name: string, isPublic: boolean): { channelId: number } | { error: string } {
+  if (!isValidUserId(token)) {
     return { error: 'Invalid User (User does not exist)' };
   }
 
@@ -45,7 +53,7 @@ function channelsCreateV1(authUserId: string, name: string, isPublic: boolean): 
 
   let data = getData();
   const channelId = data.channels.length;
-  const userObject = createUserObject(authUserId);
+  const userObject = createUserObject(token);
 
   let channel: Channel = {
     channelId: channelId,
@@ -62,32 +70,23 @@ function channelsCreateV1(authUserId: string, name: string, isPublic: boolean): 
   return { channelId: channelId };
 }
 
-
-interface UserObject {
-  uId: number;
-  email: string;
-  nameFirst: string;
-  nameLast: string;
-  handleStr: string;
-}
-
 /**
  * createUserObject
  * 
- * Given a valid authUserId, returns an object that
+ * Given a valid token, returns an object that
  * contains all information to be stored in either
  * channel.owners or channel.allMembers.
  * 
- * @param { number } authUserId 
+ * @param { number } token 
  * @returns { UserObject }
  */
-function createUserObject(authUserId: number): UserObject {
+function createUserObject(token: number): UserObject {
   const data = getData();
 
-  const user = data.users[authUserId];
+  const user = data.users[token];
 
   let userObject: UserObject = {
-    uId: authUserId,
+    uId: token,
     email: user.email,
     nameFirst: user.nameFirst,
     nameLast: user.nameLast,
@@ -100,14 +99,14 @@ function createUserObject(authUserId: number): UserObject {
 /**
  * channelsListAllV1
  * 
- * Given a valid authUserId, provides an array of all channels,
+ * Given a valid token, provides an array of all channels,
  * including private channels containing their channelId and name
  * 
- * @param { number } authUserId 
+ * @param { number } token 
  * @returns {{ channels: Channel[] }}
  */
-function channelsListAllV1(authUserId: number) {
-  if (!isValidUserId(authUserId)) {
+function channelsListAllV1(token: number) {
+  if (!isValidUserId(token)) {
     return { error: 'Invalid User (User does not exist)' };
   }
 
@@ -132,24 +131,24 @@ function channelsListAllV1(authUserId: number) {
 /**
  * channelsListV1
  * 
- * Given a valid authUserId, returns an array of all 
- * channels that the inputted authUserId is a part of
+ * Given a valid token, returns an array of all 
+ * channels that the inputted token is a part of
  * 
- * @param { number } authUserId 
+ * @param { number } token 
  * @returns {{ channels: Array<{ name: string, channelId: number }> }}
  */
-function channelsListV1 (authUserId: number) {
-  if (!isValidUserId(authUserId)) {
+function channelsListV1 (token: number) {
+  if (!isValidUserId(token)) {
     return { error: 'Invalid User (User does not exist)' };
   }
 
   let data = getData();
   let channelArray = [];
-  const userId = authUserId;
+  const userId = token;
 
   for (const channel of data.channels) {
     for (const user of channel.allMembers) {
-      if (user.uId === authUserId) {
+      if (user.uId === token) {
         let channelDetails = {
           name: channel.name,
           channelId: channel.channelId
