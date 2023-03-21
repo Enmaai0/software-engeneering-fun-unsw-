@@ -1,6 +1,6 @@
 /**
  * dm.test.ts
- * Contains the jest testing designed for dm.ts that utilises 
+ * Contains the jest testing designed for dm.ts that utilises
  * the HTTP routes created to test funcionality
  */
 
@@ -24,17 +24,17 @@ interface DmId {
   dmId: number;
 }
 
-interface DmDetailsReturn {
-  name: string;
-  members: Member[];
-}
-
 interface Member {
   uId: number;
   email: string;
   nameFirst: string;
   nameLast: string;
   handleStr: string;
+}
+
+interface DmDetailsReturn {
+  name: string;
+  members: Member[];
 }
 
 beforeEach(() => {
@@ -58,7 +58,7 @@ function testDmCreate(token: string, uIds: number[]) {
 }
 
 describe('/dm/create: Error Testing', () => {
-  let testUser1: AuthRegisterReturn; 
+  let testUser1: AuthRegisterReturn;
   let testUser2: AuthRegisterReturn;
   let testUser3: AuthRegisterReturn;
   beforeEach(() => {
@@ -86,7 +86,7 @@ describe('/dm/create: Error Testing', () => {
 });
 
 describe('/dm/create: Return Testing', () => {
-  let testUser1: AuthRegisterReturn; 
+  let testUser1: AuthRegisterReturn;
   let testUser2: AuthRegisterReturn;
   let testUser3: AuthRegisterReturn;
   beforeEach(() => {
@@ -109,7 +109,7 @@ describe('/dm/create: Return Testing', () => {
 });
 
 describe('/dm/create: dmName Testing', () => {
-  let testUser1: AuthRegisterReturn; 
+  let testUser1: AuthRegisterReturn;
   let testUser2: AuthRegisterReturn;
   let testUser3: AuthRegisterReturn;
   let testDm: DmId;
