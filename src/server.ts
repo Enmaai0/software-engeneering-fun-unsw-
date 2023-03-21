@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
 import { clearV1 } from './other';
+import { authRegisterV1 } from './auth';
 
 // Set up web app
 const app = express();
@@ -39,5 +40,15 @@ process.on('SIGINT', () => {
 app.delete('/clear/v1', (req: Request, res: Response) => {
   const returnMessage = clearV1();
   console.log('Clearing Server Data');
+
+app.post('/auth/login/v2', (req: Request, res: Response) => {
+  res.json();
+});
+
+app.post('/auth/register/v2', (req: Request, res: Response) => {
+  const { email, password, nameFirst, nameLast } = req.body;
+  const returnMessage = authRegisterV1(email, password, nameFirst, nameLast);
+
+  console.log('Registering New User:', nameFirst, nameLast, 'with email:', email);
   res.json(returnMessage);
 });

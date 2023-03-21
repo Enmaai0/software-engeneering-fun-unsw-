@@ -1,21 +1,19 @@
 image: comp1531/basic:latest
 
 stages:
-  - linting
-  - checks
+  - Linting
+  - Checks
 
 before_script:
   - npm install
 
 linting:
-  stage: linting
+  stage: Linting
   script: 
     - npm run lint
-  only:
-    - master
 
 tests:
-  stage: checks
+  stage: Checks
   script:
     - SERVER_LOG=$(mktemp)
     - npm run start >& $SERVER_LOG &
@@ -24,5 +22,3 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
-  only:
-    - master
