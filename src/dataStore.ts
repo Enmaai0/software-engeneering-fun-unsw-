@@ -1,18 +1,27 @@
 /**
- * 'data' stores the user and channel data under 
+ * 'data' stores the user and channel data under
  * 'users: []' and 'channels: []' respectively.
- * 
+ *
  * Data is stored within 'data' through an array
  * of objects. The objects contains details about
- * the user/channel and appear under their 
+ * the user/channel and appear under their
  * respective area
  */
 
-interface Data {
-  users: User[],
-  channels: Channel[],
+interface Users {
+  uId: number,
+  email: string,
+  nameFirst: string,
+  nameLast: string,
+  handleStr: string,
 }
 
+interface Message {
+  messageId: number;
+  uId: number;
+  message: string;
+  timeSent: number;
+}
 interface User {
   uId: number,
   email: string,
@@ -31,23 +40,29 @@ interface Channel {
   isPublic: boolean,
   owners: Users[],
   allMembers: Users[],
-  messages: string[],
+  messages: Message[],
 }
 
-interface Users {
-  uId: number,
-  email: string,
-  nameFirst: string,
-  nameLast: string,
-  handleStr: string,
+interface Dm {
+  dmId: number,
+  name: string,
+  owner: number,
+  members: number[],
+  messages: Message[],
 }
 
+interface Data {
+  users: User[],
+  channels: Channel[],
+  dms: Dm[]
+}
+
+// Initial state of all data for the application
 let data: Data = {
   users: [],
-  channels: []
+  channels: [],
+  dms: []
 };
-
-// YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1
 
 /*
 Example usage

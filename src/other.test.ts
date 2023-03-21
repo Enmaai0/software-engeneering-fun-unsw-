@@ -1,6 +1,6 @@
 /**
  * other.test.js
- * 
+ *
  * Contains the jest testing designed for other functions
  * not included in the main function files
  */
@@ -32,27 +32,28 @@ describe('/clear/v1 Testing', () => {
     testAuthRegister('bartFarts69@gmail.com', 'HomerStinks', 'Bart', 'Simpson');
     testAuthRegister('strongMan@gmail.com', 'SPINACH', 'Pop', 'Eye');
     testClear();
-    let testUser = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
-    expect(testUsersAll(testUser.token)).toStrictEqual({ users: 
+    const testUser = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
+    expect(testUsersAll(testUser.token)).toStrictEqual({
+      users:
       [{
         uId: testUser.authUserId,
         email: 'bunnybugs@gmail.com',
-        nameFirst: 'Bugs', 
-        nameLast: 'Bunny', 
+        nameFirst: 'Bugs',
+        nameLast: 'Bunny',
         handleStr: 'bugsbunny'
-      }] 
+      }]
     });
   });
 
   test('Clear Channels', () => {
-    let channelCreator = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
+    const channelCreator = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
     testChannelsCreate(channelCreator.token, 'Carrot Farm', true);
     testChannelsCreate(channelCreator.token, 'Another Carrot Farm', true);
     testChannelsCreate(channelCreator.token, 'Exclusive Carrot Club', false);
     testClear();
-    let testUser = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
+    const testUser = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
     expect(testChannelsList(testUser.token)).toStrictEqual({ channels: [] });
   });
 });
 
-export { testClear }
+export { testClear };
