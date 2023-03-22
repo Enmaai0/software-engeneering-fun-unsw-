@@ -3,8 +3,8 @@ import { echo } from './echo';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
+import { authLoginV1, authRegisterV1 } from './auth';
 import { clearV1 } from './other';
-import { authRegisterV1 } from './auth';
 import { dmCreate } from './dm';
 
 // Set up web app
@@ -44,6 +44,15 @@ app.delete('/clear/v1', (req: Request, res: Response) => {
 
 app.post('/auth/login/v2', (req: Request, res: Response) => {
   res.json();
+});
+
+app.get('/auth/login/v2', (req: Request, res: Response) => {
+  const email = req.query.email as string;
+  const password = req.query.passowrd as string;
+  const returnMessage = authLoginV1(email, password);
+
+  console.log('Logging in User with Email:', email);
+  res.json(returnMessage);
 });
 
 app.post('/auth/register/v2', (req: Request, res: Response) => {
