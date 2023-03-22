@@ -3,6 +3,7 @@ import { echo } from './echo';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
+import { clearV1 } from './other';
 import { authRegisterV1 } from './auth';
 import { dmCreate } from './dm';
 
@@ -36,6 +37,10 @@ process.on('SIGINT', () => {
 });
 
 /** Server Routes Implementation **/
+
+app.delete('/clear/v1', (req: Request, res: Response) => {
+  const returnMessage = clearV1();
+  console.log('Clearing Server Data');
 
 app.post('/auth/login/v2', (req: Request, res: Response) => {
   res.json();
