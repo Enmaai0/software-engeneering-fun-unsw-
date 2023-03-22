@@ -178,7 +178,7 @@ describe('/dm/list: Return Testing', () => {
   test('One Dm (Is Owner)', () => {
     testDmCreate(user1.token, [user2.authUserId]);
     expect(testDmList(user1.token)).toStrictEqual({
-      dms: [{ 
+      dms: [{
         dmId: expect.any(Number),
         name: expect.any(String)
       }]
@@ -188,7 +188,7 @@ describe('/dm/list: Return Testing', () => {
   test('One Dm (Is Member)', () => {
     testDmCreate(user1.token, [user2.authUserId]);
     expect(testDmList(user2.token)).toStrictEqual({
-      dms: [{ 
+      dms: [{
         dmId: expect.any(Number),
         name: expect.any(String)
       }]
@@ -199,16 +199,16 @@ describe('/dm/list: Return Testing', () => {
     testDmCreate(user1.token, [user2.authUserId]);
     testDmCreate(user2.token, [user1.authUserId]);
     testDmCreate(user1.token, []);
-    expect(testDmList(user1.token)).toStrictEqual({ 
-      dms: [{ 
-        dmId: expect.any(Number), 
-        name: expect.any(String) 
-      }, { 
-        dmId: expect.any(Number), 
-        name: expect.any(String) 
-      }, { 
-        dmId: expect.any(Number), 
-        name: expect.any(String) 
+    expect(testDmList(user1.token)).toStrictEqual({
+      dms: [{
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }, {
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }, {
+        dmId: expect.any(Number),
+        name: expect.any(String)
       }]
     });
   });
@@ -217,13 +217,13 @@ describe('/dm/list: Return Testing', () => {
     testDmCreate(user1.token, [user2.authUserId]);
     testDmCreate(user2.token, [user1.authUserId]);
     testDmCreate(user2.token, []);
-    expect(testDmList(user1.token)).toStrictEqual({ 
-      dms: [{ 
-        dmId: expect.any(Number), 
-        name: expect.any(String) 
-      }, { 
-        dmId: expect.any(Number), 
-        name: expect.any(String) 
+    expect(testDmList(user1.token)).toStrictEqual({
+      dms: [{
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }, {
+        dmId: expect.any(Number),
+        name: expect.any(String)
       }]
     });
   });
