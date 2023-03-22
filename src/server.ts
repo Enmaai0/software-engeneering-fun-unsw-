@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
 import { authLoginV1, authRegisterV1 } from './auth';
+import { dmCreate } from './dm';
 
 // Set up web app
 const app = express();
@@ -50,5 +51,13 @@ app.post('/auth/register/v2', (req: Request, res: Response) => {
   const returnMessage = authRegisterV1(email, password, nameFirst, nameLast);
 
   console.log('Registering New User:', nameFirst, nameLast, 'with email:', email);
+  res.json(returnMessage);
+});
+
+app.post('/dm/create/v1', (req: Request, res: Response) => {
+  const { token, uIds } = req.body;
+  const returnMessage = dmCreate(token, uIds);
+
+  console.log('Creating new DM with owner token:', token);
   res.json(returnMessage);
 });
