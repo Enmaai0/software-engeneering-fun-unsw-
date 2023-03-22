@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
 import { authLoginV1, authRegisterV1 } from './auth';
+import { clearV1 } from './other';
 import { dmCreate } from './dm';
 
 // Set up web app
@@ -36,6 +37,14 @@ process.on('SIGINT', () => {
 });
 
 /** Server Routes Implementation **/
+
+app.delete('/clear/v1', (req: Request, res: Response) => {
+  const returnMessage = clearV1();
+  console.log('Clearing Server Data');
+
+app.post('/auth/login/v2', (req: Request, res: Response) => {
+  res.json();
+});
 
 app.get('/auth/login/v2', (req: Request, res: Response) => {
   const email = req.query.email as string;
