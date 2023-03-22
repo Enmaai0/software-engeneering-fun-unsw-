@@ -8,6 +8,7 @@ import request from 'sync-request';
 import config from './config.json';
 import { getData } from './dataStore';
 import { testClear } from './other.test';
+import { testDmCreate } from './dm.test';
 
 const OK = 200;
 const port = config.port;
@@ -28,16 +29,15 @@ beforeEach(() => {
 
 function testAuthLogin(email: string, password: string) {
   const res = request(
-    'GET',
+    'POST',
     `${url}:${port}/auth/login/v2`,
     {
-      qs: {
+      json: {
         email,
         password
       }
     }
   );
-  expect(res.statusCode).toBe(OK);
   return JSON.parse(res.getBody() as string);
 }
 
@@ -83,6 +83,52 @@ describe('/auth/login: Return Testing', () => {
   });
 });
 
+/** /auth/logout/v1 Testing **/
+
+function testAuthLogout(token: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/logout/v1`,
+    {
+      json: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+describe('/auth/logout: Error Testing', () => {
+  test('Email: Invalid Token (No Users)', () => {
+    expect(testAuthLogout('someRandomTokenIDK?')).toStrictEqual(ERROR);
+  });
+
+  test('Email: Invalid Token (With Users)', () => {
+    const user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    expect(testAuthLogout(user1.token + user2.token)).toStrictEqual(ERROR);
+  });
+});
+
+describe('/auth/logout: Return Testing', () => {
+  test('Email: Invalid Token (No Users)', () => {
+    const user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    expect(testAuthLogout(user1.token)).toStrictEqual({});
+  });
+});
+
+describe('/auth/logout: Token Removal Testing', () => {
+  let user1: AuthReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('realEmail@gmail.com', 'password1234', 'Kazoo', 'Kid');
+  });
+
+  test('Creating Dm with Deleted Token', () => {
+    testClear();
+    expect(testDmCreate(user1.token, [])).toStrictEqual(ERROR);
+  });
+});
+
 /** /auth/register/v2 Testing **/
 
 function testAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {
@@ -98,7 +144,6 @@ function testAuthRegister(email: string, password: string, nameFirst: string, na
       }
     }
   );
-  expect(res.statusCode).toBe(OK);
   return JSON.parse(res.getBody() as string);
 }
 
@@ -217,7 +262,9 @@ describe('/auth/register: Return Testing', () => {
   });
 });
 
-// NOT SURE IS THIS IS ALLOWED ASK TUTOR
+export { testAuthLogin, testAuthLogout, testAuthRegister };
+
+// DOESNT WORK FOR BLACKBOX TESTING BUT GOOD FOR VERIFICATION
 
 /**
  * grabUserHandle
@@ -227,7 +274,7 @@ describe('/auth/register: Return Testing', () => {
  */
 function grabUserHandle(id: number): { userHandle: string } {
   const data = getData();
-  return { userHandle: data.users[id].permissionId };
+  return { userHandle: data.users[id].userHandle };
 }
 
 /**
