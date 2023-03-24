@@ -148,3 +148,5 @@ describe('/dm/create: dmName Testing', () => {
 /** /dm/leave/v1 Testing **/
 
 /** /dm/messages/v1 Testing **/
+
+export { testDmCreate };

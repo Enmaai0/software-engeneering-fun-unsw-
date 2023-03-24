@@ -3,7 +3,7 @@ import { echo } from './echo';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
-import { authLoginV1, authRegisterV1 } from './auth';
+import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
 import { clearV1 } from './other';
 import { dmCreate } from './dm';
 
@@ -40,18 +40,24 @@ process.on('SIGINT', () => {
 
 app.delete('/clear/v1', (req: Request, res: Response) => {
   const returnMessage = clearV1();
-  console.log('Clearing Server Data');
 
-app.post('/auth/login/v2', (req: Request, res: Response) => {
-  res.json();
+  console.log('Clearing Server Data');
+  res.json(returnMessage);
 });
 
-app.get('/auth/login/v2', (req: Request, res: Response) => {
-  const email = req.query.email as string;
-  const password = req.query.passowrd as string;
+app.post('/auth/login/v2', (req: Request, res: Response) => {
+  const { email, password } = req.body;
   const returnMessage = authLoginV1(email, password);
 
   console.log('Logging in User with Email:', email);
+  res.json(returnMessage);
+});
+
+app.post('/auth/logout/v1', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const returnMessage = authLogoutV1(token);
+
+  console.log('Logging Out User (Token:', token, ')');
   res.json(returnMessage);
 });
 

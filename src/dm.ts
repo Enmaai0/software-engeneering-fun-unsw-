@@ -230,7 +230,7 @@ function dmList(token: string): Dms {
  * @param {number} dmId
  * @returns {}
  */
-function dmRemove(token: string, dmId: number): {} {
+function dmRemove(token: string, dmId: number): Record<string, never> {
   return {};
 }
 
@@ -262,7 +262,7 @@ function dmDetails(token: string, dmId: number): DmDetails {
  * @param {number} dmId
  * @returns {}
  */
-function dmLeave(token: string, dmId: number): {} {
+function dmLeave(token: string, dmId: number): Record<string, never> {
   return {};
 }
 
