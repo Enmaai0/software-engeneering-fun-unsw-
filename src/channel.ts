@@ -1,25 +1,56 @@
 /**
  * channel.js
- * 
+ *
  * Contains the stub code functions of all channel* functions.
  */
 
-import { getData, setData } from './dataStore.js'
+import { getData, setData } from './dataStore.js';
 
-const NO_MORE_MESSAGES = -1
-const FIFTY_MESSAGES = 50
+const NO_MORE_MESSAGES = -1;
+const FIFTY_MESSAGES = 50;
 
+interface Error {
+  error: string
+}
+
+interface Message {
+  messageId: number,
+  uId: number,
+  message: string,
+  timeSent: number
+}
+
+interface FiftyMessages {
+  messages: Message[],
+  start: number,
+  end: number
+}
+
+interface Member {
+  uId: number,
+  email: string,
+  nameFirst: string,
+  nameLast: string,
+  handleStr: string
+}
+
+interface ChannelObject {
+  name: string,
+  isPublic: boolean,
+  ownerMembers: Member[],
+  allMembers: Member[]
+}
 /**
  * channelDetailsV1
- * 
+ *
  * Given a authUserId and channelId, returns details
  * about that channel if the authUserId is a member
- * 
+ *
  * @param { number } authUserId
  * @param { number } channelId
- * @return { channelObject } 
+ * @return { ChannelObject }
  */
-function channelDetailsV1(authUserId, channelId) {
+function channelDetailsV1(authUserId: number, channelId: number) : Error | ChannelObject {
   if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
@@ -32,7 +63,7 @@ function channelDetailsV1(authUserId, channelId) {
     return { error: 'Error: User is not a member' };
   }
 
-  let data = getData();
+  const data = getData();
   const channel = data.channels[channelId];
 
   return {
@@ -45,16 +76,16 @@ function channelDetailsV1(authUserId, channelId) {
 
 /**
  * channelJoinV1
- * 
+ *
  * Given a authUserId and channelId, adds the authUserId
  * as a member of the channelId entered
- * 
+ *
  * @param { number } authUserId
  * @param { number } channelId
- * @return {  } 
+ * @return {  }
  */
-function channelJoinV1(authUserId, channelId) {
-  if (!isUserId(authUserId, channelId)) {
+function channelJoinV1(authUserId: number, channelId: number) : Error | object {
+  if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
@@ -65,9 +96,9 @@ function channelJoinV1(authUserId, channelId) {
   if (isMember(authUserId, channelId)) {
     return { error: 'Error: User already a member' };
   }
-  
-  let data = getData();
-  let channel = data.channels[channelId];
+
+  const data = getData();
+  const channel = data.channels[channelId];
   const user = data.users[authUserId];
 
   if (channel.isPublic === true || user.permissionId === 1) {
@@ -77,10 +108,10 @@ function channelJoinV1(authUserId, channelId) {
       nameFirst: user.nameFirst,
       nameLast: user.nameLast,
       handleStr: user.userHandle
-    }
-  
+    };
+
     channel.allMembers.push(userObject);
-  
+
     setData(data);
 
     return {};
@@ -91,16 +122,16 @@ function channelJoinV1(authUserId, channelId) {
 
 /**
  * channelInviteV1
- * 
+ *
  * Given a authUserId, channelId and uId, adds the uId
  * to become a member of the channel
- * 
+ *
  * @param { number } authUserId
  * @param { number } channelId
  * @param { number } uId
- * @return {  } 
+ * @return {  }
  */
-function channelInviteV1(authUserId, channelId, uId) {
+function channelInviteV1(authUserId: number, channelId: number, uId: number) : Error | object {
   if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
@@ -128,17 +159,17 @@ function channelInviteV1(authUserId, channelId, uId) {
 
 /**
  * channelMessagesV1
- * 
+ *
  * Given a authUserId, channelId and start returns
  * a 'list' of messages in the channel starting from
  * start.
- * 
+ *
  * @param { number } authUserId
  * @param { number } channelId
  * @param { number } start
- * @return { messages } 
+ * @return { FiftyMessages }
  */
-function channelMessagesV1(authUserId, channelId, start) {
+function channelMessagesV1(authUserId: number, channelId: number, start: number) : Error | FiftyMessages {
   if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
@@ -158,7 +189,7 @@ function channelMessagesV1(authUserId, channelId, start) {
     return { error: 'Invalid Start (Start is greater than total messages)' };
   }
 
-  let returnMessages = [];
+  const returnMessages = [];
   let end;
 
   if (start + FIFTY_MESSAGES > messageArray.length) {
@@ -182,14 +213,14 @@ function channelMessagesV1(authUserId, channelId, start) {
 
 /**
  * isUserId
- * 
+ *
  * Given a authUserId, checks if the authUserId
  * is valid (exists in the dataStore)
- * 
+ *
  * @param { number } authUserId
- * @return { boolean } 
+ * @return { boolean }
  */
-function isUserId(authUserId) {
+function isUserId(authUserId: number) : boolean {
   const data = getData();
 
   for (const user of data.users) {
@@ -203,14 +234,14 @@ function isUserId(authUserId) {
 
 /**
  * isChannelId
- * 
+ *
  * Given a channelId, checks if the channel id
  * is valid (exists in the dataStore)
- * 
+ *
  * @param { number } channelId
- * @return { boolean } 
+ * @return { boolean }
  */
-function isChannelId(channelId) {
+function isChannelId(channelId: number) : boolean {
   const data = getData();
 
   for (const channel of data.channels) {
@@ -224,15 +255,15 @@ function isChannelId(channelId) {
 
 /**
  * isMember
- * 
+ *
  * Given an id and channelId, checks if a user
  * with the id is a part of the channel
- * 
+ *
  * @param { number } id
  * @param { number } channelId
- * @return { boolean } 
+ * @return { boolean }
  */
-function isMember(id, channelId) {
+function isMember(id: number, channelId: number) : boolean {
   const data = getData();
   const members = data.channels[channelId].allMembers;
 
@@ -245,4 +276,4 @@ function isMember(id, channelId) {
   return false;
 }
 
-export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 }
+export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 };
