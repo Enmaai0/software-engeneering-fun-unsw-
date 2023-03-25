@@ -8,6 +8,7 @@ import request from 'sync-request';
 import config from './config.json';
 import { testClear } from './other.test';
 import { testAuthRegister } from './auth.test';
+import exp from 'constants';
 
 const OK = 200;
 const port = config.port;
@@ -143,10 +144,103 @@ describe('/dm/create: dmName Testing', () => {
 
 /** /dm/list/v1 Testing **/
 
+function testDmList(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/dm/list/v1`,
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+describe('/dm/list: Error Testing', () => {
+  test('Token: Invalid Token', () => {
+    const user1 = testAuthRegister('potato@gmail.com', 'potatopotato', 'Simple', 'Spud');
+    expect(testDmList(user1.token + '1')).toStrictEqual(ERROR);
+  });
+});
+
+describe('/dm/list: Return Testing', () => {
+  let user1: AuthRegisterReturn, user2: AuthRegisterReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('potato@gmail.com', 'humblepotato', 'Simple', 'Spud');
+    user2 = testAuthRegister('carrot@gmail.com', 'carrotarebetter', 'Chad', 'Carrot');
+  });
+
+  test('No Dms', () => {
+    expect(testDmList(user1.token)).toStrictEqual({ dms: [] });
+  });
+
+  test('One Dm (Is Owner)', () => {
+    testDmCreate(user1.token, [user2.authUserId]);
+    expect(testDmList(user1.token)).toStrictEqual({
+      dms: [{
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }]
+    });
+  });
+
+  test('One Dm (Is Member)', () => {
+    testDmCreate(user1.token, [user2.authUserId]);
+    expect(testDmList(user2.token)).toStrictEqual({
+      dms: [{
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }]
+    });
+  });
+
+  test('Multiple Dms (Member of All)', () => {
+    testDmCreate(user1.token, [user2.authUserId]);
+    testDmCreate(user2.token, [user1.authUserId]);
+    testDmCreate(user1.token, []);
+    expect(testDmList(user1.token)).toStrictEqual({
+      dms: [{
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }, {
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }, {
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }]
+    });
+  });
+
+  test('Multiple Dms (Member of 2, Not a Member of 1)', () => {
+    testDmCreate(user1.token, [user2.authUserId]);
+    testDmCreate(user2.token, [user1.authUserId]);
+    testDmCreate(user2.token, []);
+    expect(testDmList(user1.token)).toStrictEqual({
+      dms: [{
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }, {
+        dmId: expect.any(Number),
+        name: expect.any(String)
+      }]
+    });
+  });
+
+  test('Multiple Dms (Not a Member of All)', () => {
+    const user3 = testAuthRegister('meow@gmail.com', 'ILoveYarn123', 'Orange', 'Cat');
+    testDmCreate(user3.token, [user2.authUserId]);
+    testDmCreate(user2.token, [user3.authUserId]);
+    testDmCreate(user2.token, []);
+    expect(testDmList(user1.token)).toStrictEqual({ dms: [] });
+  });
+});
+
 /** /dm/details/v1 Testing **/
 
 /** /dm/leave/v1 Testing **/
 
 /** /dm/messages/v1 Testing **/
 
-export { testDmCreate };
+export { testDmCreate, testDmList };

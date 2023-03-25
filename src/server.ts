@@ -5,7 +5,7 @@ import config from './config.json';
 import cors from 'cors';
 import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
 import { clearV1 } from './other';
-import { dmCreate } from './dm';
+import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
 
 // Set up web app
 const app = express();
@@ -74,5 +74,13 @@ app.post('/dm/create/v1', (req: Request, res: Response) => {
   const returnMessage = dmCreate(token, uIds);
 
   console.log('Creating new DM with owner token:', token);
+  res.json(returnMessage);
+});
+
+app.get('/dm/list/v1', (req: Request, res: Response) => { 
+  const token = req.query.token as string;
+  const returnMessage = dmList(token);
+
+  console.log('Getting all Dms with member/owner Token:', token);
   res.json(returnMessage);
 });
