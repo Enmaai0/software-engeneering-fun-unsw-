@@ -282,19 +282,20 @@ describe('/dm/create: Error Testing', () => {
 });
 
 describe('/dm/create: Deletion Testing', () => {
-  let testUser1: AuthRegisterReturn, testUser2: AuthRegisterReturn, testDm1: DmId;
+  let testUser1: AuthRegisterReturn, testUser2: AuthRegisterReturn;
   beforeEach(() => {
     testUser1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
-    testUser2 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
-    testDm1 = testDmCreate(testUser1.token, [testUser2.authUserId]);
+    testUser2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
   });
 
   test('Remove Only Dm', () => {
+    const testDm1 = testDmCreate(testUser1.token, [testUser2.authUserId]);
     expect(testDmRemove(testUser1.token, testDm1.dmId)).toStrictEqual({});
     expect(testDmList(testUser1.token)).toStrictEqual({ dms: [] });
   });
 
   test('Remove One Dm with Multiple Dms', () => {
+    const testDm1 = testDmCreate(testUser1.token, [testUser2.authUserId]);
     const testDm2 = testDmCreate(testUser2.token, [testUser1.authUserId]);
     const testDm3 = testDmCreate(testUser1.token, [testUser2.authUserId]);
     expect(testDmRemove(testUser2.token, testDm2.dmId)).toStrictEqual({});

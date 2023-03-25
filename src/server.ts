@@ -41,9 +41,11 @@ process.on('SIGINT', () => {
 app.delete('/clear/v1', (req: Request, res: Response) => {
   const returnMessage = clearV1();
 
-  console.log('Clearing Server Data');
+  console.log('⭕ Clearing Server Data');
   res.json(returnMessage);
 });
+
+/** /auth/* Routes **/
 
 app.post('/auth/login/v2', (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -69,6 +71,8 @@ app.post('/auth/register/v2', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
+/** /dm/* Routes **/
+
 app.post('/dm/create/v1', (req: Request, res: Response) => {
   const { token, uIds } = req.body;
   const returnMessage = dmCreate(token, uIds);
@@ -81,6 +85,15 @@ app.get('/dm/list/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const returnMessage = dmList(token);
 
-  console.log('Getting all Dms with member/owner Token:', token);
+  console.log('Getting all DMs with member/owner Token:', token);
+  res.json(returnMessage);
+});
+
+app.delete('/dm/remove/v1', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const dmId = req.query.dmId as string;
+  const returnMessage = dmRemove(token, Number(dmId));
+
+  console.log('Removing DM with Id:', dmId);
   res.json(returnMessage);
 });
