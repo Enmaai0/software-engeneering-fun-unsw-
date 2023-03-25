@@ -1,25 +1,25 @@
 /**
  * user.test.js
- * 
+ *
  * Contains the jest testing designed for user.js
  */
 
-import { userProfileV1 } from './users.js'
-import { authRegisterV1 } from './auth.js'
-import { clearV1 } from './other.js'
+import { userProfileV1 } from './users.js';
+import { authRegisterV1 } from './auth.js';
+import { clearV1 } from './other.js';
 
 const ERROR = { error: expect.any(String) };
 
 /**
  * Clears the dataStore before each test is ran. Ensures that
- * tests do not rely on the results of others to ensure full 
+ * tests do not rely on the results of others to ensure full
  * functionality and correct implementation.
 */
 beforeEach(() => {
   clearV1();
 });
 
-/////////////// UserProfileV1 Function ///////////////
+/// //////////// UserProfileV1 Function ///////////////
 
 describe('usersProfileV1: Error Testing', () => {
   let user1;
@@ -69,4 +69,3 @@ describe('usersProfileV1: Return Testing', () => {
     });
   });
 });
-  

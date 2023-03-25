@@ -59,7 +59,7 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
  * @param {string} token
  * @returns {}
  */
-function authLogoutV1(token: string): {} {
+function authLogoutV1(token: string): Record<string, never> {
   return {};
 }
 

@@ -1,5 +1,5 @@
 /**
- * channel.js
+ * channel.ts
  *
  * Contains the stub code functions of all channel* functions.
  */
@@ -84,7 +84,7 @@ function channelDetailsV1(authUserId: number, channelId: number) : Error | Chann
  * @param { number } channelId
  * @return {  }
  */
-function channelJoinV1(authUserId: number, channelId: number) : Error | object {
+function channelJoinV1(authUserId: number, channelId: number) : Error | Record<string, never> {
   if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
@@ -131,7 +131,7 @@ function channelJoinV1(authUserId: number, channelId: number) : Error | object {
  * @param { number } uId
  * @return {  }
  */
-function channelInviteV1(authUserId: number, channelId: number, uId: number) : Error | object {
+function channelInviteV1(authUserId: number, channelId: number, uId: number) : Error | Record<string, never> {
   if (!isUserId(authUserId)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
