@@ -216,8 +216,54 @@ function generateDmName(idArray: number[]): string {
  * @param {string} token
  * @returns { dms: [] }
  */
-function dmList(token: string): Dms {
-  return { dms: [] };
+function dmList(token: string): Dms | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  const uId = getIdFromToken(token);
+  const data = getData();
+  const dmArray = [];
+
+  for (const dm of data.dms) {
+    for (const id of dm.members) {
+      if (id === uId) {
+        dmArray.push(dm.dmId);
+      }
+    }
+    if (uId === dm.owner) {
+      dmArray.push(dm.dmId);
+    }
+  }
+
+  const dmList = createDmList(dmArray);
+
+  return { dms: dmList };
+}
+
+/**
+ * createDmList
+ *
+ * Given an array of dmIds, creates an array of objects
+ * containing the dmd dmId and names.
+ *
+ * @param { number[] } dmIdArray
+ * @returns { dmObject[] }
+ */
+function createDmList(dmIdArray: number[]): DmObject[] {
+  const data = getData();
+  const dms = [];
+
+  for (const dm of data.dms) {
+    if (dmIdArray.includes(dm.dmId)) {
+      const dmObject = {
+        dmId: dm.dmId,
+        name: dm.name
+      };
+      dms.push(dmObject);
+    }
+  }
+  return dms;
 }
 
 /**
@@ -230,7 +276,7 @@ function dmList(token: string): Dms {
  * @param {number} dmId
  * @returns {}
  */
-function dmRemove(token: string, dmId: number): {} {
+function dmRemove(token: string, dmId: number): Record<string, never> {
   return {};
 }
 
@@ -262,7 +308,7 @@ function dmDetails(token: string, dmId: number): DmDetails {
  * @param {number} dmId
  * @returns {}
  */
-function dmLeave(token: string, dmId: number): {} {
+function dmLeave(token: string, dmId: number): Record<string, never> {
   return {};
 }
 

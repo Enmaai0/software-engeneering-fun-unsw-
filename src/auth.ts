@@ -59,8 +59,48 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
  * @param {string} token
  * @returns {}
  */
-function authLogoutV1(token: string): Record<string, never> {
+function authLogoutV1(token: string): Record<string, never> | Error {
+  const data = getData();
+
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  for (const user of data.users) {
+    for (const userToken of user.tokens) {
+      if (userToken === token) {
+        const index = user.tokens.indexOf(token);
+        user.tokens.splice(index, 1);
+        user.tokenCounter--;
+        break;
+      }
+    }
+  }
+
+  setData(data);
+
   return {};
+}
+
+/**
+ * isValidToken
+ *
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
+ *
+ * @param {string} token
+ * @returns {boolean}
+ */
+function isValidToken(token: string): boolean {
+  const data = getData();
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
