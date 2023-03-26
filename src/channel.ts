@@ -1,38 +1,44 @@
 /**
  * channel.js
- * 
+ *
  * Contains the stub code functions of all channel* functions.
  */
 
-import { Channel } from 'diagnostics_channel';
-import { getData, setData, } from './dataStore'
+import { getData, setData } from './dataStore';
 
-const NO_MORE_MESSAGES = -1
-const FIFTY_MESSAGES = 50
+const NO_MORE_MESSAGES = -1;
+const FIFTY_MESSAGES = 50;
 
 interface Error {
   error: string;
 }
 
+interface Users {
+  uId: number;
+  email: string;
+  nameFirst: string;
+  nameLast: string;
+  handleStr: string;
+}
+
 interface DetailReturn {
   name: string;
   isPublic: boolean;
-  ownerMembers: object[];
-  allMembers: object[];
+  ownerMembers: Users[];
+  allMembers: Users[];
 }
 
 /**
  * channelDetailsV1
- * 
+ *
  * Given a authUserId and channelId, returns details
  * about that channel if the authUserId is a member
- * 
+ *
  * @param { number } authUserId
  * @param { number } channelId
- * @return { channelObject } 
+ * @return { channelObject }
  */
-function channelDetailsV1(token: string, channelId: number): Error | object {
-
+function channelDetailsV2(token: string, channelId: number): Error | DetailReturn {
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
   }
@@ -57,16 +63,15 @@ function channelDetailsV1(token: string, channelId: number): Error | object {
 
 /**
  * channelJoinV1
- * 
+ *
  * Given a authUserId and channelId, adds the authUserId
  * as a member of the channelId entered
- * 
+ *
  * @param { number } authUserId
  * @param { number } channelId
- * @return {  } 
+ * @return {  }
  */
-function channelJoinV1(token, channelId): Error | {} {
-
+function channelJoinV2(token, channelId): Error | Record<string, never> {
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
   }
@@ -79,8 +84,8 @@ function channelJoinV1(token, channelId): Error | {} {
     return { error: 'Error: User already a member' };
   }
 
-  let data = getData();
-  let channel = data.channels[channelId];
+  const data = getData();
+  const channel = data.channels[channelId];
   const user = data.users[channelId];
 
   if (channel.isPublic === true || user.permissionId === 1) {
@@ -90,10 +95,9 @@ function channelJoinV1(token, channelId): Error | {} {
       nameFirst: user.nameFirst,
       nameLast: user.nameLast,
       handleStr: user.userHandle
-    }
-  
+    };
+
     channel.allMembers.push(userObject);
-  
     setData(data);
 
     return {};
@@ -104,14 +108,13 @@ function channelJoinV1(token, channelId): Error | {} {
 
 /**
  * channelInviteV1
- * 
  * Given a authUserId, channelId and uId, adds the uId
  * to become a member of the channel
- * 
+ *
  * @param { number } authUserId
  * @param { number } channelId
  * @param { number } uId
- * @return {  } 
+ * @return {  }
  */
 function channelInviteV1(authUserId, channelId, uId) {
   if (!isUserId(authUserId)) {
@@ -134,22 +137,22 @@ function channelInviteV1(authUserId, channelId, uId) {
     return { error: 'Invalid User (User already in channel)' };
   }
 
-  channelJoinV1(uId, channelId);
+  channelJoinV2(uId, channelId);
 
   return {};
 }
 
 /**
  * channelMessagesV1
- * 
+ *
  * Given a authUserId, channelId and start returns
  * a 'list' of messages in the channel starting from
  * start.
- * 
+ *
  * @param { number } authUserId
  * @param { number } channelId
  * @param { number } start
- * @return { messages } 
+ * @return { messages }
  */
 function channelMessagesV1(authUserId, channelId, start) {
   if (!isUserId(authUserId)) {
@@ -171,7 +174,7 @@ function channelMessagesV1(authUserId, channelId, start) {
     return { error: 'Invalid Start (Start is greater than total messages)' };
   }
 
-  let returnMessages = [];
+  const returnMessages = [];
   let end;
 
   if (start + FIFTY_MESSAGES > messageArray.length) {
@@ -195,12 +198,12 @@ function channelMessagesV1(authUserId, channelId, start) {
 
 /**
  * isUserId
- * 
+ *
  * Given a authUserId, checks if the authUserId
  * is valid (exists in the dataStore)
- * 
+ *
  * @param { number } authUserId
- * @return { boolean } 
+ * @return { boolean }
  */
 function isUserId(authUserId: number): boolean {
   const data = getData();
@@ -216,10 +219,10 @@ function isUserId(authUserId: number): boolean {
 
 /**
  * isChannelId
- * 
+ *
  * Given a channelId, checks if the channel id
  * is valid (exists in the dataStore)
- * 
+ *
  * @param { number } channelId
  * @return { boolean } 
  */
