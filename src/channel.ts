@@ -5,13 +5,20 @@
  */
 
 import { Channel } from 'diagnostics_channel';
-import { getData, setData } from './dataStore'
+import { getData, setData, } from './dataStore'
 
 const NO_MORE_MESSAGES = -1
 const FIFTY_MESSAGES = 50
 
 interface Error {
   error: string;
+}
+
+interface DetailReturn {
+  name: string;
+  isPublic: boolean;
+  ownerMembers: object[];
+  allMembers: object[];
 }
 
 /**
@@ -24,14 +31,14 @@ interface Error {
  * @param { number } channelId
  * @return { channelObject } 
  */
-function channelDetailsV1(token: string, channelId: number) {
+function channelDetailsV1(token: string, channelId: number): Error | object {
 
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
   }
 
   if (!isValidToken) {
-    return { error: 'Invalid token(No user with that token)' }
+    return { error: 'Invalid token(No user with that token)' };
   }
 
   if (!isMember(token, channelId)) {
@@ -58,7 +65,7 @@ function channelDetailsV1(token: string, channelId: number) {
  * @param { number } channelId
  * @return {  } 
  */
-function channelJoinV1(token, channelId) {
+function channelJoinV1(token, channelId): Error | {} {
 
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
