@@ -17,7 +17,7 @@ import { getData, setData } from './dataStore';
  * @param null
  * @returns { {} }
  */
-function clearV1(): {} {
+function clearV1(): Record<string, never> {
   let data = getData();
 
   data = {
