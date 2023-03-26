@@ -33,12 +33,13 @@ function userProfileV1(token: string, uId: number) : Error | User {
     return { error: 'Invalid user (uId not exist)' };
   }
 
+  const user = data.users[uId];
   const userProfile = {
-    uId: data.users[uId].uId,
-    email: data.users[uId].email,
-    nameFirst: data.users[uId].nameFirst,
-    nameLast: data.users[uId].nameLast,
-    handleStr: data.users[uId].userHandle
+    uId: user.uId,
+    email: user.email,
+    nameFirst: user.nameFirst,
+    nameLast: user.nameLast,
+    handleStr: user.userHandle
   };
 
   return { user: userProfile };
