@@ -22,7 +22,7 @@ beforeEach(() => {
   testClear();
 });
 
-/////////////// UserProfileV2 Function ///////////////
+/////////////// UserProfileV1 Function ///////////////
 
 interface AuthReturn {
   token: string;
@@ -49,7 +49,7 @@ describe('usersProfileV1: Error Testing', () => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
   });
 
-  test('AuthUserId: Invalid authUserId', () => {
+  test('Token: Invalid Token', () => {
     expect(testUserProfile(user1.token + 'A', user1.authUserId)).toStrictEqual(ERROR);
   });
 

@@ -22,7 +22,7 @@ interface User {
   user: UserProfile
 }
 
-function userProfileV2(token: string, uId: number) : Error | User {
+function userProfileV1(token: string, uId: number) : Error | User {
   const data = getData();
 
   if (!isValidToken(token)) {
@@ -56,4 +56,4 @@ function isValidToken(token: string): boolean {
   return false;
 }
 
-export { userProfileV2 };
+export { userProfileV1 };
