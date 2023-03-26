@@ -38,7 +38,7 @@ interface DetailReturn {
  * @param { number } channelId
  * @return { channelObject }
  */
-function channelDetailsV2(token: string, channelId: number): Error | DetailReturn {
+function channelDetailsV1(token: string, channelId: number): Error | DetailReturn {
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
   }
@@ -71,7 +71,7 @@ function channelDetailsV2(token: string, channelId: number): Error | DetailRetur
  * @param { number } channelId
  * @return {  }
  */
-function channelJoinV2(token, channelId): Error | Record<string, never> {
+function channelJoinV1(token, channelId): Error | Record<string, never> {
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
   }
@@ -271,8 +271,8 @@ function isMember(token: string, channelId: number): boolean {
  */
 function isValidToken(token: string): boolean {
   const users = getData().users;
-  for (const object of users) {
-    for (const theToken of object.tokens) {
+  for (const user of users) {
+    for (const theToken of user.tokens) {
       if (theToken === token) {
         return true;
       }
@@ -291,14 +291,14 @@ function findUId(token: string): number {
   const users = getData().users;
   let id;
 
-  for (const object of users) {
-    for (const the_token of object.tokens) {
-      if (the_token === token) {
-        id = object.uId;
+  for (const user of users) {
+    for (const theToken of user.tokens) {
+      if (theToken === token) {
+        id = user.uId;
       }
     }
   }
   return id;
 }
 
-export { channelDetailsV2, channelJoinV2, channelInviteV1, channelMessagesV1 }
+export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 }
