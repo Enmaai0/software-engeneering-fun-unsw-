@@ -17,6 +17,11 @@ interface AuthReturn {
 }
 
 const MAXTOKEN = 10000000;
+const MINPASSLENGTh = 6;
+const MINNAMELENGTH = 1;
+const MAXNAMELENGTH = 50;
+const GLOBALOWNER = 1;
+const GLOBALMEMBER = 2;
 
 /**
  * authLoginV1
@@ -130,15 +135,15 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     return { error: 'Invalid Email (Email Already in Use)' };
   }
 
-  if (password.length < 6) {
+  if (password.length < MINPASSLENGTh) {
     return { error: 'Invalid Password (Minimum 6 Characters)' };
   }
 
-  if (nameFirst.length < 1 || nameLast.length < 1) {
+  if (nameFirst.length < MINNAMELENGTH || nameLast.length < MINNAMELENGTH) {
     return { error: 'Invalid Name (Name Cannot be Empty)' };
   }
 
-  if (nameFirst.length > 50 || nameLast.length > 50) {
+  if (nameFirst.length > MAXNAMELENGTH || nameLast.length > MAXNAMELENGTH) {
     return { error: 'Invalid Name (Maximum 50 Characters)' };
   }
 
@@ -148,9 +153,9 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   // the users within teams (1 = Owner, 2 = Member).
   let permissionId;
   if (data.users.length === 0) {
-    permissionId = 1;
+    permissionId = GLOBALOWNER;
   } else {
-    permissionId = 2;
+    permissionId = GLOBALMEMBER;
   }
 
   const newUserIndex = data.users.length;
