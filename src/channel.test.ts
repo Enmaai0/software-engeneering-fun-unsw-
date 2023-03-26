@@ -87,10 +87,10 @@ function testChannelMessages(token: string, channelId: number, start: number) {
 
 function testChannelDetails(token: string, channelId: number) {
   const res = request(
-    'POST',
+    'GET',
     `${url}:${port}/channel/details/v2`,
     {
-      json: {
+      qs: {
         token,
         channelId
       }
