@@ -81,7 +81,7 @@ app.post('/dm/create/v1', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
-app.get('/dm/list/v1', (req: Request, res: Response) => { 
+app.get('/dm/list/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const returnMessage = dmList(token);
 
@@ -95,5 +95,14 @@ app.delete('/dm/remove/v1', (req: Request, res: Response) => {
   const returnMessage = dmRemove(token, Number(dmId));
 
   console.log('Removing DM with Id:', dmId);
+  res.json(returnMessage);
+});
+
+app.get('/dm/details/v1', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const dmId = req.query.dmId as string;
+  const returnMessage = dmDetails(token, Number(dmId));
+
+  console.log('Getting Details of DM Id:', dmId);
   res.json(returnMessage);
 });
