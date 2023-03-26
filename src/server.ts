@@ -81,7 +81,7 @@ app.post('/dm/create/v1', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
-app.get('/dm/list/v1', (req: Request, res: Response) => { 
+app.get('/dm/list/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const returnMessage = dmList(token);
 

@@ -240,7 +240,7 @@ function isUserId(authUserId: number): boolean {
  * is valid (exists in the dataStore)
  *
  * @param { number } channelId
- * @return { boolean } 
+ * @return { boolean }
  */
 function isChannelId(channelId: number): boolean {
   const data = getData();
@@ -256,17 +256,17 @@ function isChannelId(channelId: number): boolean {
 
 /**
  * isMember
- * 
+ *
  * Given an token and channelId, checks if a user
  * with the token is a part of the channel
- * 
+ *
  * @param { string } token
  * @param { number } channelId
- * @return { boolean } 
+ * @return { boolean }
  */
 function isMember(token: string, channelId: number): boolean {
   const members = getData().channels[channelId].allMembers;
-  let id = findUId(token);
+  const id = findUId(token);
 
   for (const member of members) {
     if (member.uId === id) {
@@ -278,10 +278,10 @@ function isMember(token: string, channelId: number): boolean {
 }
 
 /**
- * Given a token and to check if it is 
+ * Given a token and to check if it is
  * a valid token owned by any user
- * 
- * @param token 
+ *
+ * @param token
  * @returns {boolean}
  */
 function isValidToken(token: string): boolean {
@@ -298,8 +298,8 @@ function isValidToken(token: string): boolean {
 
 /**
  * Given a token, find the corresponding uId
- * 
- * @param token 
+ *
+ * @param token
  * @returns {number} uId
  */
 function findUId(token: string): number {
@@ -318,13 +318,13 @@ function findUId(token: string): number {
 
 /**
  * isUIdMember
- * 
+ *
  * Given an uId and channelId, checks if a user
  * with the uId is a part of the channel
- * 
+ *
  * @param { number } id
  * @param { number } channelId
- * @return { boolean } 
+ * @return { boolean }
  */
 function isUIdMember(uId: number, channelId: number): boolean {
   const members = getData().channels[channelId].allMembers;
@@ -340,10 +340,10 @@ function isUIdMember(uId: number, channelId: number): boolean {
 
 /**
  * Given an Id, find the corresponding tokens.
- * 
+ *
  * This function should be call after check Id is valid.
- * 
- * @param Id 
+ *
+ * @param Id
  * @returns {string} token
  */
 function findToken(Id: number): string | string[] {

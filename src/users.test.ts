@@ -7,7 +7,7 @@
 import request from 'sync-request';
 import config from './config.json';
 import { testClear } from './other.test';
-import { testAuthRegister } from './auth.test'
+import { testAuthRegister } from './auth.test';
 
 const port = config.port;
 const url = config.url;
@@ -22,7 +22,7 @@ beforeEach(() => {
   testClear();
 });
 
-/////////////// UserProfileV1 Function ///////////////
+/// //////////// UserProfileV1 Function ///////////////
 
 interface AuthReturn {
   token: string;

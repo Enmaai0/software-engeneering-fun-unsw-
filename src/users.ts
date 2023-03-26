@@ -46,7 +46,7 @@ function userProfileV1(token: string, uId: number) : Error | User {
 }
 
 function isValidToken(token: string): boolean {
-  let users = getData().users;
+  const users = getData().users;
   for (const object of users) {
     for (const the_token of object.tokens) {
       if (the_token === token) {

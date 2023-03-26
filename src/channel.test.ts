@@ -7,8 +7,8 @@
 import request from 'sync-request';
 import config from './config.json';
 import { testClear } from './other.test';
-import { testAuthRegister } from './auth.test'
-import { testChannelsCreate } from './channels.test'
+import { testAuthRegister } from './auth.test';
+import { testChannelsCreate } from './channels.test';
 
 const port = config.port;
 const url = config.url;
@@ -33,7 +33,7 @@ beforeEach(() => {
   testClear();
 });
 
-/////////////// testChannelInvite Function ///////////////
+/// //////////// testChannelInvite Function ///////////////
 
 function testChannelInvite(token: string, channelId: number, uid: number) {
   const res = request(
@@ -50,7 +50,7 @@ function testChannelInvite(token: string, channelId: number, uid: number) {
   return JSON.parse(res.getBody() as string);
 }
 
-/////////////// testChannelJoin Function ///////////////
+/// //////////// testChannelJoin Function ///////////////
 
 function testChannelJoin(token: string, channelId: number) {
   const res = request(
@@ -66,7 +66,7 @@ function testChannelJoin(token: string, channelId: number) {
   return JSON.parse(res.getBody() as string);
 }
 
-/////////////// testChannelMessages Function ///////////////
+/// //////////// testChannelMessages Function ///////////////
 
 function testChannelMessages(token: string, channelId: number, start: number) {
   const res = request(
@@ -83,7 +83,7 @@ function testChannelMessages(token: string, channelId: number, start: number) {
   return JSON.parse(res.getBody() as string);
 }
 
-/////////////// testChannelDetails Function ///////////////
+/// //////////// testChannelDetails Function ///////////////
 
 function testChannelDetails(token: string, channelId: number) {
   const res = request(
@@ -99,8 +99,7 @@ function testChannelDetails(token: string, channelId: number) {
   return JSON.parse(res.getBody() as string);
 }
 
-
-/////////////// ChannelInviteV1 Test ///////////////
+/// //////////// ChannelInviteV1 Test ///////////////
 
 describe('testChannelInvite: Error Testing', () => {
   let user1: AuthReturn;
@@ -182,7 +181,7 @@ describe('testChannelInvite: Correct Return Testing', () => {
   });
 });
 
-/////////////// ChannelMessagesV1 Test ///////////////
+/// //////////// ChannelMessagesV1 Test ///////////////
 
 describe('testChannelMessages: Error Testing', () => {
   let user1: AuthReturn;
@@ -233,7 +232,7 @@ describe('testChannelMessages: Return Testing', () => {
   });
 });
 
-/////////////// ChannelDetailsV1 Test ///////////////
+/// //////////// ChannelDetailsV1 Test ///////////////
 describe('testChannelDetails: Error Testing', () => {
   let user1: AuthReturn;
   let user2: AuthReturn;
@@ -294,7 +293,7 @@ describe('testChannelDetails: Return Testing', () => {
   });
 });
 
-/////////////// ChannelJoinV1 Test ///////////////
+/// //////////// ChannelJoinV1 Test ///////////////
 
 describe('testChannelJoin: Error Testing', () => {
   let user1: AuthReturn;
