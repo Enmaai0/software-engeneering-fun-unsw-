@@ -8,9 +8,7 @@ import request from 'sync-request';
 import config from './config.json';
 import { testClear } from './other.test';
 import { testAuthRegister } from './auth.test';
-import exp from 'constants';
 
-const OK = 200;
 const port = config.port;
 const url = config.url;
 
@@ -237,10 +235,138 @@ describe('/dm/list: Return Testing', () => {
   });
 });
 
+/** /dm/remove/v1 Testing **/
+
+function testDmRemove(token: string, dmId: number) {
+  const res = request(
+    'DELETE',
+    `${url}:${port}/dm/remove/v1`,
+    {
+      qs: {
+        token,
+        dmId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+describe('/dm/create: Error Testing', () => {
+  let testUser1: AuthRegisterReturn;
+  beforeEach(() => {
+    testUser1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
+
+  test('Token: Invalid Token', () => {
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmRemove(testUser1.token + '1', testDm.dmId)).toStrictEqual(ERROR);
+  });
+
+  test('DmId: Invalid dmId', () => {
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmRemove(testUser1.token, testDm.dmId + 1)).toStrictEqual(ERROR);
+  });
+
+  test('DmId: User is no longer in Dm', () => {
+    const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
+    const testDm = testDmCreate(testUser1.token, [testUser2.authUserId]);
+    testDmLeave(testUser1.token, testDm.dmId);
+    expect(testDmRemove(testUser1.token, testDm.dmId)).toStrictEqual(ERROR);
+  });
+
+  test('DmId: User is not the Dm owner', () => {
+    const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
+    const testDm = testDmCreate(testUser1.token, [testUser2.authUserId]);
+    expect(testDmRemove(testUser2.token, testDm.dmId)).toStrictEqual(ERROR);
+  });
+});
+
+describe('/dm/create: Deletion Testing', () => {
+  let testUser1: AuthRegisterReturn, testUser2: AuthRegisterReturn;
+  beforeEach(() => {
+    testUser1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    testUser2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+  });
+
+  test('Remove Only Dm', () => {
+    const testDm1 = testDmCreate(testUser1.token, [testUser2.authUserId]);
+    expect(testDmRemove(testUser1.token, testDm1.dmId)).toStrictEqual({});
+    expect(testDmList(testUser1.token)).toStrictEqual({ dms: [] });
+  });
+
+  test('Remove One Dm with Multiple Dms', () => {
+    const testDm1 = testDmCreate(testUser1.token, [testUser2.authUserId]);
+    const testDm2 = testDmCreate(testUser2.token, [testUser1.authUserId]);
+    const testDm3 = testDmCreate(testUser1.token, [testUser2.authUserId]);
+    expect(testDmRemove(testUser2.token, testDm2.dmId)).toStrictEqual({});
+    expect(testDmList(testUser1.token)).toStrictEqual({
+      dms: [{
+        dmId: testDm1.dmId,
+        name: expect.any(String)
+      }, {
+        dmId: testDm3.dmId,
+        name: expect.any(String)
+      }]
+    });
+    expect(testDmList(testUser2.token)).toStrictEqual({
+      dms: [{
+        dmId: testDm1.dmId,
+        name: expect.any(String)
+      }, {
+        dmId: testDm3.dmId,
+        name: expect.any(String)
+      }]
+    });
+  });
+});
+
 /** /dm/details/v1 Testing **/
+
+function testDmDetails(token: string, dmId: number) {
+  const res = request(
+    'GET',
+    `${url}:${port}/dm/details/v1`,
+    {
+      qs: {
+        token,
+        dmId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 /** /dm/leave/v1 Testing **/
 
+function testDmLeave(token: string, dmId: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/dm/leave/v1`,
+    {
+      json: {
+        token,
+        dmId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 /** /dm/messages/v1 Testing **/
+
+function testDmMessages(token: string, dmId: number, start: number) {
+  const res = request(
+    'GET',
+    `${url}:${port}/dm/messages/v1`,
+    {
+      qs: {
+        token,
+        dmId,
+        start
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 export { testDmCreate, testDmList };

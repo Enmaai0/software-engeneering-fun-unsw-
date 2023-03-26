@@ -4,7 +4,7 @@
  * Contains the stub code functions of all channel* functions.
  */
 
-import { getData, setData } from './dataStore.js';
+import { getData, setData } from './dataStore';
 
 const NO_MORE_MESSAGES = -1;
 const FIFTY_MESSAGES = 50;
@@ -34,12 +34,13 @@ interface Member {
   handleStr: string
 }
 
-interface ChannelObject {
-  name: string,
-  isPublic: boolean,
-  ownerMembers: Member[],
-  allMembers: Member[]
+interface DetailReturn {
+  name: string;
+  isPublic: boolean;
+  ownerMembers: Member[];
+  allMembers: Member[];
 }
+
 /**
  * channelDetailsV1
  *
@@ -48,23 +49,22 @@ interface ChannelObject {
  *
  * @param { number } authUserId
  * @param { number } channelId
- * @return { ChannelObject }
+ * @return { DetailReturn }
  */
-function channelDetailsV1(authUserId: number, channelId: number) : Error | ChannelObject {
-  if (!isUserId(authUserId)) {
-    return { error: 'Invalid authUserId (No user with that id)' };
-  }
-
+function channelDetailsV1(token: string, channelId: number): Error | DetailReturn {
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
   }
 
-  if (!isMember(authUserId, channelId)) {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid token(No user with that token)' };
+  }
+
+  if (!isMember(token, channelId)) {
     return { error: 'Error: User is not a member' };
   }
 
-  const data = getData();
-  const channel = data.channels[channelId];
+  const channel = getData().channels[channelId];
 
   return {
     name: channel.name,
@@ -84,21 +84,22 @@ function channelDetailsV1(authUserId: number, channelId: number) : Error | Chann
  * @param { number } channelId
  * @return {  }
  */
-function channelJoinV1(authUserId: number, channelId: number) : Error | Record<string, never> {
-  if (!isUserId(authUserId)) {
-    return { error: 'Invalid authUserId (No user with that id)' };
+function channelJoinV1(token: string, channelId: number) : Error | Record<string, never> {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid token (No user with that token)' };
   }
 
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
   }
 
-  if (isMember(authUserId, channelId)) {
+  if (isMember(token, channelId)) {
     return { error: 'Error: User already a member' };
   }
 
   const data = getData();
   const channel = data.channels[channelId];
+  const authUserId = findUId(token);
   const user = data.users[authUserId];
 
   if (channel.isPublic === true || user.permissionId === 1) {
@@ -111,7 +112,6 @@ function channelJoinV1(authUserId: number, channelId: number) : Error | Record<s
     };
 
     channel.allMembers.push(userObject);
-
     setData(data);
 
     return {};
@@ -131,9 +131,9 @@ function channelJoinV1(authUserId: number, channelId: number) : Error | Record<s
  * @param { number } uId
  * @return {  }
  */
-function channelInviteV1(authUserId: number, channelId: number, uId: number) : Error | Record<string, never> {
-  if (!isUserId(authUserId)) {
-    return { error: 'Invalid authUserId (No user with that id)' };
+function channelInviteV1(token: string, channelId: number, uId: number) : Error | Record<string, never> {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid token (No user with that token)' };
   }
 
   if (!isChannelId(channelId)) {
@@ -144,15 +144,16 @@ function channelInviteV1(authUserId: number, channelId: number, uId: number) : E
     return { error: 'Invalid uId (No user with that Id)' };
   }
 
-  if (!isMember(authUserId, channelId)) {
+  if (!isMember(token, channelId)) {
     return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
-  if (isMember(uId, channelId)) {
+  if (isUIdMember(uId, channelId)) {
     return { error: 'Invalid User (User already in channel)' };
   }
 
-  channelJoinV1(uId, channelId);
+  const uToken = findToken(uId);
+  channelJoinV1(uToken[0], channelId);
 
   return {};
 }
@@ -169,8 +170,8 @@ function channelInviteV1(authUserId: number, channelId: number, uId: number) : E
  * @param { number } start
  * @return { FiftyMessages }
  */
-function channelMessagesV1(authUserId: number, channelId: number, start: number) : Error | FiftyMessages {
-  if (!isUserId(authUserId)) {
+function channelMessagesV1(token: string, channelId: number, start: number) : Error | FiftyMessages {
+  if (!isValidToken(token)) {
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
@@ -178,7 +179,7 @@ function channelMessagesV1(authUserId: number, channelId: number, start: number)
     return { error: 'Invalid channelId (No channel with that id)' };
   }
 
-  if (!isMember(authUserId, channelId)) {
+  if (!isMember(token, channelId)) {
     return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
@@ -220,7 +221,7 @@ function channelMessagesV1(authUserId: number, channelId: number, start: number)
  * @param { number } authUserId
  * @return { boolean }
  */
-function isUserId(authUserId: number) : boolean {
+function isUserId(authUserId: number): boolean {
   const data = getData();
 
   for (const user of data.users) {
@@ -239,9 +240,9 @@ function isUserId(authUserId: number) : boolean {
  * is valid (exists in the dataStore)
  *
  * @param { number } channelId
- * @return { boolean }
+ * @return { boolean } 
  */
-function isChannelId(channelId: number) : boolean {
+function isChannelId(channelId: number): boolean {
   const data = getData();
 
   for (const channel of data.channels) {
@@ -255,17 +256,17 @@ function isChannelId(channelId: number) : boolean {
 
 /**
  * isMember
- *
- * Given an id and channelId, checks if a user
- * with the id is a part of the channel
- *
- * @param { number } id
+ * 
+ * Given an token and channelId, checks if a user
+ * with the token is a part of the channel
+ * 
+ * @param { string } token
  * @param { number } channelId
- * @return { boolean }
+ * @return { boolean } 
  */
-function isMember(id: number, channelId: number) : boolean {
-  const data = getData();
-  const members = data.channels[channelId].allMembers;
+function isMember(token: string, channelId: number): boolean {
+  const members = getData().channels[channelId].allMembers;
+  let id = findUId(token);
 
   for (const member of members) {
     if (member.uId === id) {
@@ -274,6 +275,86 @@ function isMember(id: number, channelId: number) : boolean {
   }
 
   return false;
+}
+
+/**
+ * Given a token and to check if it is 
+ * a valid token owned by any user
+ * 
+ * @param token 
+ * @returns {boolean}
+ */
+function isValidToken(token: string): boolean {
+  const users = getData().users;
+  for (const user of users) {
+    for (const theToken of user.tokens) {
+      if (theToken === token) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Given a token, find the corresponding uId
+ * 
+ * @param token 
+ * @returns {number} uId
+ */
+function findUId(token: string): number {
+  const users = getData().users;
+  let id;
+
+  for (const user of users) {
+    for (const theToken of user.tokens) {
+      if (theToken === token) {
+        id = user.uId;
+      }
+    }
+  }
+  return id;
+}
+
+/**
+ * isUIdMember
+ * 
+ * Given an uId and channelId, checks if a user
+ * with the uId is a part of the channel
+ * 
+ * @param { number } id
+ * @param { number } channelId
+ * @return { boolean } 
+ */
+function isUIdMember(uId: number, channelId: number): boolean {
+  const members = getData().channels[channelId].allMembers;
+
+  for (const member of members) {
+    if (member.uId === uId) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Given an Id, find the corresponding tokens.
+ * 
+ * This function should be call after check Id is valid.
+ * 
+ * @param Id 
+ * @returns {string} token
+ */
+function findToken(Id: number): string | string[] {
+  const users = getData().users;
+
+  for (const user of users) {
+    if (user.uId === Id) {
+      return user.tokens;
+    }
+  }
+  return undefined;
 }
 
 export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 };
