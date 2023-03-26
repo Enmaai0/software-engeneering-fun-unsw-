@@ -190,7 +190,7 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
     return { error: 'Invalid Start (Start is greater than total messages)' };
   }
 
-  const returnMessages = [];
+  const returnMessages = [] as Message[];
   let end;
 
   if (start + FIFTY_MESSAGES > messageArray.length) {
@@ -348,13 +348,13 @@ function isUIdMember(uId: number, channelId: number): boolean {
  */
 function findToken(Id: number): string | string[] {
   const users = getData().users;
-
+  let userToken;
   for (const user of users) {
     if (user.uId === Id) {
-      return user.tokens;
+      userToken = user.tokens;
     }
   }
-  return undefined;
+  return userToken;
 }
 
 export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 };
