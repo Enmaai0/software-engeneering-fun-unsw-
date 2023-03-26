@@ -1,5 +1,5 @@
 /**
- * users.js
+ * users.ts
  *
  * Contains the stub code functions of all users* functions.
  */
@@ -22,14 +22,14 @@ interface User {
   user: UserProfile
 }
 
-function userProfileV1(authUserId: number, uId: number) : Error | User {
+function userProfileV2(token: string, uId: number) : Error | User {
   const data = getData();
 
-  if (authUserId >= data.users.length || authUserId < 0) {
-    return { error: 'Invalid user (authUserId not exist)' };
+  if (!isValidToken(token)) {
+    return { error: 'Invalid token (token not exist)' };
   }
 
-  if (uId >= data.users.length || authUserId < 0) {
+  if (uId >= data.users.length || uId < 0) {
     return { error: 'Invalid user (uId not exist)' };
   }
 
@@ -44,4 +44,16 @@ function userProfileV1(authUserId: number, uId: number) : Error | User {
   return { user: userProfile };
 }
 
-export { userProfileV1 };
+function isValidToken(token: string): boolean {
+  let users = getData().users;
+  for (const object of users) {
+    for (const the_token of object.tokens) {
+      if (the_token === token) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export { userProfileV2 };
