@@ -447,6 +447,100 @@ function testDmLeave(token: string, dmId: number) {
   return JSON.parse(res.getBody() as string);
 }
 
+describe('/dm/leave: Error Testing', () => {
+  let testUser1: AuthRegisterReturn;
+  beforeEach(() => {
+    testUser1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
+
+  test('Token: Invalid Token', () => {
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmDetails(testUser1.token + '1', testDm.dmId)).toStrictEqual(ERROR);
+  });
+
+  test('DmId: Invalid dmId', () => {
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmDetails(testUser1.token, testDm.dmId + 1)).toStrictEqual(ERROR);
+  });
+
+  test('DmId: User is not in Dm', () => {
+    const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmDetails(testUser2.token, testDm.dmId)).toStrictEqual(ERROR);
+  });
+});
+
+describe('/dm/leave: User Left Testing', () => {
+  let testUser1: AuthRegisterReturn;
+  beforeEach(() => {
+    testUser1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
+
+  test('Owner Leaves Dm (Only Owner in Dm)', () => {
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmLeave(testUser1.token, testDm.dmId)).toStrictEqual({});
+    expect(testDmDetails(testUser1.token, testDm.dmId)).toStrictEqual(ERROR);
+  });
+
+  test('Owner Leaves Dm (Multiple Members in Dm)', () => {
+    const testUser2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    const testUser3 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    const testDm = testDmCreate(testUser1.token, [testUser2.authUserId, testUser3.authUserId]);
+    expect(testDmLeave(testUser1.token, testDm.dmId)).toStrictEqual({});
+    expect(testDmDetails(testUser1.token, testDm.dmId)).toStrictEqual(ERROR);
+    expect(testDmDetails(testUser2.token, testDm.dmId)).toStrictEqual({
+      name: 'testbot, testbot0, testbot1',
+      members: [{
+        uId: testUser2.authUserId,
+        email: 'email2@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot0'
+      }, {
+        uId: testUser3.authUserId,
+        email: 'email3@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot1'
+      }]
+    });
+  });
+
+  test('One Member Leaves Dm', () => {
+    const testUser2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    const testDm = testDmCreate(testUser1.token, [testUser2.authUserId]);
+    expect(testDmLeave(testUser2.token, testDm.dmId)).toStrictEqual({});
+    expect(testDmDetails(testUser1.token, testDm.dmId)).toStrictEqual({
+      name: 'testbot, testbot0',
+      members: [{
+        uId: testUser1.authUserId,
+        email: 'email@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot'
+      }]
+    });
+  });
+
+  test('Multiple Members Leave Dm', () => {
+    const testUser2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    const testUser3 = testAuthRegister('email3@gmail.com', 'pass1234', 'Test', 'Bot');
+    const testDm = testDmCreate(testUser1.token, [testUser2.authUserId]);
+    expect(testDmLeave(testUser2.token, testDm.dmId)).toStrictEqual({});
+    expect(testDmLeave(testUser3.token, testDm.dmId)).toStrictEqual({});
+    expect(testDmDetails(testUser1.token, testDm.dmId)).toStrictEqual({
+      name: 'testbot, testbot0, testbot1',
+      members: [{
+        uId: testUser1.authUserId,
+        email: 'email@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot'
+      }]
+    });
+  });
+});
+
 /** /dm/messages/v1 Testing **/
 
 function testDmMessages(token: string, dmId: number, start: number) {

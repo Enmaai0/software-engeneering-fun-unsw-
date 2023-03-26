@@ -10,10 +10,7 @@ import config from './config.json';
 import { testAuthRegister } from './auth.test';
 import { testUsersAll } from './users.test';
 import { testChannelsCreate, testChannelsList } from './channels.test';
-import { testDmCreate, testDmList } from './dm.test';
-import { token } from 'morgan';
 
-const OK = 200;
 const port = config.port;
 const url = config.url;
 
