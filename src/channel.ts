@@ -250,11 +250,11 @@ function isChannelId(channelId: number): boolean {
  */
 function isMember(token: string, channelId: number): boolean {
   const members = getData().channels[channelId].allMembers;
-  let users = getData().users;
-  let the_id = findUId(token);
+  const users = getData().users;
+  let id = findUId(token);
 
   for (const member of members) {
-    if (member.uId === the_id) {
+    if (member.uId === id) {
       return true;
     }
   }
@@ -270,10 +270,10 @@ function isMember(token: string, channelId: number): boolean {
  * @returns boolean
  */
 function isValidToken(token: string): boolean {
-  let users = getData().users;
+  const users = getData().users;
   for (const object of users) {
-    for (const the_token of object.tokens) {
-      if (the_token === token) {
+    for (const theToken of object.tokens) {
+      if (theToken === token) {
         return true;
       }
     }
@@ -288,17 +288,17 @@ function isValidToken(token: string): boolean {
  * @returns {number} uId
  */
 function findUId(token: string): number {
-  let users = getData().users;
-  let the_id;
+  const users = getData().users;
+  let id;
 
   for (const object of users) {
     for (const the_token of object.tokens) {
       if (the_token === token) {
-        the_id = object.uId;
+        id = object.uId;
       }
     }
   }
-  return the_id;
+  return id;
 }
 
-export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 }
+export { channelDetailsV2, channelJoinV2, channelInviteV1, channelMessagesV1 }
