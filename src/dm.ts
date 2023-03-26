@@ -337,11 +337,59 @@ function isValidDmId(dmId: number) {
  * @param {number} dmId
  * @returns {{ DmDetails }}
  */
-function dmDetails(token: string, dmId: number): DmDetails {
+function dmDetails(token: string, dmId: number): DmDetails | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  if (!isValidDmId(dmId)) {
+    return { error: 'Invalid dmId' };
+  }
+
+  const data = getData();
+  const id = getIdFromToken(token);
+
+  if (!data.dms[dmId].members.includes(id) && (data.dms[dmId].owner !== id)) {
+    return { error: 'User is not a member of the DM' };
+  }
+
+  const usersArray = [];
+  const membersArray = data.dms[dmId].members;
+  membersArray.push(data.dms[dmId].owner);
+
+  for (const member of membersArray) {
+    const user = createUserObject(member);
+    usersArray.push(user);
+  }
+
   return {
-    name: 'placeholder',
-    members: []
+    name: data.dms[dmId].name,
+    members: usersArray
   };
+}
+
+/**
+ * createUserObject
+ *
+ * Given a valid uId, returns an a user object
+ * containing information from the given uId
+ *
+ * @param { number } uId
+ * @returns { user }
+ */
+function createUserObject(uId: number) {
+  const data = getData();
+  const user = data.users[uId];
+
+  const userObject = {
+    uId: uId,
+    email: user.email,
+    nameFirst: user.nameFirst,
+    nameLast: user.nameLast,
+    handleStr: user.userHandle
+  };
+
+  return userObject;
 }
 
 /**
