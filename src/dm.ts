@@ -4,7 +4,7 @@
  * Contains the functions of all dm* functions.
  */
 
-import { getData } from './dataStore';
+import { getData, setData } from './dataStore';
 
 interface Error {
   error: string;
@@ -272,12 +272,59 @@ function createDmList(dmIdArray: number[]): DmObject[] {
  * Remove an existing DM, so all members are no longer in the DM.
  * This can only be done by the original creator of the DM.
  *
+ * Warning: This method leaves essentially useless empty dms inside
+ * of the dataStore that contain no users, but the dm still exists
+ * The dm at index dmId will be a 'ghost' dm
+ *
  * @param {string} token
  * @param {number} dmId
  * @returns {}
  */
-function dmRemove(token: string, dmId: number): Record<string, never> {
+function dmRemove(token: string, dmId: number): Record<string, never> | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  if (!isValidDmId(dmId)) {
+    return { error: 'Invalid dmId' };
+  }
+
+  const data = getData();
+  const removerId = getIdFromToken(token);
+
+  if (!data.dms[dmId].members.includes(removerId)) {
+    return { error: 'User is not a member of the DM' };
+  }
+
+  if (removerId !== data.dms[dmId].owner) {
+    return { error: 'User is not the original DM creator' };
+  }
+
+  // Removing all members and owner from the dm
+  data.dms[dmId].owner = -123456789;
+  data.dms[dmId].members = [];
+
+  setData(data);
+
   return {};
+}
+
+/**
+ * isValidDmId
+ *
+ * Given a dmId returns whether it exists or not
+ *
+ * @param {number} dmId
+ * @returns { boolean }
+ */
+function isValidDmId(dmId: number) {
+  const data = getData();
+  for (const dm of data.dms) {
+    if (dm.dmId === dmId) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
