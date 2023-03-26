@@ -1,5 +1,3 @@
-
-import { findTokenId, checkChannelId, checkEnrolled } from './channel';
 import { getData, setData } from './dataStore';
 
 /**
