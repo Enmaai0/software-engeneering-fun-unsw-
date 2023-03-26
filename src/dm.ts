@@ -4,7 +4,7 @@
  * Contains the functions of all dm* functions.
  */
 
-import { getData } from './dataStore';
+import { getData, setData } from './dataStore';
 
 interface Error {
   error: string;
@@ -216,8 +216,54 @@ function generateDmName(idArray: number[]): string {
  * @param {string} token
  * @returns { dms: [] }
  */
-function dmList(token: string): Dms {
-  return { dms: [] };
+function dmList(token: string): Dms | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  const uId = getIdFromToken(token);
+  const data = getData();
+  const dmArray = [];
+
+  for (const dm of data.dms) {
+    for (const id of dm.members) {
+      if (id === uId) {
+        dmArray.push(dm.dmId);
+      }
+    }
+    if (uId === dm.owner) {
+      dmArray.push(dm.dmId);
+    }
+  }
+
+  const dmList = createDmList(dmArray);
+
+  return { dms: dmList };
+}
+
+/**
+ * createDmList
+ *
+ * Given an array of dmIds, creates an array of objects
+ * containing the dmd dmId and names.
+ *
+ * @param { number[] } dmIdArray
+ * @returns { dmObject[] }
+ */
+function createDmList(dmIdArray: number[]): DmObject[] {
+  const data = getData();
+  const dms = [];
+
+  for (const dm of data.dms) {
+    if (dmIdArray.includes(dm.dmId)) {
+      const dmObject = {
+        dmId: dm.dmId,
+        name: dm.name
+      };
+      dms.push(dmObject);
+    }
+  }
+  return dms;
 }
 
 /**
@@ -226,12 +272,59 @@ function dmList(token: string): Dms {
  * Remove an existing DM, so all members are no longer in the DM.
  * This can only be done by the original creator of the DM.
  *
+ * Warning: This method leaves essentially useless empty dms inside
+ * of the dataStore that contain no users, but the dm still exists
+ * The dm at index dmId will be a 'ghost' dm
+ *
  * @param {string} token
  * @param {number} dmId
  * @returns {}
  */
-function dmRemove(token: string, dmId: number): {} {
+function dmRemove(token: string, dmId: number): Record<string, never> | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  if (!isValidDmId(dmId)) {
+    return { error: 'Invalid dmId' };
+  }
+
+  const data = getData();
+  const removerId = getIdFromToken(token);
+
+  if (!data.dms[dmId].members.includes(removerId)) {
+    return { error: 'User is not a member of the DM' };
+  }
+
+  if (removerId !== data.dms[dmId].owner) {
+    return { error: 'User is not the original DM creator' };
+  }
+
+  // Removing all members and owner from the dm
+  data.dms[dmId].owner = -123456789;
+  data.dms[dmId].members = [];
+
+  setData(data);
+
   return {};
+}
+
+/**
+ * isValidDmId
+ *
+ * Given a dmId returns whether it exists or not
+ *
+ * @param {number} dmId
+ * @returns { boolean }
+ */
+function isValidDmId(dmId: number) {
+  const data = getData();
+  for (const dm of data.dms) {
+    if (dm.dmId === dmId) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -244,11 +337,59 @@ function dmRemove(token: string, dmId: number): {} {
  * @param {number} dmId
  * @returns {{ DmDetails }}
  */
-function dmDetails(token: string, dmId: number): DmDetails {
+function dmDetails(token: string, dmId: number): DmDetails | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  if (!isValidDmId(dmId)) {
+    return { error: 'Invalid dmId' };
+  }
+
+  const data = getData();
+  const id = getIdFromToken(token);
+
+  if (!data.dms[dmId].members.includes(id) && (data.dms[dmId].owner !== id)) {
+    return { error: 'User is not a member of the DM' };
+  }
+
+  const usersArray = [];
+  const membersArray = data.dms[dmId].members;
+  membersArray.push(data.dms[dmId].owner);
+
+  for (const member of membersArray) {
+    const user = createUserObject(member);
+    usersArray.push(user);
+  }
+
   return {
-    name: 'placeholder',
-    members: []
+    name: data.dms[dmId].name,
+    members: usersArray
   };
+}
+
+/**
+ * createUserObject
+ *
+ * Given a valid uId, returns an a user object
+ * containing information from the given uId
+ *
+ * @param { number } uId
+ * @returns { user }
+ */
+function createUserObject(uId: number) {
+  const data = getData();
+  const user = data.users[uId];
+
+  const userObject = {
+    uId: uId,
+    email: user.email,
+    nameFirst: user.nameFirst,
+    nameLast: user.nameLast,
+    handleStr: user.userHandle
+  };
+
+  return userObject;
 }
 
 /**
@@ -262,7 +403,7 @@ function dmDetails(token: string, dmId: number): DmDetails {
  * @param {number} dmId
  * @returns {}
  */
-function dmLeave(token: string, dmId: number): {} {
+function dmLeave(token: string, dmId: number): Record<string, never> {
   return {};
 }
 

@@ -3,9 +3,9 @@ import { echo } from './echo';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
-import { authLoginV1, authRegisterV1 } from './auth';
+import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
 import { clearV1 } from './other';
-import { dmCreate } from './dm';
+import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
 
 // Set up web app
 const app = express();
@@ -40,18 +40,26 @@ process.on('SIGINT', () => {
 
 app.delete('/clear/v1', (req: Request, res: Response) => {
   const returnMessage = clearV1();
-  console.log('Clearing Server Data');
 
-app.post('/auth/login/v2', (req: Request, res: Response) => {
-  res.json();
+  console.log('⭕ Clearing Server Data');
+  res.json(returnMessage);
 });
 
-app.get('/auth/login/v2', (req: Request, res: Response) => {
-  const email = req.query.email as string;
-  const password = req.query.passowrd as string;
+/** /auth/* Routes **/
+
+app.post('/auth/login/v2', (req: Request, res: Response) => {
+  const { email, password } = req.body;
   const returnMessage = authLoginV1(email, password);
 
   console.log('Logging in User with Email:', email);
+  res.json(returnMessage);
+});
+
+app.post('/auth/logout/v1', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const returnMessage = authLogoutV1(token);
+
+  console.log('Logging Out User (Token:', token, ')');
   res.json(returnMessage);
 });
 
@@ -63,10 +71,38 @@ app.post('/auth/register/v2', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
+/** /dm/* Routes **/
+
 app.post('/dm/create/v1', (req: Request, res: Response) => {
   const { token, uIds } = req.body;
   const returnMessage = dmCreate(token, uIds);
 
   console.log('Creating new DM with owner token:', token);
+  res.json(returnMessage);
+});
+
+app.get('/dm/list/v1', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const returnMessage = dmList(token);
+
+  console.log('Getting all DMs with member/owner Token:', token);
+  res.json(returnMessage);
+});
+
+app.delete('/dm/remove/v1', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const dmId = req.query.dmId as string;
+  const returnMessage = dmRemove(token, Number(dmId));
+
+  console.log('Removing DM with Id:', dmId);
+  res.json(returnMessage);
+});
+
+app.get('/dm/details/v1', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const dmId = req.query.dmId as string;
+  const returnMessage = dmDetails(token, Number(dmId));
+
+  console.log('Getting Details of DM Id:', dmId);
   res.json(returnMessage);
 });
