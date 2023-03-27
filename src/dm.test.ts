@@ -8,6 +8,7 @@ import request from 'sync-request';
 import config from './config.json';
 import { testClear } from './other.test';
 import { testAuthRegister } from './auth.test';
+import { testMessageSendDm } from './message';
 
 const port = config.port;
 const url = config.url;
@@ -21,19 +22,6 @@ interface AuthRegisterReturn {
 
 interface DmId {
   dmId: number;
-}
-
-interface Member {
-  uId: number;
-  email: string;
-  nameFirst: string;
-  nameLast: string;
-  handleStr: string;
-}
-
-interface DmDetailsReturn {
-  name: string;
-  members: Member[];
 }
 
 beforeEach(() => {
@@ -221,7 +209,7 @@ describe('/dm/list: Return Testing', () => {
   test('Multiple Dms (Member of 2, Not a Member of 1)', () => {
     const testDm1 = testDmCreate(user1.token, [user2.authUserId]);
     const testDm2 = testDmCreate(user2.token, [user1.authUserId]);
-    const testDm3 = testDmCreate(user2.token, []);
+    testDmCreate(user2.token, []);
     expect(testDmList(user1.token)).toStrictEqual({
       dms: [{
         dmId: testDm1.dmId,
@@ -564,5 +552,206 @@ function testDmMessages(token: string, dmId: number, start: number) {
   );
   return JSON.parse(res.getBody() as string);
 }
+
+describe('/dm/messages: Error Testing', () => {
+  let testUser1: AuthRegisterReturn;
+  beforeEach(() => {
+    testUser1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
+
+  test('Token: Invalid Token', () => {
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmMessages(testUser1.token + '1', testDm.dmId, 0)).toStrictEqual(ERROR);
+  });
+
+  test('DmId: Invalid dmId', () => {
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmMessages(testUser1.token, testDm.dmId + 1, 0)).toStrictEqual(ERROR);
+  });
+
+  test('DmId: User is not in Dm', () => {
+    const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmMessages(testUser2.token, testDm.dmId, 0)).toStrictEqual(ERROR);
+  });
+
+  test('Start: Start is Greater than Messages', () => {
+    const testDm = testDmCreate(testUser1.token, []);
+    expect(testDmMessages(testUser1.token, testDm.dmId, 100)).toStrictEqual(ERROR);
+  });
+});
+
+describe('/dm/messages: Return Testing', () => {
+  let testUser1: AuthRegisterReturn, testUser2: AuthRegisterReturn;
+  let testDm: DmId;
+  beforeEach(() => {
+    testUser1 = testAuthRegister('orangecat@gmail.com', 'ball0fYarn', 'Orange', 'Cat');
+    testUser2 = testAuthRegister('browncat@gmail.com', 'L0vingFish', 'Brown', 'Cat');
+    testDm = testDmCreate(testUser1.token, [testUser2.authUserId]);
+  });
+
+  test('Dm with no Messages', () => {
+    expect(testDmMessages(testUser1.token, testDm.dmId, 0)).toStrictEqual({
+      messages: [],
+      start: 0,
+      finish: -1
+    });
+  });
+
+  test('Dm with Single Message', () => {
+    const testMessage = testMessageSendDm(testUser1.token, testDm.dmId, 'One Message');
+    expect(testDmMessages(testUser1.token, testDm.dmId, 0)).toStrictEqual({
+      messages: [{
+        messageId: testMessage.messageId,
+        uId: testUser1.authUserId,
+        message: 'One Message',
+        timeSent: expect.any(Number)
+      }],
+      start: 0,
+      finish: -1
+    });
+  });
+
+  test('Dm with Multiple Messages', () => {
+    const testMessage1 = testMessageSendDm(testUser1.token, testDm.dmId, 'First Message');
+    const testMessage2 = testMessageSendDm(testUser1.token, testDm.dmId, 'Second Message');
+    const testMessage3 = testMessageSendDm(testUser1.token, testDm.dmId, 'Third Message');
+    expect(testDmMessages(testUser1.token, testDm.dmId, 0)).toStrictEqual({
+      messages: [{
+        messageId: testMessage1.messageId,
+        uId: testUser1.authUserId,
+        message: 'First Message',
+        timeSent: expect.any(Number)
+      }, {
+        messageId: testMessage2.messageId,
+        uId: testUser1.authUserId,
+        message: 'Second Message',
+        timeSent: expect.any(Number)
+      }, {
+        messageId: testMessage3.messageId,
+        uId: testUser1.authUserId,
+        message: 'Third Message',
+        timeSent: expect.any(Number)
+      }],
+      start: 0,
+      finish: -1
+    });
+  });
+
+  test('Dm (75 Messages) Start = 0', () => {
+    for (let i = 0; i < 75; i++) {
+      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
+    }
+
+    const testMessages = testDmMessages(testUser1.token, testDm.dmId, 0);
+    expect(testMessages.start).toStrictEqual(0);
+    expect(testMessages.end).toStrictEqual(50);
+    expect(testMessages.messages.length).toStrictEqual(50);
+    expect(testMessages.messages[49]).toStrictEqual({
+      messageId: 49,
+      uId: testUser1.authUserId,
+      message: '49',
+      timeSent: expect.any(Number)
+    });
+    expect(testMessages.messages[0]).toStrictEqual({
+      messageId: 0,
+      uId: testUser1.authUserId,
+      message: '0',
+      timeSent: expect.any(Number)
+    });
+  });
+
+  test('Dm (75 Messages) Start = 25', () => {
+    for (let i = 0; i < 75; i++) {
+      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
+    }
+
+    const testMessages = testDmMessages(testUser1.token, testDm.dmId, 25);
+    expect(testMessages.start).toStrictEqual(25);
+    expect(testMessages.end).toStrictEqual(75);
+    expect(testMessages.messages.length).toStrictEqual(50);
+    expect(testMessages.messages[49]).toStrictEqual({
+      messageId: 74,
+      uId: testUser1.authUserId,
+      message: '74',
+      timeSent: expect.any(Number)
+    });
+    expect(testMessages.messages[0]).toStrictEqual({
+      messageId: 25,
+      uId: testUser1.authUserId,
+      message: '25',
+      timeSent: expect.any(Number)
+    });
+  });
+
+  test('Dm (75 Messages) Start = 50', () => {
+    for (let i = 0; i < 75; i++) {
+      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
+    }
+
+    const testMessages = testDmMessages(testUser1.token, testDm.dmId, 50);
+    expect(testMessages.start).toStrictEqual(50);
+    expect(testMessages.end).toStrictEqual(-1);
+    expect(testMessages.messages.length).toStrictEqual(25);
+    expect(testMessages.messages[24]).toStrictEqual({
+      messageId: 74,
+      uId: testUser1.authUserId,
+      message: '74',
+      timeSent: expect.any(Number)
+    });
+    expect(testMessages.messages[0]).toStrictEqual({
+      messageId: 50,
+      uId: testUser1.authUserId,
+      message: '50',
+      timeSent: expect.any(Number)
+    });
+  });
+
+  test('Dm (20 Messages) Start = -40', () => {
+    for (let i = 0; i < 20; i++) {
+      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
+    }
+
+    const testMessages = testDmMessages(testUser1.token, testDm.dmId, -40);
+    expect(testMessages.start).toStrictEqual(-40);
+    expect(testMessages.end).toStrictEqual(10);
+    expect(testMessages.messages.length).toStrictEqual(10);
+    expect(testMessages.messages[9]).toStrictEqual({
+      messageId: 9,
+      uId: testUser1.authUserId,
+      message: '9',
+      timeSent: expect.any(Number)
+    });
+    expect(testMessages.messages[0]).toStrictEqual({
+      messageId: 0,
+      uId: testUser1.authUserId,
+      message: '0',
+      timeSent: expect.any(Number)
+    });
+  });
+
+  test('Dm (20 Messages) Start = -20', () => {
+    for (let i = 0; i < 20; i++) {
+      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
+    }
+
+    const testMessages = testDmMessages(testUser1.token, testDm.dmId, -20);
+    expect(testMessages.start).toStrictEqual(-20);
+    expect(testMessages.end).toStrictEqual(-1);
+    expect(testMessages.messages.length).toStrictEqual(20);
+    expect(testMessages.messages[19]).toStrictEqual({
+      messageId: 19,
+      uId: testUser1.authUserId,
+      message: '19',
+      timeSent: expect.any(Number)
+    });
+    expect(testMessages.messages[0]).toStrictEqual({
+      messageId: 0,
+      uId: testUser1.authUserId,
+      message: '0',
+      timeSent: expect.any(Number)
+    });
+  });
+});
 
 export { testDmCreate, testDmList };

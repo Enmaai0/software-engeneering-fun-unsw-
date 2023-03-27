@@ -185,11 +185,11 @@ function getIdFromToken(token: string): number {
 function generateDmName(idArray: number[]): string {
   const data = getData();
 
-  let handleArray = [];
+  const handleArray = [];
   let dmName = '';
 
   for (const id of idArray) {
-    handleArray.push(data.users[id].userHandle)
+    handleArray.push(data.users[id].userHandle);
   }
 
   handleArray.sort();
@@ -287,7 +287,6 @@ function dmRemove(token: string, dmId: number): Record<string, never> | Error {
 
   const data = getData();
   const removerId = getIdFromToken(token);
-  const members = data.dms[dmId].members;
 
   if (!isMember(removerId, dmId)) {
     return { error: 'User is not a member of the DM' };
@@ -328,8 +327,8 @@ function isValidDmId(dmId: number) {
  * Given a userId and dmId, returns whether the user is
  * in the dm.
  *
- * @param {number} uId 
- * @param {number} dmId 
+ * @param {number} uId
+ * @param {number} dmId
  * @returns {boolean}
  */
 function isMember(uId: number, dmId: number): boolean {
@@ -349,8 +348,8 @@ function isMember(uId: number, dmId: number): boolean {
  * Given a userId and dmId, returns whether the user is
  * the owner of the Dm.
  *
- * @param {number} uId 
- * @param {number} dmId 
+ * @param {number} uId
+ * @param {number} dmId
  * @returns {boolean}
  */
 function isOwner(uId: number, dmId: number): boolean {
@@ -384,7 +383,6 @@ function dmDetails(token: string, dmId: number): DmDetails | Error {
 
   const dm = getData().dms[dmId];
   const id = getIdFromToken(token);
-  const members = dm.members;
 
   if (!isMember(id, dmId)) {
     return { error: 'User is not a member of the DM' };
@@ -460,7 +458,7 @@ function dmLeave(token: string, dmId: number): Record<string, never> | Error {
   const dmMembers = data.dms[dmId].members;
   const idIndex = dmMembers.indexOf(id);
   if (idIndex > -1) {
-    const newDmMembers = dmMembers.splice(idIndex, 1);
+    dmMembers.splice(idIndex, 1);
   }
 
   setData(data);
