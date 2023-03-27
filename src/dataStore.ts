@@ -31,7 +31,6 @@ interface User {
   userHandle: string,
   permissionId: number,
   tokens: string[],
-  tokenCounter: number,
 }
 
 interface Channel {
