@@ -91,7 +91,8 @@ app.get('/dm/list/v1', (req: Request, res: Response) => {
 
 app.delete('/dm/remove/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
-  const dmId = req.query.dmId as string;
+  const strDmId = req.query.dmId as string;
+  const dmId = Number(strDmId);
   const returnMessage = dmRemove(token, Number(dmId));
 
   console.log('Removing DM with Id:', dmId);
@@ -100,9 +101,18 @@ app.delete('/dm/remove/v1', (req: Request, res: Response) => {
 
 app.get('/dm/details/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
-  const dmId = req.query.dmId as string;
+  const strDmId = req.query.dmId as string;
+  const dmId = Number(strDmId);
   const returnMessage = dmDetails(token, Number(dmId));
 
   console.log('Getting Details of DM Id:', dmId);
+  res.json(returnMessage);
+});
+
+app.post('/dm/leave/v1', (req: Request, res: Response) => {
+  const { token, dmId } = req.body;
+  const returnMessage = dmLeave(token, dmId);
+
+  console.log('User with Token:', token, 'Leaving Dm:', dmId);
   res.json(returnMessage);
 });

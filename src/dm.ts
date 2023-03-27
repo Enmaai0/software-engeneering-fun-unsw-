@@ -86,15 +86,15 @@ function dmCreate(token: string, uIds: number[]): DmId | Error {
 
   const dmId = data.dms.length as number;
   const ownerId = getIdFromToken(token);
-  const memberIdandOwnerId = uIds;
-  memberIdandOwnerId.push(ownerId);
-  const dmName = generateDmName(memberIdandOwnerId);
+  const memberIds = uIds;
+  memberIds.push(ownerId);
+  const dmName = generateDmName(memberIds);
 
   const dmObject: DmDataStoreObject = {
     dmId: dmId,
     name: dmName,
     owner: ownerId,
-    members: uIds,
+    members: memberIds,
     messages: [],
   };
 
@@ -185,24 +185,21 @@ function getIdFromToken(token: string): number {
 function generateDmName(idArray: number[]): string {
   const data = getData();
 
-  const userHandleArray = [];
-
-  for (const user of data.users) {
-    if (idArray.includes(user.uId)) {
-      userHandleArray.push(user.userHandle);
-    }
-  }
-
-  // Sorts the array of all handles alphabetically (see .sort)
-  userHandleArray.sort();
-
+  let handleArray = [];
   let dmName = '';
-  for (const handle of userHandleArray) {
-    dmName.concat(handle + ', ');
+
+  for (const id of idArray) {
+    handleArray.push(data.users[id].userHandle)
   }
 
-  // Removes the last uneeded ', ' from the end of the name
-  dmName = dmName.slice(0, -2);
+  handleArray.sort();
+
+  for (const handle of handleArray) {
+    dmName += handle;
+    dmName += ', ';
+  }
+
+  dmName = dmName.substring(0, dmName.length - 2);
 
   return dmName;
 }
@@ -230,9 +227,6 @@ function dmList(token: string): Dms | Error {
       if (id === uId) {
         dmArray.push(dm.dmId);
       }
-    }
-    if (uId === dm.owner) {
-      dmArray.push(dm.dmId);
     }
   }
 
@@ -263,7 +257,9 @@ function createDmList(dmIdArray: number[]): DmObject[] {
       dms.push(dmObject);
     }
   }
-  return dms;
+  const sortedDms = dms.sort();
+
+  return sortedDms;
 }
 
 /**
@@ -291,17 +287,16 @@ function dmRemove(token: string, dmId: number): Record<string, never> | Error {
 
   const data = getData();
   const removerId = getIdFromToken(token);
+  const members = data.dms[dmId].members;
 
-  if (!data.dms[dmId].members.includes(removerId)) {
+  if (!isMember(removerId, dmId)) {
     return { error: 'User is not a member of the DM' };
   }
 
-  if (removerId !== data.dms[dmId].owner) {
-    return { error: 'User is not the original DM creator' };
+  if (!isOwner(removerId, dmId)) {
+    return { error: 'User is not the owner of the DM' };
   }
 
-  // Removing all members and owner from the dm
-  data.dms[dmId].owner = -123456789;
   data.dms[dmId].members = [];
 
   setData(data);
@@ -328,6 +323,47 @@ function isValidDmId(dmId: number) {
 }
 
 /**
+ * isMember
+ *
+ * Given a userId and dmId, returns whether the user is
+ * in the dm.
+ *
+ * @param {number} uId 
+ * @param {number} dmId 
+ * @returns {boolean}
+ */
+function isMember(uId: number, dmId: number): boolean {
+  const dm = getData().dms[dmId];
+
+  for (const member of dm.members) {
+    if (member === uId) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * isOwner
+ *
+ * Given a userId and dmId, returns whether the user is
+ * the owner of the Dm.
+ *
+ * @param {number} uId 
+ * @param {number} dmId 
+ * @returns {boolean}
+ */
+function isOwner(uId: number, dmId: number): boolean {
+  const dm = getData().dms[dmId];
+
+  if (dm.owner === uId) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * dmDetails
  *
  * Given a DM with ID dmId that the authorised user is a member of,
@@ -346,24 +382,26 @@ function dmDetails(token: string, dmId: number): DmDetails | Error {
     return { error: 'Invalid dmId' };
   }
 
-  const data = getData();
+  const dm = getData().dms[dmId];
   const id = getIdFromToken(token);
+  const members = dm.members;
 
-  if (!data.dms[dmId].members.includes(id) && (data.dms[dmId].owner !== id)) {
+  if (!isMember(id, dmId)) {
     return { error: 'User is not a member of the DM' };
   }
 
   const usersArray = [];
-  const membersArray = data.dms[dmId].members;
-  membersArray.push(data.dms[dmId].owner);
+  const sortedDmMembers = dm.members.sort();
 
-  for (const member of membersArray) {
+  for (const member of sortedDmMembers) {
     const user = createUserObject(member);
     usersArray.push(user);
   }
 
+  const dmName = dm.name;
+
   return {
-    name: data.dms[dmId].name,
+    name: dmName,
     members: usersArray
   };
 }
@@ -403,7 +441,30 @@ function createUserObject(uId: number) {
  * @param {number} dmId
  * @returns {}
  */
-function dmLeave(token: string, dmId: number): Record<string, never> {
+function dmLeave(token: string, dmId: number): Record<string, never> | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  if (!isValidDmId(dmId)) {
+    return { error: 'Invalid dmId' };
+  }
+
+  const data = getData();
+  const id = getIdFromToken(token);
+
+  if (!data.dms[dmId].members.includes(id)) {
+    return { error: 'User is not a member of the DM' };
+  }
+
+  const dmMembers = data.dms[dmId].members;
+  const idIndex = dmMembers.indexOf(id);
+  if (idIndex > -1) {
+    const newDmMembers = dmMembers.splice(idIndex, 1);
+  }
+
+  setData(data);
+
   return {};
 }
 
