@@ -1,11 +1,10 @@
 /**
- * 'data' stores the user and channel data under
- * 'users: []' and 'channels: []' respectively.
+ * 'data' stores the user, channel and dm data under
+ * 'users: []', 'channels: []', and 'dms: []' respectively.
  *
- * Data is stored within 'data' through an array
- * of objects. The objects contains details about
- * the user/channel and appear under their
- * respective area
+ * Data is stored within 'data' through an array of objects.
+ * The objects contains details about the user, channel, or dm
+ * and appear under their respective area.
  */
 
 interface Users {
@@ -56,6 +55,9 @@ interface Data {
   dms: Dm[]
 }
 
+const FILE = 'src/persistenceDataStore.json';
+import fs from 'fs';
+
 // Initial state of all data for the application
 let data: Data = {
   users: [],
@@ -63,31 +65,62 @@ let data: Data = {
   dms: []
 };
 
-/*
-Example usage
-    let store = getData()
-    console.log(store) # Prints { 'names': ['Hayden', 'Tam', 'Rani', 'Giuliana', 'Rando'] }
-
-    names = store.names
-
-    names.pop()
-    names.push('Jake')
-
-    console.log(store) # Prints { 'names': ['Hayden', 'Tam', 'Rani', 'Giuliana', 'Jake'] }
-    setData(store)
-*/
-
-// Use get() to access the data
+/**
+ * Use getData() to access the data
+ * Any time getData is called the persistent dataStore is updated.
+ */
 function getData(): Data {
   return data;
 }
 
-// Use set(newData) to pass in the entire data object, with modifications made
-// - Only needs to be used if you replace the data store entirely
-// - Javascript uses pass-by-reference for objects... read more here: https://stackoverflow.com/questions/13104494/does-javascript-pass-by-reference
-// Hint: this function might be useful to edit in iteration 2
+/**
+ * Replaces the non persistence dataStore to the dataStore being
+ * inputted.
+ */
 function setData(newData: Data) {
   data = newData;
 }
 
-export { getData, setData };
+/**
+ * When called this function saves the data contained within the non persistence
+ * dataStore by writing to the persistence dataStore.
+ */
+function saveData() {
+  writeData(data);
+}
+
+/**
+ * When called this function is called updates the non-persistent dataStore
+ * with the one contained within the persistence file.
+ */
+function grabData() {
+  data = readData();
+}
+
+/**
+ * When called reads the file in which ther persistence data is
+ * being held and updates the non-persistant dataStore with the
+ * new data.
+ *
+ * If the file being read is empty (that is no data has be written)
+ * to it), it returns the default dataStore.
+ */
+function readData(): Data {
+  const jsonData = fs.readFileSync(FILE, { flag: 'r' });
+  const persData = JSON.parse(String(jsonData));
+  if (persData.length === 0) {
+    return data;
+  }
+  return persData;
+}
+
+/**
+ * When called writes to the persistent dataStore with the new
+ * updated dataStore contained within the non-persistant dataStore.
+ */
+function writeData(data: Data) {
+  const persData = JSON.stringify(data);
+  fs.writeFileSync(FILE, persData, { flag: 'w' });
+}
+
+export { getData, setData, saveData, grabData };

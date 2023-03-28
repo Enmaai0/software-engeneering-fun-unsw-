@@ -10,6 +10,7 @@ import config from './config.json';
 import { testAuthRegister } from './auth.test';
 import { testUsersAll } from './users.test';
 import { testChannelsCreate, testChannelsList } from './channels.test';
+import { testDmCreate, testDmList } from './dm.test';
 
 const port = config.port;
 const url = config.url;
@@ -50,6 +51,17 @@ describe('/clear/v1 Testing', () => {
     testClear();
     const testUser = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
     expect(testChannelsList(testUser.token)).toStrictEqual({ channels: [] });
+  });
+
+  test('Clear Dms', () => {
+    const dmCreator = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
+    const dmMember = testAuthRegister('bartFarts69@gmail.com', 'HomerStinks', 'Bart', 'Simpson');
+    testDmCreate(dmCreator.token, []);
+    testDmCreate(dmCreator.token, [dmMember.authUserId]);
+    testDmCreate(dmCreator.token, [dmMember.authUserId]);
+    testClear();
+    const testUser = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
+    expect(testDmList(testUser.token)).toStrictEqual({ dms: [] });
   });
 });
 
