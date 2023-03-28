@@ -6,6 +6,7 @@ import cors from 'cors';
 import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
 import { clearV1 } from './other';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
+import { saveData, setData } from './dataStore';
 
 // Set up web app
 const app = express();
@@ -27,7 +28,6 @@ app.get('/echo', (req: Request, res: Response, next) => {
 
 // start server
 const server = app.listen(PORT, HOST, () => {
-  // DO NOT CHANGE THIS LINE
   console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
 });
 
@@ -40,6 +40,7 @@ process.on('SIGINT', () => {
 
 app.delete('/clear/v1', (req: Request, res: Response) => {
   const returnMessage = clearV1();
+  saveData();
 
   console.log('⭕ Clearing Server Data');
   res.json(returnMessage);
@@ -50,6 +51,7 @@ app.delete('/clear/v1', (req: Request, res: Response) => {
 app.post('/auth/login/v2', (req: Request, res: Response) => {
   const { email, password } = req.body;
   const returnMessage = authLoginV1(email, password);
+  saveData();
 
   console.log('Logging in User with Email:', email);
   res.json(returnMessage);
@@ -58,6 +60,7 @@ app.post('/auth/login/v2', (req: Request, res: Response) => {
 app.post('/auth/logout/v1', (req: Request, res: Response) => {
   const { token } = req.body;
   const returnMessage = authLogoutV1(token);
+  saveData();
 
   console.log('Logging Out User (Token:', token, ')');
   res.json(returnMessage);
@@ -66,6 +69,7 @@ app.post('/auth/logout/v1', (req: Request, res: Response) => {
 app.post('/auth/register/v2', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
   const returnMessage = authRegisterV1(email, password, nameFirst, nameLast);
+  saveData();
 
   console.log('Registering New User:', nameFirst, nameLast, 'with email:', email);
   res.json(returnMessage);
@@ -76,6 +80,7 @@ app.post('/auth/register/v2', (req: Request, res: Response) => {
 app.post('/dm/create/v1', (req: Request, res: Response) => {
   const { token, uIds } = req.body;
   const returnMessage = dmCreate(token, uIds);
+  saveData();
 
   console.log('Creating new DM with owner token:', token);
   res.json(returnMessage);
@@ -84,6 +89,7 @@ app.post('/dm/create/v1', (req: Request, res: Response) => {
 app.get('/dm/list/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const returnMessage = dmList(token);
+  saveData();
 
   console.log('Getting all DMs with member/owner Token:', token);
   res.json(returnMessage);
@@ -93,6 +99,7 @@ app.delete('/dm/remove/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const dmId = req.query.dmId as string;
   const returnMessage = dmRemove(token, Number(dmId));
+  saveData();
 
   console.log('Removing DM with Id:', dmId);
   res.json(returnMessage);
@@ -102,6 +109,7 @@ app.get('/dm/details/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const dmId = req.query.dmId as string;
   const returnMessage = dmDetails(token, Number(dmId));
+  saveData();
 
   console.log('Getting Details of DM Id:', dmId);
   res.json(returnMessage);
