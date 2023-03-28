@@ -212,6 +212,43 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   };
 }
 
+
+/**
+  * channelLeaveV1
+  * 
+  * Takes a token and channelId, find the user via the token
+  * and delete the user in this channel.
+  * 
+  * @param token 
+  * @param channelId 
+  * @returns { }
+  */
+function channelLeaveV1(token: string, channelId: number): Error | Record<string, never> {
+  if (!isChannelId(channelId)) {
+    return { error: 'Invalid channelId (No channel with that id)' };
+  }
+
+  if (!isValidToken(token)) {
+    return { error: 'Invalid authUserId (No user with that id)' };
+  }
+
+  if (!isMember(token, channelId)) {
+    return { error: 'Invalid authUserId (User does not have permission)' };
+  }
+
+  let channel = getData().channels[channelId];
+  const id = findUId(token);
+  let index;
+  for (index = 0; index < channel.allMembers.length; index++) {
+    if (channel.allMembers[index].uId === id) {
+      break;
+    }
+  }
+  channel.allMembers.splice(index, 1);
+
+  return { }
+}
+
 /**
  * isUserId
  *
