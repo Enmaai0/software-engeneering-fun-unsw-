@@ -6,7 +6,7 @@ import cors from 'cors';
 import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
 import { clearV1 } from './other';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
-import { saveData, setData } from './dataStore';
+import { saveData, grabData } from './dataStore';
 
 // Set up web app
 const app = express();
@@ -28,6 +28,7 @@ app.get('/echo', (req: Request, res: Response, next) => {
 
 // start server
 const server = app.listen(PORT, HOST, () => {
+  grabData();
   console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
 });
 

@@ -2,8 +2,8 @@
  * 'data' stores the user, channel and dm data under
  * 'users: []', 'channels: []', and 'dms: []' respectively.
  *
- * Data is stored within 'data' through an array of objects. 
- * The objects contains details about the user, channel, or dm 
+ * Data is stored within 'data' through an array of objects.
+ * The objects contains details about the user, channel, or dm
  * and appear under their respective area.
  */
 
@@ -69,7 +69,7 @@ let data: Data = {
 /**
  * Use getData() to access the data
  * Any time getData is called the persistent dataStore is updated.
- */ 
+ */
 function getData(): Data {
   return data;
 }
@@ -77,7 +77,7 @@ function getData(): Data {
 /**
  * Replaces the non persistence dataStore to the dataStore being
  * inputted.
- */ 
+ */
 function setData(newData: Data) {
   data = newData;
 }
@@ -102,11 +102,11 @@ function grabData() {
  * When called reads the file in which ther persistence data is
  * being held and updates the non-persistant dataStore with the
  * new data.
- * 
+ *
  * If the file being read is empty (that is no data has be written)
  * to it), it returns the default dataStore.
  */
-function readData(): Data { 
+function readData(): Data {
   const jsonData = fs.readFileSync(FILE, { flag: 'r' });
   const persData = JSON.parse(String(jsonData));
   if (persData.length === 0) {
