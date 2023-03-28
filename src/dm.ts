@@ -57,6 +57,9 @@ interface DmMessages {
   end: number;
 }
 
+const NO_MORE_MESSAGES = -1;
+const FIFTY_MESSAGES = 50;
+
 /**
  * dmCreate
  *
@@ -185,11 +188,11 @@ function getIdFromToken(token: string): number {
 function generateDmName(idArray: number[]): string {
   const data = getData();
 
-  let handleArray = [];
+  const handleArray = [];
   let dmName = '';
 
   for (const id of idArray) {
-    handleArray.push(data.users[id].userHandle)
+    handleArray.push(data.users[id].userHandle);
   }
 
   handleArray.sort();
@@ -287,7 +290,6 @@ function dmRemove(token: string, dmId: number): Record<string, never> | Error {
 
   const data = getData();
   const removerId = getIdFromToken(token);
-  const members = data.dms[dmId].members;
 
   if (!isMember(removerId, dmId)) {
     return { error: 'User is not a member of the DM' };
@@ -328,8 +330,8 @@ function isValidDmId(dmId: number) {
  * Given a userId and dmId, returns whether the user is
  * in the dm.
  *
- * @param {number} uId 
- * @param {number} dmId 
+ * @param {number} uId
+ * @param {number} dmId
  * @returns {boolean}
  */
 function isMember(uId: number, dmId: number): boolean {
@@ -349,8 +351,8 @@ function isMember(uId: number, dmId: number): boolean {
  * Given a userId and dmId, returns whether the user is
  * the owner of the Dm.
  *
- * @param {number} uId 
- * @param {number} dmId 
+ * @param {number} uId
+ * @param {number} dmId
  * @returns {boolean}
  */
 function isOwner(uId: number, dmId: number): boolean {
@@ -384,7 +386,6 @@ function dmDetails(token: string, dmId: number): DmDetails | Error {
 
   const dm = getData().dms[dmId];
   const id = getIdFromToken(token);
-  const members = dm.members;
 
   if (!isMember(id, dmId)) {
     return { error: 'User is not a member of the DM' };
@@ -460,7 +461,7 @@ function dmLeave(token: string, dmId: number): Record<string, never> | Error {
   const dmMembers = data.dms[dmId].members;
   const idIndex = dmMembers.indexOf(id);
   if (idIndex > -1) {
-    const newDmMembers = dmMembers.splice(idIndex, 1);
+    dmMembers.splice(idIndex, 1);
   }
 
   setData(data);
@@ -479,11 +480,43 @@ function dmLeave(token: string, dmId: number): Record<string, never> | Error {
  * @param {number} start
  * @returns {{ DmMessages }}
  */
-function dmMessages(token: string, dmId: number, start: number): DmMessages {
+function dmMessages(token: string, dmId: number, start: number): DmMessages | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  if (!isValidDmId(dmId)) {
+    return { error: 'Invalid dmId' };
+  }
+
+  const data = getData();
+  const id = getIdFromToken(token);
+
+  if (!data.dms[dmId].members.includes(id)) {
+    return { error: 'User is not a member of the DM' };
+  }
+
+  if (start > data.dms[dmId].messages.length) {
+    return { error: 'Invalid Start (Start is greater than total messages)' };
+  }
+
+  const messageArray = data.dms[dmId].messages;
+  const returnMessages: Message[] = [];
+
+  const returnEnd = (start + FIFTY_MESSAGES > messageArray.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
+
+  // Stops the loop from iterating througn negative array indexes
+  const realStart = (start < 0) ? 0 : start;
+  const realEnd = start + FIFTY_MESSAGES;
+
+  for (let i = realStart; i < realEnd; i++) {
+    returnMessages.push(messageArray[i]);
+  }
+
   return {
-    messages: [],
-    start: 0,
-    end: 0
+    messages: returnMessages,
+    start: start,
+    end: returnEnd,
   };
 }
 
