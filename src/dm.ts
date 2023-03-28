@@ -57,6 +57,9 @@ interface DmMessages {
   end: number;
 }
 
+const NO_MORE_MESSAGES = -1;
+const FIFTY_MESSAGES = 50;
+
 /**
  * dmCreate
  *
@@ -477,11 +480,43 @@ function dmLeave(token: string, dmId: number): Record<string, never> | Error {
  * @param {number} start
  * @returns {{ DmMessages }}
  */
-function dmMessages(token: string, dmId: number, start: number): DmMessages {
+function dmMessages(token: string, dmId: number, start: number): DmMessages | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
+  }
+
+  if (!isValidDmId(dmId)) {
+    return { error: 'Invalid dmId' };
+  }
+
+  const data = getData();
+  const id = getIdFromToken(token);
+
+  if (!data.dms[dmId].members.includes(id)) {
+    return { error: 'User is not a member of the DM' };
+  }
+
+  if (start > data.dms[dmId].messages.length) {
+    return { error: 'Invalid Start (Start is greater than total messages)' };
+  }
+
+  const messageArray = data.dms[dmId].messages;
+  const returnMessages: Message[] = [];
+
+  const returnEnd = (start + FIFTY_MESSAGES > messageArray.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
+
+  // Stops the loop from iterating througn negative array indexes
+  const realStart = (start < 0) ? 0 : start;
+  const realEnd = start + FIFTY_MESSAGES;
+
+  for (let i = realStart; i < realEnd; i++) {
+    returnMessages.push(messageArray[i]);
+  }
+
   return {
-    messages: [],
-    start: 0,
-    end: 0
+    messages: returnMessages,
+    start: start,
+    end: returnEnd,
   };
 }
 
