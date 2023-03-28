@@ -4,8 +4,6 @@ import { getData, setData } from './dataStore';
  * Sends a given message to a given channel
  *
  * @param {string} token - user session
-
-
  * @param {number} channelId - channel Id number
  * @param {string} message - message to comment
  * @returns {{messageId: number}}  - Id number for sent message
@@ -15,35 +13,39 @@ export function messageSendV1(token: string, channelId: number, message: string)
   const data = getData();
 
   // Checks the token is valid and gives uId else returns error
-
-
   const authUserId = findTokenId(token);
-  if (authUserId === false) return { error: 'token is not valid' };
+  if (authUserId === false) {
+    return { error: 'token is not valid' };
+  }
 
   // Check whether the channelId is valid
   const channelInvalid = checkChannelId(channelId);
-  if (channelInvalid !== true) return channelInvalid;
+  if (channelInvalid !== true) {
+    return channelInvalid;
+  }
 
   // Check valid message length
-
-
-  if (message.length < 1 || message.length > 1000) return { error: 'invalid message length' };
+  if (message.length < 1 || message.length > 1000) {
+    return { error: 'invalid message length' };
+  }
 
   // Check whether a user is in the channel
   const userEnrolled = checkEnrolled(authUserId, channelId);
-  if (userEnrolled === false) return { error: 'authUser is not a member of this channel' };
+  if (userEnrolled === false) {
+    return { error: 'authUser is not a member of this channel' };
+  }
 
   let i = 0;
-
   for (i = 0; i < data.channels.length; i++) {
-    if (data.channels[i].channelId === channelId) break;
+    if (data.channels[i].channelId === channelId) {
+      break;
+    }
   }
 
   data.messageCountId++;
   data.channels[i].messages.unshift({
     message: message,
     uId: authUserId,
-
     messageId: data.messageCountId,
     timeSent: Math.floor(Date.now() / 1000),
   });
@@ -52,7 +54,6 @@ export function messageSendV1(token: string, channelId: number, message: string)
   return {
     messageId: data.messageCountId,
   };
-
 }
 
 /**
@@ -61,36 +62,41 @@ export function messageSendV1(token: string, channelId: number, message: string)
  * @param {string} token - user session
  * @param {number} dmId - Id of dm to send message to
  * @param {string} message - message to send
-
  * @returns {{messageId: number}} - Id number for sent message
  * @returns {{error: string}} - any invalid input
  */
 export function messageSendDmV1(token: string, dmId: number, message: string) {
   const data = getData();
 
-
   // Checks the token is valid and gives uId else returns error
-
   const authUserId = findTokenId(token);
-  if (authUserId === false) return { error: 'token is not valid' };
+  if (authUserId === false) {
+    return { error: 'token is not valid' };
+  }
 
   // Check whether the dmId is valid
   const dmInvalid = checkDmId(dmId);
-  if (dmInvalid !== true) return dmInvalid;
-
+  if (dmInvalid !== true) {
+    return dmInvalid;
+  }
 
   // Check valid message length
-  if (message.length < 1 || message.length > 1000) return { error: 'invalid message length' };
+  if (message.length < 1 || message.length > 1000) {
+    return { error: 'invalid message length' };
+  }
 
   // Check whether a user is in the channel
-   const userEnrolled = checkEnrolledDm(authUserId, dmId);
-  if (userEnrolled === false) return { error: 'authUser is not a member of this channel' };
+  const userEnrolled = checkEnrolledDm(authUserId, dmId);
+  if (userEnrolled === false) {
+    return { error: 'authUser is not a member of this channel' };
+  }
 
   let i = 0;
   for (i = 0; i < data.dms.length; i++) {
-    if (data.dms[i].dmId === dmId) break;
+    if (data.dms[i].dmId === dmId) {
+      break;
+    }
   }
-
 
   data.messageCountId++;
   data.dms[i].messages.unshift({
@@ -99,7 +105,6 @@ export function messageSendDmV1(token: string, dmId: number, message: string) {
     messageId: data.messageCountId,
     timeSent: Math.floor(Date.now() / 1000),
   });
-
 
   setData(data);
   return {
@@ -111,17 +116,15 @@ export function messageSendDmV1(token: string, dmId: number, message: string) {
  * Edits given message
  *
  * @param {string} token - user session
-
  * @param {number} messageId - Id of message to be edited
  * @param {string} message - new edit of existing message
- * @returns {{}}
+ * @returns {{}} - an empty object
  * @returns {{error: string}} - any invalid input
  */
 export function messageEditV1(token: string, messageId: number, message: string) {
   const data = getData();
 
   // Checks the token is valid and gives uId else returns error
-
   const authUserId = findTokenId(token);
   if (authUserId === false) return { error: 'token is not valid' };
 
@@ -132,7 +135,6 @@ export function messageEditV1(token: string, messageId: number, message: string)
   // Check valid message length
   if (message.length > 1000) return { error: 'invalid message length' };
 
-
   // Check whether a user is in the channel
   if (messageValid.uId !== authUserId) {
     const perms = checkPermissions(authUserId, messageValid.routeId, messageValid.route);
@@ -140,7 +142,6 @@ export function messageEditV1(token: string, messageId: number, message: string)
   }
 
   // Remove message if the edit is an empty string
-
   if (message.length < 1) return messageRemoveV1(token, messageId);
 
   // Different path if message is a dm or channel
@@ -149,7 +150,6 @@ export function messageEditV1(token: string, messageId: number, message: string)
   } else if (messageValid.route === 'dms') {
     data.dms[messageValid.index1].messages[messageValid.index2].message = message;
   }
-
 
   setData(data);
   return {};
@@ -192,7 +192,6 @@ export function messageRemoveV1(token: string, messageId: any) {
     data.dms[messageValid.index1].messages.splice(messageValid.index2, 1);
   }
 
- 
   setData(data);
   return {};
 }
@@ -209,30 +208,30 @@ export function findTokenId(token: string) {
     const data = getData();
     for (const user of data.users) {
         for (const session of user.tokenSessions) {
-    if (token === session) return user.uId;
-    }
-    }
+            if (token === session) return user.uId;
+        }
+            }
     return false;
 }
 
 /**
-* Checks whether the channelId exists and is valid
-*
-* @param {number} channelId
-* @returns {boolean}
-*/
+ * Checks whether the channelId exists and is valid
+ *
+ * @param {number} channelId
+ * @returns {boolean}
+ */
 export function checkChannelId(channelId: number): boolean {
-    let inBank = false;
-    const data = getData();
-    for (let i = 0; i < data.channels.length; i++) {
+  let inBank = false;
+  const data = getData();
+  for (let i = 0; i < data.channels.length; i++) {
     if (data.channels[i].channelId === channelId && data.channels[i].channelId !== undefined) {
-    inBank = true;
-    break;
-        }
-    }   
-    if (inBank === false) return false;
-    return true;
+      inBank = true;
+      break;
     }
+  }   
+  if (inBank === false) return false;
+  return true;
+}
 
 /**
 * Checks if the authUser is a member of the channel with ID channelId
@@ -280,17 +279,19 @@ export function checkDmId(dmId: number) {
 }
 
 /**
- * Checks if user is in a given dm
+ * Checks if user is in a given DM
  *
  * @param {number} authUserId
  * @param {number} dmId
- * @returns {boolean} - if user is/isn't in dm
+ * @returns {boolean} - true if user is in DM, false otherwise
  */
-export function checkEnrolledDm(authUserId: number, dmId: number) {
+export function checkEnrolledDm(authUserId: number, dmId: number): boolean {
   const data = getData();
   let i = 0;
   for (i = 0; i < data.dms.length; i++) {
-    if (data.dms[i].dmId === dmId) break;
+    if (data.dms[i].dmId === dmId) {
+      break;
+    }
   }
 
   for (let j = 0; j < data.dms[i].members.length; j++) {
@@ -303,25 +304,25 @@ export function checkEnrolledDm(authUserId: number, dmId: number) {
 }
 
 /**
- * Check if given messageId exists
+ * Check if given message ID exists
  *
  * @param {number} messageId
  * @returns {
- *      route: string,
- *  index1: number,
- *  index2: number,
- *  uId: number,
- *  routeId: number,
- * } - if messageId is found
- * @returns {{route: 'empty'}} - if messageId not found
+ *    route: string,
+ *    index1: number,
+ *    index2: number,
+ *    uId: number,
+ *    routeId: number,
+ * } - if message ID is found
+ * @returns {{route: 'empty'}} - if message ID not found
  */
-export function checkMessageId(messageId: number) {
+export function checkMessageId(messageId: number): { route: string, index1?: number, index2?: number, uId?: number, routeId?: number } | { route: 'empty' } {
   const data = getData();
   for (let i = 0; i < data.channels.length; i++) {
     for (let j = 0; j < data.channels[i].messages.length; j++) {
       if (data.channels[i].messages[j].messageId === messageId) {
         return {
-              route: 'channel',
+          route: 'channel',
           index1: i,
           index2: j,
           uId: data.channels[i].messages[j].uId,
@@ -342,7 +343,7 @@ export function checkMessageId(messageId: number) {
           routeId: data.dms[i].dmId,
         };
       }
-    }   
+    }
   }
 
   return { route: 'empty' };
@@ -352,17 +353,20 @@ export function checkMessageId(messageId: number) {
  * Checks the permissions of the user in a channel/dm/global
  *
  * @param {number} uId
-  * @param {number} routeId
+ * @param {number} routeId
  * @param {string} route
  * @returns {boolean} - whether user is a global owner or owner of a channel/dm
  */
 export function checkPermissions(uId, routeId, route) {
-  const     data = getData();
+  const data = getData();
+
   if (route === 'channel') {
     for (const channel of data.channels) {
       if (channel.channelId === routeId) {
         for (const member of channel.allMembers) {
-      if (member.uId === uId) return member.isOwner;
+          if (member.uId === uId) {
+            return member.isOwner;
+          }
         }
       }
     }
@@ -370,14 +374,19 @@ export function checkPermissions(uId, routeId, route) {
     for (const dm of data.dms) {
       if (dm.dmId === routeId) {
         for (const member of dm.members) {
-          if (member.uId === uId) return member.isOwner;
-    }
+          if (member.uId === uId) {
+            return member.isOwner;
+          }
+        }
       }
     }
   }
 
   for (const user of data.users) {
-    if (user.uId === uId) return user.isGlobalOwner;
+    if (user.uId === uId) {
+      return user.isGlobalOwner;
+    }
   }
-}
 
+  return false;
+}
