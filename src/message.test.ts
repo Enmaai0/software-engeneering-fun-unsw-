@@ -1,44 +1,37 @@
 import request from 'sync-request';
-
 import { port, url } from './config.json';
-const SERVER_URL = `${url}:${port}`;
 
+const SERVER_URL = `${url}:${port}`;
 const OK = 200;
 
 const callMessageSend = (token: string, channelId: number, message: string) => {
-  const res = request(
-    'POST',
-    SERVER_URL + '/message/send/v1',
-    {
-      json: {
-        token: token,
-        channelId: channelId,
-        message: message,
-      }
-    }
-  );
+  const res = request('POST', SERVER_URL + '/message/send/v1', {
+    json: {
+      token: token,
+      channelId: channelId,
+      message: message,
+    },
+  });
+
   return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
+    ret: JSON.parse(res.getBody('utf8')),
+    status: res.statusCode,
   };
 };
+
 // Had this linting error, we had it previously on multiple lines but wouldn't let us pass the linting tests
 // 27:3  error  Multiline support is limited to browsers supporting ES5 only  no-multi-str
-const ONE_THOUSAND_CHARS = (
-  'The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex nymphs. Waltz, bad nymph, for quick jigs vex!  Fox nymphs grab quick-jived waltz. Brick quiz whangs jumpy veldt fox. Bright vixens jump; dozy fowl quack. Quick wafting zephyrs vex bold Jim. Quick zephyrs blow, vexing daft Jim. Sex-charged fop blew my junk TV quiz. How quickly daft jumping zebras vex. Two driven jocks help fax my big quiz. Quick, Baz, get my woven flax jodhpurs! "Now fax quiz Jack!" my brave ghost pled. Five quacking zephyrs jolt my wax bed. Flummoxed by job, kvetching W. zaps Iraq. Cozy sphinx waves quart jug of bad milk. A very bad quack might jinx zippy fowls. Few quips galvanized the mock jury box. Quick brown dogs jump over the lazy fox. The jay, pig, fox, zebra, and my wolves quack! Blowzy red vixens fight for a quick jump. Joaquin Phoenix was gazed by MTV for luck. A wizards job is to vex chumps quickly in fog. Watch "Jeopardy!", Alex Trebeks fun TV quiz game. Woven silk pyjamas exchanged for blue quartz.'
-);
-
+// random 100 characters I asked gpt to write.
+const ONE_THOUSAND_CHARS =
+"As I sit here typing this passage, I can't help but feel a sense of nostalgia wash over me. It's been a long time since I've written something with exactly 1000 characters. In fact, it's been so long that I'm not even sure what to write about. Should I write about the weather? It's sunny outside, with a chance of rain later in the day. Or maybe I should write about my day so far. I woke up early, had breakfast, and went for a walk around the park. It was nice, but nothing out of the ordinary. Perhaps I should write about something more meaningful, like the state of the world. There's so much going on right now, with politics, the environment, and social issues all vying for attention. It can be overwhelming at times, and it's hard to know where to start. But maybe the best thing to do is simply write from my heart, without any particular topic in mind. To let the words flow freely, without worrying about their length or content. To express myself in a way that feels authentic and true."
 beforeEach(() => {
-  request(
-    'DELETE',
-    SERVER_URL + '/clear/v1',
-    { qs: {} }
-  );
+  request('DELETE', SERVER_URL + '/clear/v1', { qs: {} });
 });
+
 
 describe('tests for message/send/v1', () => {
   test('success', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const result = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     expect(result.status).toBe(OK);
@@ -46,7 +39,7 @@ describe('tests for message/send/v1', () => {
   });
 
   test('invalid channelId', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const result = callMessageSend(newId.ret.token, channel.ret.channelId + 1, 'This message is valid');
     expect(result.status).toBe(OK);
@@ -54,7 +47,7 @@ describe('tests for message/send/v1', () => {
   });
 
   test('invalid length of message (under 1 character)', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const result = callMessageSend(newId.ret.token, channel.ret.channelId, '');
     expect(result.status).toBe(OK);
@@ -62,22 +55,22 @@ describe('tests for message/send/v1', () => {
   });
 
   test('invalid length of message (over 1000 characters)', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const result = callMessageSend(newId.ret.token, channel.ret.channelId, ONE_THOUSAND_CHARS);
     expect(result.status).toBe(OK);
     expect(result.ret).toStrictEqual({ error: expect.any(String) });
   });
   test('authUser not a member of the channel', () => {
-    const owner = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const owner = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(owner.ret.token, 'New Channel', true);
-    const newId = requestRegister('hello22@gmail.com', 'thisisapassword', 'james', 'does');
+    const newId = requestRegister('validemail11@gmail.com', 'pass1234', 'jornet', 'Renzella');
     const result = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     expect(result.status).toBe(OK);
     expect(result.ret).toStrictEqual({ error: expect.any(String) });
   });
   test('token is invalid', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const result = callMessageSend(newId.ret.token + 'invalid', channel.ret.channelId, 'This message is valid');
     expect(result.status).toBe(OK);
@@ -113,7 +106,7 @@ beforeEach(() => {
 
 describe('tests for message/edit/v1', () => {
   test('success', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     const result = callMessageEdit(newId.ret.token, newText.ret.messageId, 'This message is changed');
@@ -133,7 +126,7 @@ describe('tests for message/edit/v1', () => {
   });
 
   test('invalid messageId', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     const result = callMessageEdit(newId.ret.token, newText.ret.messageId + 1, 'This message is changed');
@@ -142,7 +135,7 @@ describe('tests for message/edit/v1', () => {
   });
 
   test('invalid length of message (over 1000 characters)', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     const result = callMessageEdit(newId.ret.token, newText.ret.messageId, ONE_THOUSAND_CHARS);
@@ -151,10 +144,10 @@ describe('tests for message/edit/v1', () => {
   });
 
   test('message not sent by authUser and they dont have owner permissions', () => {
-    const owner = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const owner = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(owner.ret.token, 'New Channel', true);
     const newText = callMessageSend(owner.ret.token, channel.ret.channelId, 'This message is valid');
-    const newId = requestRegister('hello22@gmail.com', 'thisisapassword', 'james', 'does');
+    const newId = requestRegister('validemail11@gmail.com', 'pass1234', 'jornet', 'Renzella');
     requestChannelJoin(newId.ret.token, channel.ret.channelId);
     const result = callMessageEdit(newId.ret.token, newText.ret.messageId, 'This message is changed');
     expect(result.status).toBe(OK);
@@ -162,8 +155,8 @@ describe('tests for message/edit/v1', () => {
   });
 
   test('message not sent by authUser and they have owner permissions', () => {
-    const owner = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
-    const newId = requestRegister('hello22@gmail.com', 'thisisapassword', 'james', 'does');
+    const owner = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const newId = requestRegister('validemail11@gmail.com', 'pass1234', 'jornet', 'Renzella');
     const channel = requestChannelsCreate(owner.ret.token, 'New Channel', true);
     requestChannelJoin(newId.ret.token, channel.ret.channelId);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
@@ -173,7 +166,7 @@ describe('tests for message/edit/v1', () => {
   });
 
   test('token is invalid', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     const result = callMessageEdit(newId.ret.token + 'invalid', newText.ret.messageId, 'This is a valid change');
@@ -201,7 +194,7 @@ const callMessageRemove = (token: string, messageId: number) => {
 
 describe('tests for message/remove/v1', () => {
   test('success', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     const result = callMessageRemove(newId.ret.token, newText.ret.messageId);
@@ -216,7 +209,7 @@ describe('tests for message/remove/v1', () => {
   });
 
   test('invalid messageId', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     const result = callMessageEdit(newId.ret.token, newText.ret.messageId + 1, 'This is a change');
@@ -225,7 +218,7 @@ describe('tests for message/remove/v1', () => {
   });
 
   test('invalid messageId', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     const result = callMessageEdit(newId.ret.token, newText.ret.messageId + 1, 'This is valid change');
@@ -234,10 +227,10 @@ describe('tests for message/remove/v1', () => {
   });
 
   test('message not sent by authUser and they dont have owner permissions', () => {
-    const owner = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const owner = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(owner.ret.token, 'New Channel', true);
     const newText = callMessageSend(owner.ret.token, channel.ret.channelId, 'This message is valid');
-    const newId = requestRegister('hello22@gmail.com', 'thisisapassword', 'james', 'does');
+    const newId = requestRegister('validemail11@gmail.com', 'pass1234', 'jornet', 'Renzella');
     requestChannelJoin(newId.ret.token, channel.ret.channelId);
     const result = callMessageRemove(newId.ret.token, newText.ret.messageId);
     expect(result.status).toBe(OK);
@@ -245,8 +238,8 @@ describe('tests for message/remove/v1', () => {
   });
 
   test('message not sent by authUser and they have owner permissions', () => {
-    const owner = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
-    const newId = requestRegister('hello22@gmail.com', 'thisisapassword', 'james', 'does');
+    const owner = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const newId = requestRegister('validemail11@gmail.com', 'pass1234', 'jornet', 'Renzella');
     const channel = requestChannelsCreate(owner.ret.token, 'New Channel', true);
     requestChannelJoin(newId.ret.token, channel.ret.channelId);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
@@ -256,7 +249,7 @@ describe('tests for message/remove/v1', () => {
   });
 
   test('token is invalid', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
     const newText = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     const result = callMessageRemove(newId.ret.token + 'invalid', newText.ret.messageId);
@@ -291,61 +284,57 @@ const callMessageSendDm = (token: string, dmId: number, message: string) => {
   };
 };
 
-describe('tests for message/senddm/v1', () => {
+describe('tests for message/send/v1', () => {
   test('success', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
-    const member = requestRegister('he11o@gmail.com', 'thisisapassword', 'james', 'does');
-    const channel = requestDmCreate(newId.ret.token, [member.ret.authUserId]);
-    const result = callMessageSendDm(newId.ret.token, channel.ret.dmId, 'This message is valid');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     expect(result.status).toBe(OK);
     expect(result.ret).toStrictEqual({ messageId: expect.any(Number) });
   });
 
-  test('invalid dmId', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
-    const member = requestRegister('he11o@gmail.com', 'thisisapassword', 'james', 'does');
-    const channel = requestDmCreate(newId.ret.token, [member.ret.authUserId]);
-    const result = callMessageSendDm(newId.ret.token, channel.ret.dmId + 1, 'This message is valid');
+  test('invalid channelId', () => {
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId + 1, 'This message is valid');
     expect(result.status).toBe(OK);
     expect(result.ret).toStrictEqual({ error: expect.any(String) });
   });
 
   test('invalid length of message (under 1 character)', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
-    const member = requestRegister('he11o@gmail.com', 'thisisapassword', 'james', 'does');
-    const channel = requestDmCreate(newId.ret.token, [member.ret.authUserId]);
-    const result = callMessageSendDm(newId.ret.token, channel.ret.dmId, '');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId, '');
     expect(result.status).toBe(OK);
     expect(result.ret).toStrictEqual({ error: expect.any(String) });
   });
 
   test('invalid length of message (over 1000 characters)', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
-    const member = requestRegister('he11o@gmail.com', 'thisisapassword', 'james', 'does');
-    const channel = requestDmCreate(newId.ret.token, [member.ret.authUserId]);
-    const result = callMessageSendDm(newId.ret.token, channel.ret.dmId, ONE_THOUSAND_CHARS);
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId, ONE_THOUSAND_CHARS);
     expect(result.status).toBe(OK);
     expect(result.ret).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('authUser not a member of the DM', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
-    const member = requestRegister('he11o@gmail.com', 'thisisapassword', 'james', 'does');
-    const channel = requestDmCreate(newId.ret.token, []);
-    const result = callMessageSendDm(member.ret.token, channel.ret.dmId, 'This message is valid');
+  test('authUser not a member of the channel', () => {
+    const owner = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(owner.ret.token, 'New Channel', true);
+    const newId = requestRegister('validemail11@gmail.com', 'pass1234', 'jornet', 'Renzella');
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
     expect(result.status).toBe(OK);
     expect(result.ret).toStrictEqual({ error: expect.any(String) });
   });
 
   test('token is invalid', () => {
-    const newId = requestRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
-    const member = requestRegister('he11o@gmail.com', 'thisisapassword', 'james', 'does');
-    const channel = requestDmCreate(newId.ret.token, [member.ret.authUserId]);
-    const result = callMessageSendDm(newId.ret.token + 'invalid', channel.ret.dmId, 'This message is valid');
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token + 'invalid', channel.ret.channelId, 'This message is valid');
     expect(result.status).toBe(OK);
     expect(result.ret).toStrictEqual({ error: expect.any(String) });
   });
 });
+
 
 /// ////////////////////////////////////////////////////////////////////////
 
