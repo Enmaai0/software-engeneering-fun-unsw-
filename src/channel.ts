@@ -8,6 +8,7 @@ import { getData, setData } from './dataStore';
 
 const NO_MORE_MESSAGES = -1;
 const FIFTY_MESSAGES = 50;
+const GLOBALMEMBER = 2;
 
 interface Error {
   error: string
@@ -228,7 +229,7 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   *
   * @param token
   * @param channelId
-  * @returns { }
+  * @returns {{}}
   */
 function channelLeaveV1(token: string, channelId: number): Error | Record<string, never> {
   if (!isChannelId(channelId)) {
@@ -253,7 +254,7 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
   }
   channel.allMembers.splice(index, 1);
 
-  return { };
+  return {};
 }
 
 function channelAddOwnerV1(token: string, channelId:number, uId: number) {
@@ -275,8 +276,7 @@ function channelAddOwnerV1(token: string, channelId:number, uId: number) {
     return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
-  // GLOBALMEMBER = 2
-  if (data.users[uId].permissionId === 2) {
+  if (data.users[uId].permissionId === GLOBALMEMBER) {
     return { error: 'do not have owner permission' };
   }
 
@@ -286,7 +286,7 @@ function channelAddOwnerV1(token: string, channelId:number, uId: number) {
     }
   }
   const user = data.users[uId];
-  const users: Users = {
+  const userObject: Users = {
     uId: user.uId,
     email: user.email,
     nameFirst: user.nameFirst,
@@ -294,7 +294,7 @@ function channelAddOwnerV1(token: string, channelId:number, uId: number) {
     handleStr: user.userHandle
   };
 
-  data.channels[channelId].owners.push(users);
+  data.channels[channelId].owners.push(userObject);
 }
 
 /**

@@ -4,14 +4,18 @@
  * Contains the jest testing designed for user.js
  */
 
-import request from 'sync-request';
-import config from './config.json';
-import { testClear } from './other.test';
-import { testAuthRegister } from './auth.test';
+import {
+  testUserProfile,
+  testClear,
+  testAuthRegister
+} from './testFunctions';
 
-const port = config.port;
-const url = config.url;
 const ERROR = { error: expect.any(String) };
+
+interface AuthReturn {
+  token: string;
+  authUserId: number;
+}
 
 /**
  * Clears the dataStore before each test is ran. Ensures that

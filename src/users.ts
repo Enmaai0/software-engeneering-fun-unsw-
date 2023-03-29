@@ -1,7 +1,7 @@
 /**
  * users.ts
  *
- * Contains the stub code functions of all users* functions.
+ * Contains the function implementation of all users* functions.
  */
 
 import { getData, setData } from './dataStore';
@@ -172,11 +172,9 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
  */
 function isValidToken(token: string): boolean {
   const users = getData().users;
-  for (const object of users) {
-    for (const theToken of object.tokens) {
-      if (theToken === token) {
-        return true;
-      }
+  for (const user of users) {
+    if (user.tokens.includes(token)) {
+      return true;
     }
   }
   return false;
