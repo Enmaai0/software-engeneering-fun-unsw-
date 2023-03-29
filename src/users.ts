@@ -126,6 +126,10 @@ function userSetEmailV1(token: string, email: string) : Error | Record<string, n
     return { error: 'Invalid Email (Enter a Valid Email)' };
   }
 
+  if (isRegisteredEmail(email)) {
+    return { error: 'Invalid Email (Email Already in Use)' };
+  }
+
   const data = getData();
   data.users[findUId(token)].email = email;
   setData(data);
