@@ -8,6 +8,7 @@ import { getData, setData } from './dataStore';
 
 const NO_MORE_MESSAGES = -1;
 const FIFTY_MESSAGES = 50;
+const GLOBALMEMBER = 2;
 
 interface Error {
   error: string
@@ -220,16 +221,15 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   };
 }
 
-
 /**
   * channelLeaveV1
-  * 
+  *
   * Takes a token and channelId, find the user via the token
   * and delete the user in this channel.
-  * 
-  * @param token 
-  * @param channelId 
-  * @returns { }
+  *
+  * @param token
+  * @param channelId
+  * @returns {{}}
   */
 function channelLeaveV1(token: string, channelId: number): Error | Record<string, never> {
   if (!isChannelId(channelId)) {
@@ -244,7 +244,7 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
     return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
-  let channel = getData().channels[channelId];
+  const channel = getData().channels[channelId];
   const id = findUId(token);
   let index;
   for (index = 0; index < channel.allMembers.length; index++) {
@@ -254,11 +254,11 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
   }
   channel.allMembers.splice(index, 1);
 
-  return { }
+  return {};
 }
 
 function channelAddOwnerV1(token: string, channelId:number, uId: number) {
-  let data = getData();
+  const data = getData();
 
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
@@ -276,18 +276,17 @@ function channelAddOwnerV1(token: string, channelId:number, uId: number) {
     return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
-  //GLOBALMEMBER = 2
-  if (data.users[uId].permissionId === 2) {
-    return { error: 'do not have owner permission' }
+  if (data.users[uId].permissionId === GLOBALMEMBER) {
+    return { error: 'do not have owner permission' };
   }
- 
+
   for (const channel of data.channels[channelId].owners) {
     if (channel.uId === uId) {
       return { error: 'user is already an owner in the channel' };
     }
   }
-  let user = data.users[uId];
-  let users: Users = {
+  const user = data.users[uId];
+  const userObject: Users = {
     uId: user.uId,
     email: user.email,
     nameFirst: user.nameFirst,
@@ -295,8 +294,7 @@ function channelAddOwnerV1(token: string, channelId:number, uId: number) {
     handleStr: user.userHandle
   };
 
-  data.channels[channelId].owners.push(users);
-  
+  data.channels[channelId].owners.push(userObject);
 }
 
 /**

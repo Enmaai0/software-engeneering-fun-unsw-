@@ -1,7 +1,7 @@
 /**
  * users.ts
  *
- * Contains the stub code functions of all users* functions.
+ * Contains the function implementation of all users* functions.
  */
 
 import { getData } from './dataStore';
@@ -47,11 +47,9 @@ function userProfileV1(token: string, uId: number) : Error | User {
 
 function isValidToken(token: string): boolean {
   const users = getData().users;
-  for (const object of users) {
-    for (const the_token of object.tokens) {
-      if (the_token === token) {
-        return true;
-      }
+  for (const user of users) {
+    if (user.tokens.includes(token)) {
+      return true;
     }
   }
   return false;
