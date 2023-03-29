@@ -82,7 +82,7 @@ function usersAllV1(token: string) : Error | UserArray {
   const users = data.users;
   const returnArray = [];
   for (const user of users) {
-    let userProfile = {
+    const userProfile = {
       uId: user.uId,
       email: user.email,
       nameFirst: user.nameFirst,
@@ -95,11 +95,11 @@ function usersAllV1(token: string) : Error | UserArray {
   return { users: returnArray };
 }
 
-function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Error | Record<string,never> {
+function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
     return { error: 'Invalid Token (Enter a Valid Token)' };
   }
-  
+
   if (nameFirst.length < MINNAMELENGTH || nameLast.length < MINNAMELENGTH) {
     return { error: 'Invalid Name (Name Cannot be Empty)' };
   }
@@ -108,7 +108,7 @@ function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Err
     return { error: 'Invalid Name (Maximum 50 Characters)' };
   }
 
-  let data = getData();
+  const data = getData();
   data.users[findUId(token)].nameFirst = nameFirst;
   data.users[findUId(token)].nameLast = nameLast;
 
@@ -117,7 +117,7 @@ function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Err
   return {};
 }
 
-function userSetEmailV1(token: string, email: string) : Error | Record<string,never> {
+function userSetEmailV1(token: string, email: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
     return { error: 'Invalid Token (Enter a Valid Token)' };
   }
@@ -126,14 +126,14 @@ function userSetEmailV1(token: string, email: string) : Error | Record<string,ne
     return { error: 'Invalid Email (Enter a Valid Email)' };
   }
 
-  let data = getData();
+  const data = getData();
   data.users[findUId(token)].email = email;
   setData(data);
 
   return {};
 }
 
-function userSetHandleV1(token: string, handle: string) : Error | Record<string,never> {
+function userSetHandleV1(token: string, handle: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
     return { error: 'Invalid Token (Enter a Valid Token)' };
   }
@@ -150,7 +150,7 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
     return { error: 'Invalid Handle (Maximum 20 Characters)' };
   }
 
-  let data = getData();
+  const data = getData();
   data.users[findUId(token)].userHandle = handle;
   setData(data);
 
@@ -240,4 +240,4 @@ function findUId(token: string): number {
   return id;
 }
 
-export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1};
+export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 };

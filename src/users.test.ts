@@ -27,7 +27,7 @@ interface AuthReturn {
   authUserId: number;
 }
 
-/////////////// testUserProfile Function ///////////////
+/// //////////// testUserProfile Function ///////////////
 
 function testUserProfile(token: string, uId: number) {
   const res = request(
@@ -43,7 +43,7 @@ function testUserProfile(token: string, uId: number) {
   return JSON.parse(res.getBody() as string);
 }
 
-/////////////// testUsersAll Function ///////////////
+/// //////////// testUsersAll Function ///////////////
 
 function testUsersAll(token: string) {
   const res = request(
@@ -58,7 +58,7 @@ function testUsersAll(token: string) {
   return JSON.parse(res.getBody() as string);
 }
 
-/////////////// testSetName Function ///////////////
+/// //////////// testSetName Function ///////////////
 
 function testSetName(token: string, namFisrt: string, nameLast: string) {
   const res = request(
@@ -75,7 +75,7 @@ function testSetName(token: string, namFisrt: string, nameLast: string) {
   return JSON.parse(res.getBody() as string);
 }
 
-/////////////// testSetEmail Function ///////////////
+/// //////////// testSetEmail Function ///////////////
 
 function testSetEmail(token: string, email: string) {
   const res = request(
@@ -91,7 +91,7 @@ function testSetEmail(token: string, email: string) {
   return JSON.parse(res.getBody() as string);
 }
 
-/////////////// testSetHandle Function ///////////////
+/// //////////// testSetHandle Function ///////////////
 
 function testSetHandle(token: string, handleStr: string) {
   const res = request(
@@ -107,7 +107,7 @@ function testSetHandle(token: string, handleStr: string) {
   return JSON.parse(res.getBody() as string);
 }
 
-/////////////// UserProfileV1 Function ///////////////
+/// //////////// UserProfileV1 Function ///////////////
 
 describe('usersProfileV1: Error Testing', () => {
   let user1: AuthReturn;
@@ -157,7 +157,7 @@ describe('usersProfileV1: Return Testing', () => {
   });
 });
 
-/////////////// UsersAllV1 Function ///////////////
+/// //////////// UsersAllV1 Function ///////////////
 
 describe('usersAllV1: Error Testing', () => {
   let user1: AuthReturn;
@@ -182,13 +182,15 @@ describe('Correct Return: All Users', () => {
   });
 
   test('All: One User', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({ users: [{
-      uId: user1.authUserId,
-      email: 'email@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'testbot',
-    }]});
+    expect(testUsersAll(user1.token)).toStrictEqual({
+      users: [{
+        uId: user1.authUserId,
+        email: 'email@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot',
+      }]
+    });
   });
 
   beforeEach(() => {
@@ -196,23 +198,25 @@ describe('Correct Return: All Users', () => {
   });
 
   test('All: Two Users', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({ users: [{
-      uId: user1.authUserId,
-      email: 'email@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'testbot',
-    }, {
-      uId: user2.authUserId,
-      email: 'email2@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'testbot0',
-    }]});
+    expect(testUsersAll(user1.token)).toStrictEqual({
+      users: [{
+        uId: user1.authUserId,
+        email: 'email@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot',
+      }, {
+        uId: user2.authUserId,
+        email: 'email2@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot0',
+      }]
+    });
   });
 });
 
-/////////////// UserSetNameV1 Function ///////////////
+/// //////////// UserSetNameV1 Function ///////////////
 
 describe('userSetNameV1: Error Testing', () => {
   let user1: AuthReturn;
@@ -248,7 +252,7 @@ describe('userSetNameV1: Error Testing', () => {
 describe('Correct SetName: Correct Return Testing', () => {
   let user1: AuthReturn;
   let user2: AuthReturn;
-  let returnObj: Record<string,never>;
+  let returnObj: Record<string, never>;
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
     returnObj = testSetName(user1.token, 'A', 'B');
@@ -259,13 +263,15 @@ describe('Correct SetName: Correct Return Testing', () => {
   });
 
   test('SetName: Set Name One User', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({ users: [{
-      uId: user1.authUserId,
-      email: 'email@gmail.com',
-      nameFirst: 'A',
-      nameLast: 'B',
-      handleStr: 'testbot',
-    }]});
+    expect(testUsersAll(user1.token)).toStrictEqual({
+      users: [{
+        uId: user1.authUserId,
+        email: 'email@gmail.com',
+        nameFirst: 'A',
+        nameLast: 'B',
+        handleStr: 'testbot',
+      }]
+    });
   });
 
   beforeEach(() => {
@@ -274,23 +280,25 @@ describe('Correct SetName: Correct Return Testing', () => {
   });
 
   test('SetName: Set Name Two Users', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({ users: [{
-      uId: user1.authUserId,
-      email: 'email@gmail.com',
-      nameFirst: 'A',
-      nameLast: 'B',
-      handleStr: 'testbot',
-    }, {
-      uId: user2.authUserId,
-      email: 'email2@gmail.com',
-      nameFirst: 'A',
-      nameLast: 'B',
-      handleStr: 'testbot0',
-    }]});
+    expect(testUsersAll(user1.token)).toStrictEqual({
+      users: [{
+        uId: user1.authUserId,
+        email: 'email@gmail.com',
+        nameFirst: 'A',
+        nameLast: 'B',
+        handleStr: 'testbot',
+      }, {
+        uId: user2.authUserId,
+        email: 'email2@gmail.com',
+        nameFirst: 'A',
+        nameLast: 'B',
+        handleStr: 'testbot0',
+      }]
+    });
   });
 });
 
-/////////////// UserSetEmailV1 Function ///////////////
+/// //////////// UserSetEmailV1 Function ///////////////
 
 describe('userSetEmailV1: Error Testing', () => {
   let user1: AuthReturn;
@@ -314,7 +322,7 @@ describe('userSetEmailV1: Error Testing', () => {
 describe('Correct SetEmail: Correct Return Testing', () => {
   let user1: AuthReturn;
   let user2: AuthReturn;
-  let returnObj: Record<string,never>;
+  let returnObj: Record<string, never>;
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
     returnObj = testSetEmail(user1.token, 'email2@gmail.com');
@@ -325,13 +333,15 @@ describe('Correct SetEmail: Correct Return Testing', () => {
   });
 
   test('SetEmail: Set Email One User', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({ users: [{
-      uId: user1.authUserId,
-      email: 'email2@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'testbot',
-    }]});
+    expect(testUsersAll(user1.token)).toStrictEqual({
+      users: [{
+        uId: user1.authUserId,
+        email: 'email2@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot',
+      }]
+    });
   });
 
   beforeEach(() => {
@@ -340,23 +350,25 @@ describe('Correct SetEmail: Correct Return Testing', () => {
   });
 
   test('SetName: Set Name Two Users', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({ users: [{
-      uId: user1.authUserId,
-      email: 'email2@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'testbot',
-    }, {
-      uId: user2.authUserId,
-      email: 'email@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'testbot0',
-    }]});
+    expect(testUsersAll(user1.token)).toStrictEqual({
+      users: [{
+        uId: user1.authUserId,
+        email: 'email2@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot',
+      }, {
+        uId: user2.authUserId,
+        email: 'email@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'testbot0',
+      }]
+    });
   });
 });
 
-/////////////// UserSetHandlecoV1 Function ///////////////
+/// //////////// UserSetHandlecoV1 Function ///////////////
 
 describe('userSetHandleV1: Error Testing', () => {
   let user1: AuthReturn;
@@ -389,13 +401,12 @@ describe('userSetHandleV1: Error Testing', () => {
     user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     expect(testSetEmail(user2.token, 'testbot')).toStrictEqual(ERROR);
   });
-  
 });
 
 describe('Correct SetEmail: Correct Return Testing', () => {
   let user1: AuthReturn;
   let user2: AuthReturn;
-  let returnObj: Record<string,never>;
+  let returnObj: Record<string, never>;
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
     returnObj = testSetHandle(user1.token, 'handle');
@@ -406,13 +417,15 @@ describe('Correct SetEmail: Correct Return Testing', () => {
   });
 
   test('SetHandle: Set Handle One User', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({ users: [{
-      uId: user1.authUserId,
-      email: 'email2@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'handle',
-    }]});
+    expect(testUsersAll(user1.token)).toStrictEqual({
+      users: [{
+        uId: user1.authUserId,
+        email: 'email2@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'handle',
+      }]
+    });
   });
 
   beforeEach(() => {
@@ -421,19 +434,21 @@ describe('Correct SetEmail: Correct Return Testing', () => {
   });
 
   test('SetHandle: Set Handle Two Users', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({ users: [{
-      uId: user1.authUserId,
-      email: 'email@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'handle',
-    }, {
-      uId: user2.authUserId,
-      email: 'email2@gmail.com',
-      nameFirst: 'Test',
-      nameLast: 'Bot',
-      handleStr: 'handle2',
-    }]});
+    expect(testUsersAll(user1.token)).toStrictEqual({
+      users: [{
+        uId: user1.authUserId,
+        email: 'email@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'handle',
+      }, {
+        uId: user2.authUserId,
+        email: 'email2@gmail.com',
+        nameFirst: 'Test',
+        nameLast: 'Bot',
+        handleStr: 'handle2',
+      }]
+    });
   });
 });
 
