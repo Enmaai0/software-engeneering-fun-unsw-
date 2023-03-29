@@ -46,8 +46,10 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
   const userIndex = emailToUserIndex(email);
 
   if (data.users[userIndex].password === password) {
+    const newToken = generateToken();
+    data.users[userIndex].tokens.push(newToken);
     return {
-      token: data.users[userIndex].tokens[data.users[userIndex].tokenCounter],
+      token: newToken,
       authUserId: userIndex
     };
   }
@@ -76,7 +78,6 @@ function authLogoutV1(token: string): Record<string, never> | Error {
       if (userToken === token) {
         const index = user.tokens.indexOf(token);
         user.tokens.splice(index, 1);
-        user.tokenCounter--;
         break;
       }
     }
@@ -168,7 +169,6 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     userHandle: generateUserHandle(nameFirst, nameLast),
     permissionId: permissionId,
     tokens: [generateToken()],
-    tokenCounter: 0,
   };
 
   data.users.push(userObject);
