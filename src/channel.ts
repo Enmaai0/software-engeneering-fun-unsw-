@@ -200,7 +200,7 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
     }
   } else {
     end = start + FIFTY_MESSAGES;
-    for (let i = start; i < FIFTY_MESSAGES; i++) {
+    for (let i = start; i < start + FIFTY_MESSAGES; i++) {
       returnMessages.push(messageArray[i]);
     }
   }
