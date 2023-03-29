@@ -254,10 +254,19 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
   }
   channel.allMembers.splice(index, 1);
 
-  return {};
+  return { };
 }
 
-function channelAddOwnerV1(token: string, channelId:number, uId: number) {
+/**
+ * Takes a token, a channelId and a uId, add the user 
+ * to owner member if permitted.
+ * 
+ * @param token 
+ * @param channelId 
+ * @param uId 
+ * @returns { }
+ */
+function channelAddOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
   const data = getData();
 
   if (!isChannelId(channelId)) {
@@ -280,8 +289,8 @@ function channelAddOwnerV1(token: string, channelId:number, uId: number) {
     return { error: 'do not have owner permission' };
   }
 
-  for (const channel of data.channels[channelId].owners) {
-    if (channel.uId === uId) {
+  for (const owner of data.channels[channelId].owners) {
+    if (owner.uId === uId) {
       return { error: 'user is already an owner in the channel' };
     }
   }
@@ -295,6 +304,59 @@ function channelAddOwnerV1(token: string, channelId:number, uId: number) {
   };
 
   data.channels[channelId].owners.push(userObject);
+  return { }
+}
+
+/**
+ * Takes a token, a channelId and a uId, to remove a
+ * specific owner member 
+ * 
+ * @param token 
+ * @param channelId 
+ * @param uId 
+ * @returns 
+ */
+function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
+  const data = getData();
+  let isowner = false;
+
+  if (!isChannelId(channelId)) {
+    return { error: 'Invalid channelId (No channel with that id)' };
+  }
+
+  if (!isUserId(uId)) {
+    return { error: 'Invalid userId (No user with that id)' };
+  }
+
+  if (!isValidToken(token)) {
+    return { error: 'Invalid authUserId (No user with that id)' };
+  }
+
+  if (!isMember(token, channelId)) {
+    return { error: 'Invalid authUserId (User does not have permission)' };
+  }
+
+  for (const owner of data.channels[channelId].owners) {
+    if (owner.uId === uId) {
+      isowner = true;
+    }
+  }
+  if (!isowner) {
+    return {error: 'The user is not an owner'};
+  }
+
+  if (data.channels[channelId].owners.length == 1) {
+    return {error: 'The user is currently the only owner'};
+  }
+
+  const owners = data.channels[channelId].owners;
+  let index;
+  for (index = 0; index < data.channels[channelId].owners.length; index++) {
+    if (owners[index].uId === uId)
+      break;
+  }
+  owners.splice(index, 1);
+  return { }
 }
 
 /**
