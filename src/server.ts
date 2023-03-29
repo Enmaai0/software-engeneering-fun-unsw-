@@ -3,11 +3,11 @@ import { echo } from './echo';
 import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
-import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
 import { clearV1 } from './other';
+import { saveData, grabData } from './dataStore';
+import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
-import { saveData, grabData } from './dataStore';
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
 
 // Set up web app
@@ -137,6 +137,7 @@ app.get('/dm/messages/v1', (req: Request, res: Response) => {
 });
 
 /** /user/* Routes **/
+
 app.get('/user/profile/v2', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const uId = req.query.uId as string;
@@ -184,6 +185,7 @@ app.put('/user/profile/sethandle/v1', (req: Request, res: Response) => {
 });
 
 /** /channel/* Routes **/
+
 app.get('/channel/details/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const channelId = req.query.channelId as string;
