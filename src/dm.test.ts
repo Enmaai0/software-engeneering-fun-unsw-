@@ -4,19 +4,17 @@
  * the HTTP routes created to test funcionality
  */
 
-import {
-  testDmCreate,
-  testDmList,
-  testDmRemove,
-  testDmDetails,
-  testDmLeave,
-  testDmMessages,
-  testClear,
-  testAuthRegister,
-  testMessageSendDm
-} from './testFunctions';
+import request from 'sync-request';
+import config from './config.json';
+import { testClear } from './other.test';
+import { testAuthRegister } from './auth.test';
+import { testMessageSendDm } from './message';
+
+const port = config.port;
+const url = config.url;
 
 const ERROR = { error: expect.any(String) };
+
 interface AuthRegisterReturn {
   token: string;
   authUserId: number;
@@ -31,6 +29,20 @@ beforeEach(() => {
 });
 
 /** /dm/create/v1 Testing **/
+
+function testDmCreate(token: string, uIds: number[]) {
+  const res = request(
+    'POST',
+    `${url}:${port}/dm/create/v1`,
+    {
+      json: {
+        token,
+        uIds
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 describe('/dm/create: Error Testing', () => {
   let testUser1: AuthRegisterReturn;
@@ -125,6 +137,19 @@ describe('/dm/create: dmName Testing', () => {
 
 /** /dm/list/v1 Testing **/
 
+function testDmList(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/dm/list/v1`,
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 describe('/dm/list: Error Testing', () => {
   test('Token: Invalid Token', () => {
     const user1 = testAuthRegister('potato@gmail.com', 'potatopotato', 'Simple', 'Spud');
@@ -207,6 +232,20 @@ describe('/dm/list: Return Testing', () => {
 
 /** /dm/remove/v1 Testing **/
 
+function testDmRemove(token: string, dmId: number) {
+  const res = request(
+    'DELETE',
+    `${url}:${port}/dm/remove/v1`,
+    {
+      qs: {
+        token,
+        dmId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 describe('/dm/remove: Error Testing', () => {
   let testUser1: AuthRegisterReturn;
   beforeEach(() => {
@@ -277,6 +316,20 @@ describe('/dm/remove: Deletion Testing', () => {
 });
 
 /** /dm/details/v1 Testing **/
+
+function testDmDetails(token: string, dmId: number) {
+  const res = request(
+    'GET',
+    `${url}:${port}/dm/details/v1`,
+    {
+      qs: {
+        token,
+        dmId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 describe('/dm/details: Error Testing', () => {
   let testUser1: AuthRegisterReturn;
@@ -375,6 +428,20 @@ describe('/dm/details: Return Testing', () => {
 
 /** /dm/leave/v1 Testing **/
 
+function testDmLeave(token: string, dmId: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/dm/leave/v1`,
+    {
+      json: {
+        token,
+        dmId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 describe('/dm/leave: Error Testing', () => {
   let testUser1: AuthRegisterReturn;
   beforeEach(() => {
@@ -471,6 +538,21 @@ describe('/dm/leave: User Left Testing', () => {
 
 /** /dm/messages/v1 Testing **/
 
+function testDmMessages(token: string, dmId: number, start: number) {
+  const res = request(
+    'GET',
+    `${url}:${port}/dm/messages/v1`,
+    {
+      qs: {
+        token,
+        dmId,
+        start
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 describe('/dm/messages: Error Testing', () => {
   let testUser1: AuthRegisterReturn;
   beforeEach(() => {
@@ -512,7 +594,7 @@ describe('/dm/messages: Return Testing', () => {
     expect(testDmMessages(testUser1.token, testDm.dmId, 0)).toStrictEqual({
       messages: [],
       start: 0,
-      end: -1
+      finish: -1
     });
   });
 
@@ -526,7 +608,7 @@ describe('/dm/messages: Return Testing', () => {
         timeSent: expect.any(Number)
       }],
       start: 0,
-      end: -1
+      finish: -1
     });
   });
 
@@ -552,7 +634,7 @@ describe('/dm/messages: Return Testing', () => {
         timeSent: expect.any(Number)
       }],
       start: 0,
-      end: -1
+      finish: -1
     });
   });
 
@@ -671,3 +753,5 @@ describe('/dm/messages: Return Testing', () => {
     });
   });
 });
+
+export { testDmCreate, testDmList };

@@ -508,9 +508,9 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages | Er
       messages: [],
       start: start,
       end: -1,
-    };
+    }
   }
-
+  
   const returnMessages: Message[] = [];
   const returnEnd = (start + FIFTY_MESSAGES > messageArray.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
 

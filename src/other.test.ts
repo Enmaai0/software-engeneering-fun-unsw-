@@ -5,15 +5,24 @@
  * not included in the main function files
  */
 
-import {
-  testClear,
-  testAuthRegister,
-  testUsersAll,
-  testChannelsCreate,
-  testChannelsList,
-  testDmCreate,
-  testDmList
-} from './testFunctions';
+import request from 'sync-request';
+import config from './config.json';
+import { testAuthRegister } from './auth.test';
+import { testUsersAll } from './users.test';
+import { testChannelsCreate, testChannelsList } from './channels.test';
+import { testDmCreate, testDmList } from './dm.test';
+
+const port = config.port;
+const url = config.url;
+
+function testClear() {
+  const res = request(
+    'DELETE',
+    `${url}:${port}/clear/v1`,
+    { qs: {} }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 describe('/clear/v1 Testing', () => {
   test('Clear Users', () => {
