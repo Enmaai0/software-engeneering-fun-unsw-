@@ -191,7 +191,7 @@ app.get('/channel/details/v1', (req: Request, res: Response) => {
 
   console.log('Getting details from Token:', token);
   res.json(returnMessage);
-})
+});
 
 app.post('/channel/join/v1', (req: Request, res: Response) => {
   const { token, channelId } = req.body;
@@ -200,7 +200,7 @@ app.post('/channel/join/v1', (req: Request, res: Response) => {
 
   console.log('Putting user into Channel:', channelId);
   res.json(returnMessage);
-})
+});
 
 app.post('/channel/invite/v1', (req: Request, res: Response) => {
   const { token, channelId, uId } = req.body;
@@ -209,7 +209,7 @@ app.post('/channel/invite/v1', (req: Request, res: Response) => {
 
   console.log('Putting user into Channel from Token:', token);
   res.json(returnMessage);
-})
+});
 
 app.post('/channel/messages/v1', (req: Request, res: Response) => {
   const { token, channelId, start } = req.body;
@@ -218,7 +218,7 @@ app.post('/channel/messages/v1', (req: Request, res: Response) => {
 
   console.log('Return 50 Messages with Token:', token);
   res.json(returnMessage);
-})
+});
 
 app.post('/channel/leave/v1', (req: Request, res: Response) => {
   const { token, channelId } = req.body;
@@ -227,7 +227,7 @@ app.post('/channel/leave/v1', (req: Request, res: Response) => {
 
   console.log('Removing User from Token:', token);
   res.json(returnMessage);
-})
+});
 
 app.post('/channel/addowner/v1', (req: Request, res: Response) => {
   const { token, channelId, uId } = req.body;
@@ -236,7 +236,7 @@ app.post('/channel/addowner/v1', (req: Request, res: Response) => {
 
   console.log('Adding User from Token:', token);
   res.json(returnMessage);
-})
+});
 
 app.post('/channel/removeowner/v1', (req: Request, res: Response) => {
   const { token, channelId, uId } = req.body;
@@ -245,4 +245,4 @@ app.post('/channel/removeowner/v1', (req: Request, res: Response) => {
 
   console.log('Removing Owner from Token:', token);
   res.json(returnMessage);
-})
+});

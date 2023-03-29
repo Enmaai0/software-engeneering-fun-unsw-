@@ -258,12 +258,12 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
 }
 
 /**
- * Takes a token, a channelId and a uId, add the user 
+ * Takes a token, a channelId and a uId, add the user
  * to owner member if permitted.
- * 
- * @param token 
- * @param channelId 
- * @param uId 
+ *
+ * @param token
+ * @param channelId
+ * @param uId
  * @returns { }
  */
 function channelAddOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
@@ -304,17 +304,17 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number): Error
   };
 
   data.channels[channelId].owners.push(userObject);
-  return { }
+  return { };
 }
 
 /**
  * Takes a token, a channelId and a uId, to remove a
- * specific owner member 
- * 
- * @param token 
- * @param channelId 
- * @param uId 
- * @returns 
+ * specific owner member
+ *
+ * @param token
+ * @param channelId
+ * @param uId
+ * @returns
  */
 function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
   const data = getData();
@@ -342,21 +342,22 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Er
     }
   }
   if (!isowner) {
-    return {error: 'The user is not an owner'};
+    return { error: 'The user is not an owner' };
   }
 
-  if (data.channels[channelId].owners.length == 1) {
-    return {error: 'The user is currently the only owner'};
+  if (data.channels[channelId].owners.length === 1) {
+    return { error: 'The user is currently the only owner' };
   }
 
   const owners = data.channels[channelId].owners;
   let index;
   for (index = 0; index < data.channels[channelId].owners.length; index++) {
-    if (owners[index].uId === uId)
+    if (owners[index].uId === uId) {
       break;
+    }
   }
   owners.splice(index, 1);
-  return { }
+  return { };
 }
 
 /**
@@ -504,4 +505,4 @@ function findToken(Id: number): string | string[] {
   return userToken;
 }
 
-export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1, channelLeaveV1, channelAddOwnerV1 };
+export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };
