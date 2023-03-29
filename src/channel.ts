@@ -41,6 +41,14 @@ interface DetailReturn {
   allMembers: Member[];
 }
 
+interface Users {
+  uId: number,
+  email: string,
+  nameFirst: string,
+  nameLast: string,
+  handleStr: string,
+}
+
 /**
  * channelDetailsV1
  *
@@ -212,6 +220,85 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   };
 }
 
+
+/**
+  * channelLeaveV1
+  * 
+  * Takes a token and channelId, find the user via the token
+  * and delete the user in this channel.
+  * 
+  * @param token 
+  * @param channelId 
+  * @returns { }
+  */
+function channelLeaveV1(token: string, channelId: number): Error | Record<string, never> {
+  if (!isChannelId(channelId)) {
+    return { error: 'Invalid channelId (No channel with that id)' };
+  }
+
+  if (!isValidToken(token)) {
+    return { error: 'Invalid authUserId (No user with that id)' };
+  }
+
+  if (!isMember(token, channelId)) {
+    return { error: 'Invalid authUserId (User does not have permission)' };
+  }
+
+  let channel = getData().channels[channelId];
+  const id = findUId(token);
+  let index;
+  for (index = 0; index < channel.allMembers.length; index++) {
+    if (channel.allMembers[index].uId === id) {
+      break;
+    }
+  }
+  channel.allMembers.splice(index, 1);
+
+  return { }
+}
+
+function channelAddOwnerV1(token: string, channelId:number, uId: number) {
+  let data = getData();
+
+  if (!isChannelId(channelId)) {
+    return { error: 'Invalid channelId (No channel with that id)' };
+  }
+
+  if (!isUserId(uId)) {
+    return { error: 'Invalid userId (No user with that id)' };
+  }
+
+  if (!isValidToken(token)) {
+    return { error: 'Invalid authUserId (No user with that id)' };
+  }
+
+  if (!isMember(token, channelId)) {
+    return { error: 'Invalid authUserId (User does not have permission)' };
+  }
+
+  //GLOBALMEMBER = 2
+  if (data.users[uId].permissionId === 2) {
+    return { error: 'do not have owner permission' }
+  }
+ 
+  for (const channel of data.channels[channelId].owners) {
+    if (channel.uId === uId) {
+      return { error: 'user is already an owner in the channel' };
+    }
+  }
+  let user = data.users[uId];
+  let users: Users = {
+    uId: user.uId,
+    email: user.email,
+    nameFirst: user.nameFirst,
+    nameLast: user.nameLast,
+    handleStr: user.userHandle
+  };
+
+  data.channels[channelId].owners.push(users);
+  
+}
+
 /**
  * isUserId
  *
@@ -357,4 +444,4 @@ function findToken(Id: number): string | string[] {
   return userToken;
 }
 
-export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 };
+export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1, channelLeaveV1, channelAddOwnerV1 };
