@@ -185,8 +185,9 @@ app.put('/user/profile/sethandle/v1', (req: Request, res: Response) => {
 
 /** /channel/* Routes **/
 app.get('/channel/details/v1', (req: Request, res: Response) => {
-  const { token, channelId } = req.body;
-  const returnMessage = channelDetailsV1(token, channelId);
+  const token = req.query.token as string;
+  const channelId = req.query.channelId as string;
+  const returnMessage = channelDetailsV1(token, Number(channelId));
   saveData();
 
   console.log('Getting details from Token:', token);
