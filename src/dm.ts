@@ -501,8 +501,17 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages | Er
   }
 
   const messageArray = data.dms[dmId].messages;
-  const returnMessages: Message[] = [];
 
+  // If the messages array is empty, simply return empty messages
+  if (messageArray.length === 0) {
+    return {
+      messages: [],
+      start: start,
+      end: -1,
+    }
+  }
+  
+  const returnMessages: Message[] = [];
   const returnEnd = (start + FIFTY_MESSAGES > messageArray.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
 
   // Stops the loop from iterating througn negative array indexes
@@ -510,7 +519,9 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages | Er
   const realEnd = start + FIFTY_MESSAGES;
 
   for (let i = realStart; i < realEnd; i++) {
-    returnMessages.push(messageArray[i]);
+    if ((messageArray.length - i) >= 0) {
+      returnMessages.push(messageArray[messageArray.length - i]);
+    }
   }
 
   return {
