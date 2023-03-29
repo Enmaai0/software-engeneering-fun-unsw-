@@ -237,3 +237,59 @@ export function testUserProfile(token: string, uId: number) {
   );
   return JSON.parse(res.getBody() as string);
 }
+
+export function testUsersAll(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/user/all/v1`,
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testSetName(token: string, namFisrt: string, nameLast: string) {
+  const res = request(
+    'PUT',
+    `${url}:${port}/user/profile/setname/v1`,
+    {
+      json: {
+        token,
+        namFisrt,
+        nameLast
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testSetEmail(token: string, email: string) {
+  const res = request(
+    'PUT',
+    `${url}:${port}/user/profile/setemail/v1`,
+    {
+      json: {
+        token,
+        email
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testSetHandle(token: string, handleStr: string) {
+  const res = request(
+    'PUT',
+    `${url}:${port}/user/profile/sethandle/v1`,
+    {
+      json: {
+        token,
+        handleStr
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
