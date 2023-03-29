@@ -8,6 +8,7 @@ import { clearV1 } from './other';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
 import { saveData, grabData } from './dataStore';
+import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
 
 // Set up web app
 const app = express();
@@ -135,10 +136,12 @@ app.get('/dm/messages/v1', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
+/** /user/* Routes **/
 app.get('/user/profile/v2', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const uId = req.query.uId as string;
   const returnMessage = userProfileV1(token, Number(uId));
+  saveData();
 
   console.log('Getting Profile of User Id:', uId);
   res.json(returnMessage);
@@ -147,6 +150,7 @@ app.get('/user/profile/v2', (req: Request, res: Response) => {
 app.get('/users/all/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const returnMessage = usersAllV1(token);
+  saveData();
 
   console.log('Getting All Users from Token:', token);
   res.json(returnMessage);
@@ -155,6 +159,7 @@ app.get('/users/all/v1', (req: Request, res: Response) => {
 app.put('/user/profile/setname/v1', (req: Request, res: Response) => {
   const { token, nameFirst, nameLast } = req.body;
   const returnMessage = userSetNameV1(token, nameFirst, nameLast);
+  saveData();
 
   console.log('Setting User Name from Token:', token);
   res.json(returnMessage);
@@ -163,6 +168,7 @@ app.put('/user/profile/setname/v1', (req: Request, res: Response) => {
 app.put('/user/profile/setemail/v1', (req: Request, res: Response) => {
   const { token, email } = req.body;
   const returnMessage = userSetEmailV1(token, email);
+  saveData();
 
   console.log('Setting User Email from Token:', token);
   res.json(returnMessage);
@@ -171,7 +177,72 @@ app.put('/user/profile/setemail/v1', (req: Request, res: Response) => {
 app.put('/user/profile/sethandle/v1', (req: Request, res: Response) => {
   const { token, handleStr } = req.body;
   const returnMessage = userSetHandleV1(token, handleStr);
+  saveData();
 
   console.log('Setting User Handle from Token:', token);
   res.json(returnMessage);
 });
+
+/** /channel/* Routes **/
+app.get('/channel/details/v1', (req: Request, res: Response) => {
+  const { token, channelId } = req.body;
+  const returnMessage = channelDetailsV1(token, channelId);
+  saveData();
+
+  console.log('Getting details from Token:', token);
+  res.json(returnMessage);
+})
+
+app.post('/channel/join/v1', (req: Request, res: Response) => {
+  const { token, channelId } = req.body;
+  const returnMessage = channelJoinV1(token, channelId);
+  saveData();
+
+  console.log('Putting user into Channel:', channelId);
+  res.json(returnMessage);
+})
+
+app.post('/channel/invite/v1', (req: Request, res: Response) => {
+  const { token, channelId, uId } = req.body;
+  const returnMessage = channelInviteV1(token, channelId, uId);
+  saveData();
+
+  console.log('Putting user into Channel from Token:', token);
+  res.json(returnMessage);
+})
+
+app.post('/channel/messages/v1', (req: Request, res: Response) => {
+  const { token, channelId, start } = req.body;
+  const returnMessage = channelMessagesV1(token, channelId, start);
+  saveData();
+
+  console.log('Return 50 Messages with Token:', token);
+  res.json(returnMessage);
+})
+
+app.post('/channel/leave/v1', (req: Request, res: Response) => {
+  const { token, channelId } = req.body;
+  const returnMessage = channelLeaveV1(token, channelId);
+  saveData();
+
+  console.log('Removing User from Token:', token);
+  res.json(returnMessage);
+})
+
+app.post('/channel/addowner/v1', (req: Request, res: Response) => {
+  const { token, channelId, uId } = req.body;
+  const returnMessage = channelAddOwnerV1(token, channelId, uId);
+  saveData();
+
+  console.log('Adding User from Token:', token);
+  res.json(returnMessage);
+})
+
+app.post('/channel/removeowner/v1', (req: Request, res: Response) => {
+  const { token, channelId, uId } = req.body;
+  const returnMessage = channelRemoveOwnerV1(token, channelId, uId);
+  saveData();
+
+  console.log('Removing Owner from Token:', token);
+  res.json(returnMessage);
+})
