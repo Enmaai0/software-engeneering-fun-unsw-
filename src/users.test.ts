@@ -4,14 +4,18 @@
  * Contains the jest testing designed for user.js
  */
 
-import request from 'sync-request';
-import config from './config.json';
-import { testClear } from './other.test';
-import { testAuthRegister } from './auth.test';
+import {
+  testUserProfile,
+  testClear,
+  testAuthRegister
+} from './testFunctions';
 
-const port = config.port;
-const url = config.url;
 const ERROR = { error: expect.any(String) };
+
+interface AuthReturn {
+  token: string;
+  authUserId: number;
+}
 
 /**
  * Clears the dataStore before each test is ran. Ensures that
@@ -23,25 +27,6 @@ beforeEach(() => {
 });
 
 /// //////////// UserProfileV1 Function ///////////////
-
-interface AuthReturn {
-  token: string;
-  authUserId: number;
-}
-
-function testUserProfile(token: string, uId: number) {
-  const res = request(
-    'GET',
-    `${url}:${port}/user/profile/v2`,
-    {
-      qs: {
-        token,
-        uId
-      }
-    }
-  );
-  return JSON.parse(res.getBody() as string);
-}
 
 describe('usersProfileV1: Error Testing', () => {
   let user1: AuthReturn;
