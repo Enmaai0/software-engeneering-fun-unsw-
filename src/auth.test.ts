@@ -4,13 +4,13 @@
  * the HTTP routes created to test functionality
  */
 
-import {
-  testAuthLogin,
-  testAuthLogout,
-  testAuthRegister,
-  testClear,
-  testDmCreate
-} from './testFunctions';
+import request from 'sync-request';
+import config from './config.json';
+import { testClear } from './other.test';
+import { testDmCreate } from './dm.test';
+
+const port = config.port;
+const url = config.url;
 
 const ERROR = { error: expect.any(String) };
 
@@ -24,6 +24,20 @@ beforeEach(() => {
 });
 
 /** /auth/login/v2 Testing **/
+
+function testAuthLogin(email: string, password: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/login/v2`,
+    {
+      json: {
+        email,
+        password
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 describe('/auth/login: Error Testing', () => {
   beforeEach(() => {
@@ -69,6 +83,19 @@ describe('/auth/login: Return Testing', () => {
 
 /** /auth/logout/v1 Testing **/
 
+function testAuthLogout(token: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/logout/v1`,
+    {
+      json: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 describe('/auth/logout: Error Testing', () => {
   test('Email: Invalid Token (No Users)', () => {
     expect(testAuthLogout('someRandomTokenIDK?')).toStrictEqual(ERROR);
@@ -101,6 +128,22 @@ describe('/auth/logout: Token Removal Testing', () => {
 });
 
 /** /auth/register/v2 Testing **/
+
+function testAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/register/v2`,
+    {
+      json: {
+        email,
+        password,
+        nameFirst,
+        nameLast
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 describe('/auth/register: Error Testing', () => {
   test('Email: Invalid Email', () => {
@@ -164,3 +207,5 @@ describe('/auth/register: Return Testing', () => {
     });
   });
 });
+
+export { testAuthLogin, testAuthLogout, testAuthRegister };

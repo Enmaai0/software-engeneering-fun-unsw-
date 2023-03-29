@@ -4,15 +4,14 @@
  * Contains the jest testing designed for channel.ts
  */
 
-import {
-  testChannelDetails,
-  testChannelInvite,
-  testChannelJoin,
-  testChannelMessages,
-  testClear,
-  testAuthRegister,
-  testChannelsCreate
-} from './testFunctions';
+import request from 'sync-request';
+import config from './config.json';
+import { testClear } from './other.test';
+import { testAuthRegister } from './auth.test';
+import { testChannelsCreate } from './channels.test';
+
+const port = config.port;
+const url = config.url;
 
 const ERROR = { error: expect.any(String) };
 
@@ -33,6 +32,72 @@ interface ChannelsCreateReturn {
 beforeEach(() => {
   testClear();
 });
+
+/// //////////// testChannelInvite Function ///////////////
+
+function testChannelInvite(token: string, channelId: number, uid: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/channel/invite/v2`,
+    {
+      json: {
+        token,
+        channelId,
+        uid
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+/// //////////// testChannelJoin Function ///////////////
+
+function testChannelJoin(token: string, channelId: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/channel/join/v2`,
+    {
+      json: {
+        token,
+        channelId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+/// //////////// testChannelMessages Function ///////////////
+
+function testChannelMessages(token: string, channelId: number, start: number) {
+  const res = request(
+    'GET',
+    `${url}:${port}/channel/messages/v2`,
+    {
+      qs: {
+        token,
+        channelId,
+        start
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+/// //////////// testChannelDetails Function ///////////////
+
+function testChannelDetails(token: string, channelId: number) {
+  const res = request(
+    'GET',
+    `${url}:${port}/channel/details/v2`,
+    {
+      qs: {
+        token,
+        channelId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 /// //////////// ChannelInviteV1 Test ///////////////
 
