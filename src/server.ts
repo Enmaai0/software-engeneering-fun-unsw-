@@ -6,6 +6,7 @@ import cors from 'cors';
 import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
 import { clearV1 } from './other';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
+import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
 import { saveData, grabData } from './dataStore';
 
 // Set up web app
@@ -131,5 +132,46 @@ app.get('/dm/messages/v1', (req: Request, res: Response) => {
   const returnMessage = dmMessages(token, Number(dmId), Number(start));
 
   console.log('Getting Details of DM Id:', dmId);
+  res.json(returnMessage);
+});
+
+app.get('/user/profile/v2', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const uId = req.query.uId as string;
+  const returnMessage = userProfileV1(token, Number(uId));
+
+  console.log('Getting Profile of User Id:', uId);
+  res.json(returnMessage);
+});
+
+app.get('/users/all/v1', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const returnMessage = usersAllV1(token);
+
+  console.log('Getting All Users from Token:', token);
+  res.json(returnMessage);
+});
+
+app.put('/user/profile/setname/v1', (req: Request, res: Response) => {
+  const { token, nameFirst, nameLast } = req.body;
+  const returnMessage = userSetNameV1(token, nameFirst, nameLast);
+
+  console.log('Setting User Name from Token:', token);
+  res.json(returnMessage);
+});
+
+app.put('/user/profile/setemail/v1', (req: Request, res: Response) => {
+  const { token, email } = req.body;
+  const returnMessage = userSetEmailV1(token, email);
+
+  console.log('Setting User Email from Token:', token);
+  res.json(returnMessage);
+});
+
+app.put('/user/profile/sethandle/v1', (req: Request, res: Response) => {
+  const { token, handleStr } = req.body;
+  const returnMessage = userSetHandleV1(token, handleStr);
+
+  console.log('Setting User Handle from Token:', token);
   res.json(returnMessage);
 });
