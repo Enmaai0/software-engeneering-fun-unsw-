@@ -116,11 +116,8 @@ describe('Correct Return: All Users', () => {
     });
   });
 
-  beforeEach(() => {
-    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
-  });
-
   test('All: Two Users', () => {
+    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -197,12 +194,9 @@ describe('Correct SetName: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
+  test('SetName: Set Name Two Users', () => {
     user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     testSetName(user2.token, 'A', 'B');
-  });
-
-  test('SetName: Set Name Two Users', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -267,12 +261,9 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
+  test('SetName: Set Name Two Users', () => {
     user2 = testAuthRegister('email3@gmail.com', 'pass1234', 'Test', 'Bot');
     testSetEmail(user2.token, 'email@gmail.com');
-  });
-
-  test('SetName: Set Name Two Users', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -343,7 +334,7 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
-        email: 'email2@gmail.com',
+        email: 'email@gmail.com',
         nameFirst: 'Test',
         nameLast: 'Bot',
         handleStr: 'handle',
@@ -351,12 +342,9 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
-    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
-    testSetEmail(user2.token, 'handle2');
-  });
-
   test('SetHandle: Set Handle Two Users', () => {
+    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    testSetHandle(user2.token, 'handle2');
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -411,11 +399,8 @@ describe('Correct Return: All Users', () => {
     });
   });
 
-  beforeEach(() => {
-    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
-  });
-
   test('All: Two Users', () => {
+    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -492,12 +477,9 @@ describe('Correct SetName: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
+  test('SetName: Set Name Two Users', () => {
     user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     testSetName(user2.token, 'A', 'B');
-  });
-
-  test('SetName: Set Name Two Users', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -562,12 +544,9 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
+  test('SetName: Set Name Two Users', () => {
     user2 = testAuthRegister('email3@gmail.com', 'pass1234', 'Test', 'Bot');
     testSetEmail(user2.token, 'email@gmail.com');
-  });
-
-  test('SetName: Set Name Two Users', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -603,10 +582,6 @@ describe('userSetHandleV1: Error Testing', () => {
     expect(testSetEmail(user1.token + '1', 'handle')).toStrictEqual(ERROR);
   });
 
-  test('Handle: Invalid Handle !', () => {
-    expect(testSetEmail(user1.token, 'invalidHandle!')).toStrictEqual(ERROR);
-  });
-
   test('Handle: Invalid Handle Too Long', () => {
     expect(testSetEmail(user1.token, 'invalidHandleinvalidHandle')).toStrictEqual(ERROR);
   });
@@ -619,9 +594,21 @@ describe('userSetHandleV1: Error Testing', () => {
     user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     expect(testSetEmail(user2.token, 'testbot')).toStrictEqual(ERROR);
   });
+
+  test('Handle: Invalid Handle Contains Capitals', () => {
+    expect(testSetEmail(user1.token, 'lowerCAPITAL')).toStrictEqual(ERROR);
+  });
+
+  test('Handle: Invalid Handle Contains Symbols ( ! )', () => {
+    expect(testSetEmail(user1.token, 'invalidHandle!')).toStrictEqual(ERROR);
+  });
+
+  test('Handle: Invalid Handle Contains Symbols ( & )', () => {
+    expect(testSetEmail(user1.token, 'invalid&Handle!')).toStrictEqual(ERROR);
+  });
 });
 
-describe('Correct SetEmail: Correct Return Testing', () => {
+describe('Correct SetHandle: Correct Return Testing', () => {
   let user1: AuthReturn;
   let user2: AuthReturn;
   let returnObj: Record<string, never>;
@@ -631,14 +618,14 @@ describe('Correct SetEmail: Correct Return Testing', () => {
   });
 
   test('SetHandle: Return Empty Object', () => {
-    expect(returnObj).toStrictEqual({ });
+    expect(returnObj).toStrictEqual({});
   });
 
   test('SetHandle: Set Handle One User', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
-        email: 'email2@gmail.com',
+        email: 'email@gmail.com',
         nameFirst: 'Test',
         nameLast: 'Bot',
         handleStr: 'handle',
@@ -646,12 +633,9 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
-    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
-    testSetEmail(user2.token, 'handle2');
-  });
-
   test('SetHandle: Set Handle Two Users', () => {
+    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    testSetHandle(user2.token, 'handle2');
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
