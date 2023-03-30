@@ -45,7 +45,7 @@ export function messageSendV1(token: string, channelId: number, message: string)
     timeSent: Math.floor(Date.now() / 1000),
   };
 
-  data.channels[channelId].push(newmessage);
+  data.channels[channelId].messages.push(newmessage);
 
   setData(data);
   return {
@@ -96,7 +96,7 @@ export function messageSendDmV1(token: string, dmId: number, message: string): M
     timeSent: Math.floor(Date.now() / 1000),
   };
 
-  data.dms[dmId].push(newmessage);
+  data.dms[dmId].messages.push(newmessage);
 
   setData(data);
   return {
@@ -121,14 +121,15 @@ export function messageEditV1(token: string, messageId: number, message: string)
   if (authUserId === false) return { error: 'token is not valid' };
 
   // Check whether the messageId is valid
-  const messageValid = (messageId);
+  const messageValid = checkMessageId(messageId);
+
   if (messageValid.route === 'empty') return { error: 'invalid messageId' };
 
   // Check valid message length
   if (message.length > CHAR) return { error: 'invalid message length' };
 
   // Check whether a user is in the channel
-  if (messageValid !== authUserId) {
+  if (messageValid.uId !== authUserId) {
     const perms = checkPermissions(authUserId, messageValid.routeId, messageValid.route);
     if (!perms) return { error: 'incorrect permissions for this action' };
   }
@@ -171,7 +172,7 @@ export function messageRemoveV1(token: string, messageId: any):  Record<string, 
 
   // Check whether a user is in the channel
  
-  if (messageValid !== authUserId) {
+  if (messageValid.uId !== authUserId) {
     const perms = checkPermissions(authUserId, messageValid.routeId, messageValid.route);
     if (!perms) return { error: 'incorrect permissions for this action' };
   }
@@ -199,7 +200,7 @@ export function messageRemoveV1(token: string, messageId: any):  Record<string, 
 export function findTokenId(token: string) {
     const data = getData();
     for (const user of data.users) {
-        for (const session of user.tokenSessions) {
+        for (const session of user.tokens) {
             if (token === session) return user.uId;
         }
             }
@@ -285,7 +286,7 @@ export function checkEnrolledDm(authUserId: number, dmId: number): boolean {
   }
 
   for (let j = 0; j < data.dms[i].members.length; j++) {
-    if (authUserId === data.dms[i].members[j].uId) {
+    if (authUserId === data.dms[i].members[j]) {
       return true;
     }
   }
@@ -306,7 +307,7 @@ export function checkEnrolledDm(authUserId: number, dmId: number): boolean {
  * } - if message ID is found
  * @returns {{route: 'empty'}} - if message ID not found
  */
-export function checkMessageId(messageId: number): { route: string, index1?: number, index2?: number, uId?: number, routeId?: number } | { route: 'empty' } {
+export function checkMessageId(messageId: number): { route: string, index1: number, index2: number, uId: number, routeId: number } | { route: 'empty' } {
   const data = getData();
   for (let i = 0; i < data.channels.length; i++) {
     for (let j = 0; j < data.channels[i].messages.length; j++) {
@@ -347,7 +348,7 @@ export function checkMessageId(messageId: number): { route: string, index1?: num
  * @param {string} route
  * @returns {boolean} - whether user is a global owner or owner of a channel/dm
  */
-export function checkPermissions(uId: number, routeId: number, route: any) {
+export function checkPermissions(uId: number, routeId: number, route: string) {
   const data = getData();
 
   if (route === 'channel') {
@@ -355,7 +356,7 @@ export function checkPermissions(uId: number, routeId: number, route: any) {
       if (channel.channelId === routeId) {
         for (const member of channel.allMembers) {
           if (member.uId === uId) {
-            return member.isOwner;
+            return member.
           }
         }
       }
@@ -364,8 +365,8 @@ export function checkPermissions(uId: number, routeId: number, route: any) {
     for (const dm of data.dms) {
       if (dm.dmId === routeId) {
         for (const member of dm.members) {
-          if (member.uId === uId) {
-            return member.isOwner;
+          if (member === uId) {
+            return member.
           }
         }
       }
@@ -374,7 +375,7 @@ export function checkPermissions(uId: number, routeId: number, route: any) {
 
   for (const user of data.users) {
     if (user.uId === uId) {
-      return user.isGlobalOwner;
+      return user.permissionId;
     }
   }
 
