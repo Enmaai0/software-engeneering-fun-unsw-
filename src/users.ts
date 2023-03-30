@@ -1,7 +1,7 @@
 /**
  * users.ts
  *
- * Contains the function implementation of all users* functions.
+ * Contains the stub code functions of all users* functions.
  */
 
 import { getData, setData } from './dataStore';
@@ -10,7 +10,7 @@ import validator from 'validator';
 const MINNAMELENGTH = 1;
 const MAXNAMELENGTH = 50;
 const MINHANDLELENGTH = 3;
-const MAXHANDLELENGTH = 3;
+const MAXHANDLELENGTH = 20;
 
 interface Error {
   error: string
@@ -172,9 +172,11 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
  */
 function isValidToken(token: string): boolean {
   const users = getData().users;
-  for (const user of users) {
-    if (user.tokens.includes(token)) {
-      return true;
+  for (const object of users) {
+    for (const theToken of object.tokens) {
+      if (theToken === token) {
+        return true;
+      }
     }
   }
   return false;
