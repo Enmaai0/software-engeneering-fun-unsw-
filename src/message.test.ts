@@ -1,40 +1,38 @@
-import request from 'sync-request';
+/**
+ * message.test.ts
+ *
+ * File contains all of the jest testing for the HTTP layer for
+ * all /message/* routes.
+ */
 
-import { port, url } from './config.json';
-const SERVER_URL = `${url}:${port}`;
+import {
+  testMessageEdit,
+  testMessageRemove,
+  testMessageSend,
+  testMessageSendDm,
+  testClear,
+  testAuthRegister,
+  testChannelsCreate,
+  testChannelJoin,
+  testChannelMessages,
+  testDmCreate,
+  testDmMessages
+} from './testFunctions';
 
-const OK = 200;
-
-const callMessageSend = (token: string, channelId: number, message: string) => {
-  const res = request(
-    'POST',
-    SERVER_URL + '/message/send/v1',
-    {
-      json: {
-        token: token,
-        channelId: channelId,
-        message: message,
-      }
-    }
-  );
-  return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
-  };
-};
-// Had this linting error, we had it previously on multiple lines but wouldn't let us pass the linting tests
-// 27:3  error  Multiline support is limited to browsers supporting ES5 only  no-multi-str
 const ONE_THOUSAND_CHARS = (
   'The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex nymphs. Waltz, bad nymph, for quick jigs vex!  Fox nymphs grab quick-jived waltz. Brick quiz whangs jumpy veldt fox. Bright vixens jump; dozy fowl quack. Quick wafting zephyrs vex bold Jim. Quick zephyrs blow, vexing daft Jim. Sex-charged fop blew my junk TV quiz. How quickly daft jumping zebras vex. Two driven jocks help fax my big quiz. Quick, Baz, get my woven flax jodhpurs! "Now fax quiz Jack!" my brave ghost pled. Five quacking zephyrs jolt my wax bed. Flummoxed by job, kvetching W. zaps Iraq. Cozy sphinx waves quart jug of bad milk. A very bad quack might jinx zippy fowls. Few quips galvanized the mock jury box. Quick brown dogs jump over the lazy fox. The jay, pig, fox, zebra, and my wolves quack! Blowzy red vixens fight for a quick jump. Joaquin Phoenix was gazed by MTV for luck. A wizards job is to vex chumps quickly in fog. Watch "Jeopardy!", Alex Trebeks fun TV quiz game. Woven silk pyjamas exchanged for blue quartz.'
 );
 
+/**
+ * Clears the dataStore before each test is ran. Ensures that
+ * tests do not rely on the results of others to ensure full 
+ * functionality and correct implementation.
+*/
 beforeEach(() => {
-  request(
-    'DELETE',
-    SERVER_URL + '/clear/v1',
-    { qs: {} }
-  );
+  testClear();
 });
+
+/** /message/send Testing **/
 
 describe('tests for message/send/v1', () => {
   test('success', () => {
@@ -85,31 +83,7 @@ describe('tests for message/send/v1', () => {
   });
 });
 
-const callMessageEdit = (token: string, channelId: number, message: string) => {
-  const res = request(
-    'PUT',
-    SERVER_URL + '/message/edit/v1',
-    {
-      json: {
-        token: token,
-        messageId: messageId,
-        message: message,
-      }
-    }
-  );
-  return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
-  };
-};
-
-beforeEach(() => {
-  request(
-    'DELETE',
-    SERVER_URL + '/clear/v1',
-    { qs: {} }
-  );
-});
+/** /message/edit Testing **/
 
 describe('tests for message/edit/v1', () => {
   test('success', () => {
@@ -182,22 +156,7 @@ describe('tests for message/edit/v1', () => {
   });
 });
 
-const callMessageRemove = (token: string, messageId: number) => {
-  const res = request(
-    'DELETE',
-    SERVER_URL + '/message/remove/v1',
-    {
-      qs: {
-        token: token,
-        messageId: messageId,
-      }
-    }
-  );
-  return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
-  };
-};
+/** /message/remove Testing **/
 
 describe('tests for message/remove/v1', () => {
   test('success', () => {
@@ -265,31 +224,7 @@ describe('tests for message/remove/v1', () => {
   });
 });
 
-beforeEach(() => {
-  request(
-    'DELETE',
-    SERVER_URL + '/clear/v1',
-    { qs: {} }
-  );
-});
-
-const callMessageSendDm = (token: string, dmId: number, message: string) => {
-  const res = request(
-    'POST',
-    SERVER_URL + '/message/senddm/v1',
-    {
-      json: {
-        token: token,
-        dmId: dmId,
-        message: message,
-      }
-    }
-  );
-  return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
-  };
-};
+/** /message/sendDm Testing **/
 
 describe('tests for message/senddm/v1', () => {
   test('success', () => {
@@ -346,97 +281,3 @@ describe('tests for message/senddm/v1', () => {
     expect(result.ret).toStrictEqual({ error: expect.any(String) });
   });
 });
-
-/// ////////////////////////////////////////////////////////////////////////
-
-function requestChannelJoin(token : string, channelId: number) {
-  const res = request(
-    'POST',
-    SERVER_URL + '/channel/join/v2',
-    {
-      json: {
-        token,
-        channelId
-      }
-    }
-  );
-  return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
-  };
-}
-
-function requestRegister(email : string, password : string, nameFirst : string, nameLast : string) {
-  const res = request(
-    'POST',
-    SERVER_URL + '/auth/register/v2',
-    {
-      json: {
-        email: email,
-        password: password,
-        nameFirst: nameFirst,
-        nameLast: nameLast
-      }
-    }
-  );
-
-  return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
-  };
-}
-
-function requestDmCreate(token : string, uIds : number[]) {
-  const res = request(
-    'POST',
-    SERVER_URL + '/dm/create/v1',
-    {
-      json: {
-        token: token,
-        uIds: uIds
-      }
-    }
-  );
-  return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
-  };
-}
-
-export const callChannelMessages = (token: string, channelId: number, start:number) => {
-  const res = request(
-    'GET',
-    SERVER_URL + '/channel/messages/v2',
-    {
-      qs: {
-        token: token,
-        channelId: channelId,
-        start: start,
-      }
-    }
-  );
-  return {
-    ret: JSON.parse(res.body as string),
-    status: res.statusCode,
-  };
-};
-
-export function requestChannelsCreate(token: string, name: string, isPublic: boolean) {
-  const res = request(
-    'POST',
-    SERVER_URL + '/channels/create/v2',
-    {
-      json: {
-        token,
-        name,
-        isPublic,
-      }
-    }
-  );
-  return {
-    ret: JSON.parse(res.getBody() as string),
-    status: res.statusCode
-  };
-}
-
-export { callMessageSend, callMessageEdit, callMessageSendDm, callMessageRemove };
