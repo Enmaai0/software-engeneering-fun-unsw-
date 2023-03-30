@@ -1,13 +1,17 @@
 /**
- * channels.test.js
- * 
- * Contains the jest testing designed for channels.js
+ * channels.test.ts
+ *
+ * File contains all of the jest testing for the HTTP layer for
+ * all /channels/* routes.
  */
 
-import { authRegisterV1 } from './auth.js'
-import { channelsListAllV1, channelsListV1, channelsCreateV1 } from './channels.js'
-import { clearV1 } from './other.js'
-import { getData, setData } from './dataStore.js'
+import {
+  testChannelsCreate,
+  testChannelsList,
+  testChannelsListAll,
+  testClear,
+  testAuthRegister,
+} from './testFunctions';
 
 const ERROR = { error: expect.any(String) };
 
@@ -17,7 +21,7 @@ const ERROR = { error: expect.any(String) };
  * functionality and correct implementation.
 */
 beforeEach(() => {
-  clearV1();
+  testClear();
 });
 
 /////////////// channelsCreateV1 ///////////////

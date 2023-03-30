@@ -172,12 +172,38 @@ export function testChannelRemoveOwner(token: string, channelId: number, uId: nu
 export function testChannelsCreate(token: string, name: string, isPublic: boolean) {
   const res = request(
     'POST',
-    `${url}:${port}/channels/create/v1`,
+    `${url}:${port}/channels/create/v2`,
     {
       json: {
         token,
         name,
         isPublic
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testChannelsList(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/channels/list/v2`,
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testChannelsListAll(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/channels/listAll/v2`,
+    {
+      qs: {
+        token
       }
     }
   );
@@ -270,16 +296,66 @@ export function testDmMessages(token: string, dmId: number, start: number) {
   return JSON.parse(res.getBody() as string);
 }
 
-/** /other/* Test Functions **/
+/** /message/* Test Functions */
 
-export function testClear() {
+export function testMessageSend(token: string, channelId: number, message: string) {
   const res = request(
-    'DELETE',
-    `${url}:${port}/clear/v1`,
-    { qs: {} }
+    'POST',
+    `${url}:${port}/message/send/v1`,
+    {
+      json: {
+        token: token,
+        channelId: channelId,
+        message: message
+      }
+    }
   );
   return JSON.parse(res.getBody() as string);
-}
+};
+
+export function testMessageEdit(token: string, messageId: number, message: string) {
+  const res = request(
+    'PUT',
+    `${url}:${port}/message/edit/v1`,
+    {
+      json: {
+        token: token,
+        messageId: messageId,
+        message: message
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+};
+
+export function testMessageRemove(token: string, messageId: number) {
+  const res = request(
+    'DELETE',
+    `${url}:${port}/message/remove/v1`,
+    {
+      qs: {
+        token: token,
+        messageId: messageId,
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+};
+
+export function testMessageSendDm(token: string, dmId: number, message: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/message/senddm/v1`,
+    {
+      json: {
+        token: token,
+        dmId: dmId,
+        message: message,
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+};
 
 /** /users/* Test Functions **/
 
@@ -349,6 +425,17 @@ export function testSetHandle(token: string, handleStr: string) {
         handleStr
       }
     }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+/** /other/* Test Functions **/
+
+export function testClear() {
+  const res = request(
+    'DELETE',
+    `${url}:${port}/clear/v1`,
+    { qs: {} }
   );
   return JSON.parse(res.getBody() as string);
 }

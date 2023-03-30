@@ -1,7 +1,8 @@
 /**
  * channel.test.ts
  *
- * Contains the jest testing designed for channel.ts
+ * File contains all of the jest testing for the HTTP layer for
+ * all /channel/* routes.
  */
 
 import {
@@ -37,7 +38,7 @@ beforeEach(() => {
   testClear();
 });
 
-/** ChannelInviteV1 Test **/
+/** /channel/invite Testing **/
 
 describe('/channel/invite: Error Testing', () => {
   let user1: AuthReturn;
@@ -118,7 +119,7 @@ describe('/channel/invite: Correct Return Testing', () => {
   });
 });
 
-/** ChannelMessagesV1 Test **/
+/** /channel/messages Testing **/
 
 describe('/channel/messages: Error Testing', () => {
   let user1: AuthReturn;
@@ -162,7 +163,7 @@ describe('/channel/messages: Return Testing', () => {
   });
 });
 
-/** ChannelDetailsV1 Test **/
+/** /channel/details Testing **/
 
 describe('/channel/details: Error Testing', () => {
   let user1: AuthReturn, user2: AuthReturn;
@@ -246,7 +247,7 @@ describe('/channel/details: Return Testing', () => {
   });
 });
 
-/** ChannelJoinV1 Test **/
+/** /channel/join Testing **/
 
 describe('/channel/join: Error Testing', () => {
   let user1: AuthReturn;
@@ -351,7 +352,7 @@ describe('/channel/join: Return Testing', () => {
   });
 });
 
-/** ChannelLeaveV1 Test **/
+/** /channel/leave Testing **/
 
 describe('/channel/leave: Error Testing', () => {
   let user1: AuthReturn;
@@ -413,7 +414,7 @@ describe('/channel/leave: Return Testing', () => {
   });
 });
 
-/** ChannelAddOwnerV1 Test **/
+/** /channel/addOwner Testing **/
 
 describe('/channel/addOwner: Error Testing', () => {
   let user1: AuthReturn;
@@ -513,7 +514,7 @@ describe('/channel/addOwner: Return Testing', () => {
   });
 });
 
-/** ChannelRemoveOwnerV1 Test **/
+/** /channel/removeOwner Testing **/
 
 describe('/channel/removeOwner: Error Testing', () => {
   let user1: AuthReturn;

@@ -1,7 +1,8 @@
 /**
- * user.test.ts
+ * users.test.ts
  *
- * Contains the jest testing designed for user.js
+ * File contains all of the jest testing for the HTTP layer for
+ * all /users/* routes.
  */
 
 import {

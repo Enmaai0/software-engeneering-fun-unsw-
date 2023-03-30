@@ -1,8 +1,8 @@
 /**
- * other.test.js
+ * other.test.ts
  *
- * Contains the jest testing designed for other functions
- * not included in the main function files
+ * File contains all of the jest testing for the HTTP layer for
+ * all other routes not contained in other files.
  */
 
 import {

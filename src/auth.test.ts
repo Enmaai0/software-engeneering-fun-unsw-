@@ -1,7 +1,8 @@
 /**
  * auth.test.ts
- * Contains the jest testing designed for auth.ts that utelises
- * the HTTP routes created to test functionality
+ *
+ * File contains all of the jest testing for the HTTP layer for
+ * all /auth/* routes.
  */
 
 import {
@@ -20,6 +21,11 @@ interface AuthReturn {
   authUserId: number;
 }
 
+/**
+ * Clears the dataStore before each test is ran. Ensures that
+ * tests do not rely on the results of others to ensure full 
+ * functionality and correct implementation.
+*/
 beforeEach(() => {
   testClear();
 });
