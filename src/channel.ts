@@ -8,7 +8,6 @@ import { getData, setData } from './dataStore';
 
 const NO_MORE_MESSAGES = -1;
 const FIFTY_MESSAGES = 50;
-const GLOBALMEMBER = 2;
 
 interface Error {
   error: string
@@ -268,6 +267,7 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
  */
 function channelAddOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
   const data = getData();
+  let ispermitted = false;
 
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
@@ -285,15 +285,20 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number): Error
     return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
-  if (data.users[uId].permissionId === GLOBALMEMBER) {
-    return { error: 'do not have owner permission' };
-  }
+  const ownerUId = findUId(token);
 
   for (const owner of data.channels[channelId].owners) {
     if (owner.uId === uId) {
       return { error: 'user is already an owner in the channel' };
     }
+    if (owner.uId === ownerUId) {
+      ispermitted = true;
+    }
   }
+  if (!ispermitted) {
+    return { error: 'do not have owner permission' };
+  }
+
   const user = data.users[uId];
   const userObject: Users = {
     uId: user.uId,
@@ -319,6 +324,7 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number): Error
 function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
   const data = getData();
   let isowner = false;
+  let ispermitted = false;
 
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
@@ -336,11 +342,22 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Er
     return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
+  const ownerUId = findUId(token);
+
   for (const owner of data.channels[channelId].owners) {
+    if (owner.uId === ownerUId) {
+      ispermitted = true;
+    }
+
     if (owner.uId === uId) {
       isowner = true;
     }
   }
+
+  if (!ispermitted) {
+    return { error: 'do not have owner permission' };
+  }
+
   if (!isowner) {
     return { error: 'The user is not an owner' };
   }

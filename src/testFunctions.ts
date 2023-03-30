@@ -123,6 +123,48 @@ export function testChannelDetails(token: string, channelId: number) {
   return JSON.parse(res.getBody() as string);
 }
 
+export function testChannelLeave(token: string, channelId: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/channel/leave/v1`,
+    {
+      json: {
+        token,
+        channelId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testChannelAddOwner(token: string, channelId: number, uId: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/channel/leave/v1`,
+    {
+      json: {
+        token,
+        channelId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testRemoveOwner(token: string, channelId: number, uId: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/channel/leave/v1`,
+    {
+      json: {
+        token,
+        channelId
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 /** /channels/* Test Functions **/
 
 /** /dm/* Test Functions **/
