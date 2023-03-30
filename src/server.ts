@@ -222,7 +222,6 @@ app.post('/message/sendDm/v1', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
-
 /** /user/* Routes **/
 
 app.get('/user/profile/v2', (req: Request, res: Response) => {

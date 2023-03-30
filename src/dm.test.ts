@@ -29,7 +29,7 @@ interface DmId {
 
 /**
  * Clears the dataStore before each test is ran. Ensures that
- * tests do not rely on the results of others to ensure full 
+ * tests do not rely on the results of others to ensure full
  * functionality and correct implementation.
 */
 beforeEach(() => {

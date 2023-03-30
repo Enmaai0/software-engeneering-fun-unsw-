@@ -311,7 +311,7 @@ export function testMessageSend(token: string, channelId: number, message: strin
     }
   );
   return JSON.parse(res.getBody() as string);
-};
+}
 
 export function testMessageEdit(token: string, messageId: number, message: string) {
   const res = request(
@@ -326,7 +326,7 @@ export function testMessageEdit(token: string, messageId: number, message: strin
     }
   );
   return JSON.parse(res.getBody() as string);
-};
+}
 
 export function testMessageRemove(token: string, messageId: number) {
   const res = request(
@@ -340,7 +340,7 @@ export function testMessageRemove(token: string, messageId: number) {
     }
   );
   return JSON.parse(res.getBody() as string);
-};
+}
 
 export function testMessageSendDm(token: string, dmId: number, message: string) {
   const res = request(
@@ -355,7 +355,7 @@ export function testMessageSendDm(token: string, dmId: number, message: string) 
     }
   );
   return JSON.parse(res.getBody() as string);
-};
+}
 
 /** /users/* Test Functions **/
 
