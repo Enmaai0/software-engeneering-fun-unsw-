@@ -283,7 +283,7 @@ export function testUserProfile(token: string, uId: number) {
 export function testUsersAll(token: string) {
   const res = request(
     'GET',
-    `${url}:${port}/user/all/v1`,
+    `${url}:${port}/users/all/v1`,
     {
       qs: {
         token
@@ -293,14 +293,14 @@ export function testUsersAll(token: string) {
   return JSON.parse(res.getBody() as string);
 }
 
-export function testSetName(token: string, namFisrt: string, nameLast: string) {
+export function testSetName(token: string, nameFirst: string, nameLast: string) {
   const res = request(
     'PUT',
     `${url}:${port}/user/profile/setname/v1`,
     {
       json: {
         token,
-        namFisrt,
+        nameFirst,
         nameLast
       }
     }

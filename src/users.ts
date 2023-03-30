@@ -10,7 +10,7 @@ import validator from 'validator';
 const MINNAMELENGTH = 1;
 const MAXNAMELENGTH = 50;
 const MINHANDLELENGTH = 3;
-const MAXHANDLELENGTH = 3;
+const MAXHANDLELENGTH = 20;
 
 interface Error {
   error: string
@@ -80,7 +80,9 @@ function usersAllV1(token: string) : Error | UserArray {
 
   const data = getData();
   const users = data.users;
+
   const returnArray = [];
+
   for (const user of users) {
     const userProfile = {
       uId: user.uId,
@@ -89,6 +91,7 @@ function usersAllV1(token: string) : Error | UserArray {
       nameLast: user.nameLast,
       handleStr: user.userHandle
     };
+
     returnArray.push(userProfile);
   }
 
@@ -109,10 +112,10 @@ function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Err
   }
 
   const data = getData();
-  data.users[findUId(token)].nameFirst = nameFirst;
-  data.users[findUId(token)].nameLast = nameLast;
+  const uId = findUId(token);
 
-  setData(data);
+  data.users[uId].nameFirst = nameFirst;
+  data.users[uId].nameLast = nameLast;
 
   return {};
 }
@@ -130,9 +133,10 @@ function userSetEmailV1(token: string, email: string) : Error | Record<string, n
     return { error: 'Invalid Email (Email Already in Use)' };
   }
 
+  const uId = findUId(token);
+
   const data = getData();
-  data.users[findUId(token)].email = email;
-  setData(data);
+  data.users[uId].email = email;
 
   return {};
 }
@@ -154,8 +158,15 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
     return { error: 'Invalid Handle (Maximum 20 Characters)' };
   }
 
+  // Checks if the string has non-alphanumeric characters
+  if (handle.match(/^[0-9a-z]$/)) {
+    return { error: 'Invalid Handle (Must Contain Only Alphanumeric Characters' };
+  }
+
+  const uId = findUId(token);
+
   const data = getData();
-  data.users[findUId(token)].userHandle = handle;
+  data.users[uId].userHandle = handle;
   setData(data);
 
   return {};
@@ -223,23 +234,23 @@ function isUserHandleTaken(userHandle: string): boolean {
 }
 
 /**
+ * findUId
+ *
  * Given a token, find the corresponding uId
  *
  * @param token
  * @returns {number} uId
  */
 function findUId(token: string): number {
-  const users = getData().users;
-  let id;
+  const data = getData();
 
-  for (const user of users) {
-    for (const theToken of user.tokens) {
-      if (theToken === token) {
-        id = user.uId;
-      }
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return user.uId;
     }
   }
-  return id;
+  return -1;
 }
 
 export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 };

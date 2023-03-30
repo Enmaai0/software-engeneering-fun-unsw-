@@ -4,13 +4,16 @@
  * Contains the jest testing designed for user.js
  */
 
-import request from 'sync-request';
-import config from './config.json';
-import { testClear } from './other.test';
-import { testAuthRegister } from './auth.test';
+import {
+  testUserProfile,
+  testUsersAll,
+  testSetName,
+  testSetEmail,
+  testSetHandle,
+  testClear,
+  testAuthRegister
+} from './testFunctions';
 
-const port = config.port;
-const url = config.url;
 const ERROR = { error: expect.any(String) };
 
 /**
@@ -25,86 +28,6 @@ beforeEach(() => {
 interface AuthReturn {
   token: string;
   authUserId: number;
-}
-
-/// //////////// testUserProfile Function ///////////////
-
-function testUserProfile(token: string, uId: number) {
-  const res = request(
-    'GET',
-    `${url}:${port}/user/profile/v2`,
-    {
-      qs: {
-        token,
-        uId
-      }
-    }
-  );
-  return JSON.parse(res.getBody() as string);
-}
-
-/// //////////// testUsersAll Function ///////////////
-
-function testUsersAll(token: string) {
-  const res = request(
-    'GET',
-    `${url}:${port}/user/all/v1`,
-    {
-      qs: {
-        token
-      }
-    }
-  );
-  return JSON.parse(res.getBody() as string);
-}
-
-/// //////////// testSetName Function ///////////////
-
-function testSetName(token: string, nameFisrt: string, nameLast: string) {
-  const res = request(
-    'PUT',
-    `${url}:${port}/user/profile/setname/v1`,
-    {
-      json: {
-        token,
-        nameFisrt,
-        nameLast
-      }
-    }
-  );
-  return JSON.parse(res.getBody() as string);
-}
-
-/// //////////// testSetEmail Function ///////////////
-
-function testSetEmail(token: string, email: string) {
-  const res = request(
-    'PUT',
-    `${url}:${port}/user/profile/setemail/v1`,
-    {
-      json: {
-        token,
-        email
-      }
-    }
-  );
-  return JSON.parse(res.getBody() as string);
-}
-
-/// //////////// testSetHandle Function ///////////////
-
-function testSetHandle(token: string, handleStr: string) {
-  const res = request(
-    'PUT',
-    `${url}:${port}/user/profile/sethandle/v1`,
-    {
-      json: {
-        token,
-        handleStr
-      }
-    }
-  );
-  return JSON.parse(res.getBody() as string);
 }
 
 /// //////////// UserProfileV1 Function ///////////////
@@ -193,11 +116,8 @@ describe('Correct Return: All Users', () => {
     });
   });
 
-  beforeEach(() => {
-    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
-  });
-
   test('All: Two Users', () => {
+    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -274,12 +194,9 @@ describe('Correct SetName: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
+  test('SetName: Set Name Two Users', () => {
     user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     testSetName(user2.token, 'A', 'B');
-  });
-
-  test('SetName: Set Name Two Users', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -344,12 +261,9 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
+  test('SetName: Set Name Two Users', () => {
     user2 = testAuthRegister('email3@gmail.com', 'pass1234', 'Test', 'Bot');
     testSetEmail(user2.token, 'email@gmail.com');
-  });
-
-  test('SetName: Set Name Two Users', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -420,7 +334,7 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
-        email: 'email2@gmail.com',
+        email: 'email@gmail.com',
         nameFirst: 'Test',
         nameLast: 'Bot',
         handleStr: 'handle',
@@ -428,12 +342,9 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     });
   });
 
-  beforeEach(() => {
-    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
-    testSetEmail(user2.token, 'handle2');
-  });
-
   test('SetHandle: Set Handle Two Users', () => {
+    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    testSetHandle(user2.token, 'handle2');
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -451,5 +362,3 @@ describe('Correct SetEmail: Correct Return Testing', () => {
     });
   });
 });
-
-export { testUserProfile, testUsersAll, testSetName, testSetEmail, testSetHandle };
