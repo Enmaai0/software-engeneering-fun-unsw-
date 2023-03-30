@@ -65,7 +65,7 @@ export function testAuthRegister(email: string, password: string, nameFirst: str
 
 /** /channel/* Test Functions **/
 
-export function testChannelInvite(token: string, channelId: number, uid: number) {
+export function testChannelInvite(token: string, channelId: number, uId: number) {
   const res = request(
     'POST',
     `${url}:${port}/channel/invite/v2`,
@@ -73,7 +73,7 @@ export function testChannelInvite(token: string, channelId: number, uid: number)
       json: {
         token,
         channelId,
-        uid
+        uId
       }
     }
   );
@@ -140,25 +140,27 @@ export function testChannelLeave(token: string, channelId: number) {
 export function testChannelAddOwner(token: string, channelId: number, uId: number) {
   const res = request(
     'POST',
-    `${url}:${port}/channel/leave/v1`,
+    `${url}:${port}/channel/addowner/v1`,
     {
       json: {
         token,
-        channelId
+        channelId,
+        uId
       }
     }
   );
   return JSON.parse(res.getBody() as string);
 }
 
-export function testRemoveOwner(token: string, channelId: number, uId: number) {
+export function testChannelRemoveOwner(token: string, channelId: number, uId: number) {
   const res = request(
     'POST',
-    `${url}:${port}/channel/leave/v1`,
+    `${url}:${port}/channel/removeowner/v1`,
     {
       json: {
         token,
-        channelId
+        channelId,
+        uId
       }
     }
   );
@@ -166,6 +168,21 @@ export function testRemoveOwner(token: string, channelId: number, uId: number) {
 }
 
 /** /channels/* Test Functions **/
+
+export function testChannelsCreate(token: string, name: string, isPublic: boolean) {
+  const res = request(
+    'POST',
+    `${url}:${port}/channels/create/v1`,
+    {
+      json: {
+        token,
+        name,
+        isPublic
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 /** /dm/* Test Functions **/
 

@@ -4,8 +4,30 @@
  * Contains the function implementations of all channels* functions.
  */
 
-import { authRegisterV1 } from './auth.ts';
-import { getData, setData } from './dataStore.ts';
+import { getData, setData } from './dataStore';
+
+interface Message {
+  messageId: number;
+  uId: number;
+  message: string;
+  timeSent: number;
+}
+
+interface UserObject {
+  uId: number;
+  email: string;
+  nameFirst: string;
+  nameLast: string;
+  handleStr: string;
+}
+interface Channel {
+  channelId: number;
+  name: string;
+  isPublic: boolean;
+  owners: UserObject[];
+  allMembers: UserObject[];
+  messages: Message[];
+}
 
 /**
  * channelsCreateV1
@@ -19,32 +41,9 @@ import { getData, setData } from './dataStore.ts';
  * @param { isPublic } isPublic
  * @returns {{ channelId: channelid }}
  */
-
-interface UserObject {
-  userId: string;
-  username: string;
-}
-
-interface Channel {
-  channelId: number;
-  name: string;
-  isPublic: boolean;
-  owners: UserObject[];
-  allMembers: UserObject[];
-  messages: string[];
-}
-
-interface UserObject {
-  uId: number;
-  email: string;
-  nameFirst: string;
-  nameLast: string;
-  handleStr: string;
-}
-
 function channelsCreateV1(token: string, name: string, isPublic: boolean): { channelId: number } | { error: string } {
-  if (!isValidUserId(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+  if (!isValidToken(token)) {
+    return { error: 'Invalid Token' };
   }
 
   if (name.length < 1 || name.length > 20) {
@@ -53,7 +52,10 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): { cha
 
   const data = getData();
   const channelId = data.channels.length;
-  const userObject = createUserObject(token);
+
+  const uId = getIdFromToken(token);
+  const userObject = createUserObject(uId);
+  const messageArray: Message[] = [];
 
   const channel: Channel = {
     channelId: channelId,
@@ -61,7 +63,7 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): { cha
     isPublic: isPublic,
     owners: [userObject],
     allMembers: [userObject],
-    messages: [],
+    messages: messageArray,
   };
 
   data.channels.push(channel);
@@ -71,22 +73,64 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): { cha
 }
 
 /**
+ * isValidToken
+ *
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
+ *
+ * @param {string} token
+ * @returns {boolean}
+ */
+function isValidToken(token: string): boolean {
+  const data = getData();
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * getIdFromToken
+ *
+ * Given a token extracts the uId of the person
+ * associated with that token.
+ * Errors should not occur due to previous error test
+ *
+ * @param {string} token
+ * @returns {number}
+ */
+function getIdFromToken(token: string): number {
+  const data = getData();
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return user.uId;
+    }
+  }
+  return -1;
+}
+
+/**
  * createUserObject
  *
  * Given a valid token, returns an object that
  * contains all information to be stored in either
  * channel.owners or channel.allMembers.
  *
- * @param { number } token
+ * @param { number } uId
  * @returns { UserObject }
  */
-function createUserObject(token: number): UserObject {
+function createUserObject(uId: number): UserObject {
   const data = getData();
-
-  const user = data.users[token];
+  const user = data.users[uId];
 
   const userObject: UserObject = {
-    uId: token,
+    uId: uId,
     email: user.email,
     nameFirst: user.nameFirst,
     nameLast: user.nameLast,
@@ -105,8 +149,8 @@ function createUserObject(token: number): UserObject {
  * @param { number } token
  * @returns {{ channels: Channel[] }}
  */
-function channelsListAllV1(token: number) {
-  if (!isValidUserId(token)) {
+function channelsListAllV1(token: string) {
+  if (!isValidToken(token)) {
     return { error: 'Invalid User (User does not exist)' };
   }
 
@@ -137,18 +181,18 @@ function channelsListAllV1(token: number) {
  * @param { number } token
  * @returns {{ channels: Array<{ name: string, channelId: number }> }}
  */
-function channelsListV1 (token: number) {
-  if (!isValidUserId(token)) {
+function channelsListV1 (token: string) {
+  if (!isValidToken(token)) {
     return { error: 'Invalid User (User does not exist)' };
   }
 
   const data = getData();
   const channelArray = [];
-  const userId = token;
+  const userId = getIdFromToken(token);
 
   for (const channel of data.channels) {
     for (const user of channel.allMembers) {
-      if (user.uId === token) {
+      if (user.uId === userId) {
         const channelDetails = {
           name: channel.name,
           channelId: channel.channelId
@@ -159,25 +203,6 @@ function channelsListV1 (token: number) {
   }
 
   return { channels: channelArray };
-}
-
-/**
- * isValidUserId
- *
- * Given a id of a user, returns whether that
- * id exists within the dataStore.
- *
- * @param { number } id
- * @returns { boolean }
- */
-function isValidUserId(id: number): boolean {
-  const data = getData();
-
-  if (id >= data.users.length) {
-    return false;
-  }
-
-  return true;
 }
 
 export { channelsCreateV1, channelsListAllV1, channelsListV1 };

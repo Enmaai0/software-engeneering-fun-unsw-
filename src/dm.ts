@@ -103,6 +103,8 @@ function dmCreate(token: string, uIds: number[]): DmId | Error {
 
   data.dms.push(dmObject);
 
+  setData(data);
+
   return { dmId: dmId };
 }
 
@@ -128,7 +130,7 @@ function isValidToken(token: string): boolean {
 }
 
 /**
- * isUSerId
+ * isUserId
  *
  * Given a uId checks if that uId exists
  *
@@ -185,6 +187,15 @@ function getIdFromToken(token: string): number {
   return -1;
 }
 
+/**
+ * generateDmName
+ *
+ * Generates a concated string of all userhandles
+ * that are contained within the array passed in
+ *
+ * @param {number[]} idArray
+ * @returns {string}
+ */
 function generateDmName(idArray: number[]): string {
   const data = getData();
 
