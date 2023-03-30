@@ -536,9 +536,9 @@ describe('/dm/messages: Return Testing', () => {
     const testMessage3 = testMessageSendDm(testUser1.token, testDm.dmId, 'Third Message');
     expect(testDmMessages(testUser1.token, testDm.dmId, 0)).toStrictEqual({
       messages: [{
-        messageId: testMessage1.messageId,
+        messageId: testMessage3.messageId,
         uId: testUser1.authUserId,
-        message: 'First Message',
+        message: 'Third Message',
         timeSent: expect.any(Number)
       }, {
         messageId: testMessage2.messageId,
@@ -546,9 +546,9 @@ describe('/dm/messages: Return Testing', () => {
         message: 'Second Message',
         timeSent: expect.any(Number)
       }, {
-        messageId: testMessage3.messageId,
+        messageId: testMessage1.messageId,
         uId: testUser1.authUserId,
-        message: 'Third Message',
+        message: 'First Message',
         timeSent: expect.any(Number)
       }],
       start: 0,

@@ -282,7 +282,7 @@ describe('Correct SetEmail: Correct Return Testing', () => {
   });
 });
 
-/** UserSetHandlecoV1 Function **/
+/** UserSetHandleV1 Function **/
 
 describe('userSetHandleV1: Error Testing', () => {
   let user1: AuthReturn;
@@ -565,7 +565,7 @@ describe('Correct SetEmail: Correct Return Testing', () => {
   });
 });
 
-/** UserSetHandlecoV1 Function **/
+/** UserSetHandleV1 Function **/
 
 describe('userSetHandleV1: Error Testing', () => {
   let user1: AuthReturn;

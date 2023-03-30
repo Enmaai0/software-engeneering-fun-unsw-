@@ -9,7 +9,8 @@ import {
   testAuthLogout,
   testAuthRegister,
   testClear,
-  testDmCreate
+  testDmCreate,
+  testUsersAll
 } from './testFunctions';
 
 const ERROR = { error: expect.any(String) };
@@ -160,7 +161,46 @@ describe('/auth/register: Return Testing', () => {
     });
 
     test('Correct Return: Check Unique authUserId', () => {
-      expect(user1).not.toMatchObject(user2);
+      expect(user1.authUserId).not.toEqual(user2.authUserId);
+      expect(user1.token).not.toEqual(user2.token);
+    });
+  });
+
+  describe('Testing with /users/all', () => {
+    let user1: AuthReturn;
+    beforeEach(() => {
+      user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    });
+
+    test('One Users List All', () => {
+      expect(testUsersAll(user1.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }]
+      });
+    });
+
+    test('Two Users List All', () => {
+      const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+      expect(testUsersAll(user1.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }, {
+          uId: user2.authUserId,
+          email: 'email2@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot II',
+          handleStr: 'testbotii'
+        }]
+      });
     });
   });
 });

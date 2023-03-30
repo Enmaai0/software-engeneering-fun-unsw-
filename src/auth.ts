@@ -16,6 +16,17 @@ interface AuthReturn {
   authUserId: number;
 }
 
+interface UserObject {
+  uId: number,
+  email: string,
+  password: string,
+  nameFirst: string,
+  nameLast:string,
+  userHandle: string,
+  permissionId: number,
+  tokens: string[],
+}
+
 const MAXTOKEN = 10000000;
 const MINPASSLENGTh = 6;
 const MINNAMELENGTH = 1;
@@ -53,6 +64,8 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
       authUserId: userIndex
     };
   }
+
+  setData(data);
 
   return { error: 'Incorrect Password' };
 }
@@ -160,7 +173,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   }
 
   const newUserIndex = data.users.length;
-  const userObject = {
+  const userObject: UserObject = {
     uId: newUserIndex,
     email: email,
     password: password,
@@ -172,11 +185,12 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   };
 
   data.users.push(userObject);
+
   setData(data);
 
   return {
     token: userObject.tokens[0],
-    authUserId: newUserIndex
+    authUserId: userObject.uId
   };
 }
 
