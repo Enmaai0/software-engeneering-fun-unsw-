@@ -15,7 +15,7 @@ import { getData, setData } from './dataStore';
  * channel array (default state)
  *
  * @param null
- * @returns { {} }
+ * @returns {{ }}
  */
 function clearV1(): Record<string, never> {
   let data = getData();
@@ -23,7 +23,8 @@ function clearV1(): Record<string, never> {
   data = {
     users: [],
     channels: [],
-    dms: []
+    dms: [],
+    globalMessageCounter: 0
   };
 
   setData(data);

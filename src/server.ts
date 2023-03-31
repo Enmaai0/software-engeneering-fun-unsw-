@@ -10,7 +10,7 @@ import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
 import { channelsCreateV1, channelsListAllV1, channelsListV1 } from './channels';
-import { messageEditV1, messageRemoveV1, messageSendV1 } from './message';
+import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1 } from './message';
 
 // Set up web app
 const app = express();
@@ -209,7 +209,7 @@ app.put('/message/edit/v1', (req: Request, res: Response) => {
 
 app.delete('/message/remove/v1', (req: Request, res: Response) => {
   const token = req.query.token as string;
-  const messageId = req.query.dmId as string;
+  const messageId = req.query.messageId as string;
   const returnMessage = messageRemoveV1(token, Number(messageId));
   saveData();
   res.json(returnMessage);
@@ -217,7 +217,7 @@ app.delete('/message/remove/v1', (req: Request, res: Response) => {
 
 app.post('/message/senddm/v1', (req: Request, res: Response) => {
   const { token, dmId, message } = req.body;
-  const returnMessage = messageSendV1(token, dmId, message);
+  const returnMessage = messageSendDmV1(token, dmId, message);
   saveData();
   res.json(returnMessage);
 });

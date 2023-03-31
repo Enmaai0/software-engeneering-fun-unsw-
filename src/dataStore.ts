@@ -52,7 +52,8 @@ interface Dm {
 interface Data {
   users: User[],
   channels: Channel[],
-  dms: Dm[]
+  dms: Dm[],
+  globalMessageCounter: number
 }
 
 const FILE = 'src/persistenceDataStore.json';
@@ -62,7 +63,8 @@ import fs from 'fs';
 let data: Data = {
   users: [],
   channels: [],
-  dms: []
+  dms: [],
+  globalMessageCounter: 0
 };
 
 /**

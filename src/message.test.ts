@@ -174,12 +174,7 @@ describe('/message/edit: Return Testing', () => {
     const message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
     expect(testMessageEdit(user1.token, message.messageId, '')).toStrictEqual({});
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [{
-        message: '',
-        uId: user1.authUserId,
-        messageId: message.messageId,
-        timeSent: expect.any(Number),
-      }],
+      messages: [],
       start: 0,
       end: -1,
     });
@@ -286,9 +281,30 @@ describe('/message/remove: Return Testing', () => {
   });
 
   test('Correct Message Removal (3 -> 2 Messages)', () => {
+    testChannelJoin(user2.token, channel.channelId);
     const message1 = testMessageSend(user1.token, channel.channelId, 'First');
     const message2 = testMessageSend(user1.token, channel.channelId, 'Second');
     const message3 = testMessageSend(user2.token, channel.channelId, 'Third');
+    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
+      messages: [{
+        message: 'Third',
+        uId: user2.authUserId,
+        messageId: message3.messageId,
+        timeSent: expect.any(Number),
+      }, {
+        message: 'Second',
+        uId: user1.authUserId,
+        messageId: message2.messageId,
+        timeSent: expect.any(Number),
+      }, {
+        message: 'First',
+        uId: user1.authUserId,
+        messageId: message1.messageId,
+        timeSent: expect.any(Number),
+      }],
+      start: 0,
+      end: -1,
+    });
     expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual({});
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
       messages: [{
