@@ -7,11 +7,6 @@
 import { getData, setData } from './dataStore';
 import validator from 'validator';
 
-const MINNAMELENGTH = 1;
-const MAXNAMELENGTH = 50;
-const MINHANDLELENGTH = 3;
-const MAXHANDLELENGTH = 20;
-
 interface Error {
   error: string
 }
@@ -31,6 +26,11 @@ interface User {
 interface UserArray {
   users: UserProfile[]
 }
+
+const MINNAMELENGTH = 1;
+const MAXNAMELENGTH = 50;
+const MINHANDLELENGTH = 3;
+const MAXHANDLELENGTH = 20;
 
 /**
  * userProfileV1
@@ -178,8 +178,8 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
  * Given a token returns whether the token exists
  * within the dataStore or not.
  *
- * @param {string} token
- * @returns {boolean}
+ * @param { string } token
+ * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
   const users = getData().users;
@@ -198,7 +198,7 @@ function isValidToken(token: string): boolean {
  * depending on whether the email is already
  * contained within dataStore under a user.
  *
- * @param {string} email
+ * @param { string } email
  * @return { boolean }
  */
 function isRegisteredEmail(email: string): boolean {
@@ -219,7 +219,7 @@ function isRegisteredEmail(email: string): boolean {
  * through the entire data base of users to
  * find if the userHandle already exists.
  *
- * @param {string} userHandle
+ * @param { string } userHandle
  * @return { boolean }
  */
 function isUserHandleTaken(userHandle: string): boolean {
@@ -238,8 +238,8 @@ function isUserHandleTaken(userHandle: string): boolean {
  *
  * Given a token, find the corresponding uId
  *
- * @param token
- * @returns {number} uId
+ * @param { string } token
+ * @returns { number }
  */
 function findUId(token: string): number {
   const data = getData();

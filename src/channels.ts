@@ -6,6 +6,9 @@
 
 import { getData, setData } from './dataStore';
 
+interface Error {
+  error: string
+}
 interface Message {
   messageId: number;
   uId: number;
@@ -29,6 +32,18 @@ interface Channel {
   messages: Message[];
 }
 
+interface Channels {
+  channelId: number;
+  name: string;
+}
+
+interface ChannelsList {
+  channels: Channels[]
+}
+interface ChannelId {
+  channelId: number
+}
+
 /**
  * channelsCreateV1
  *
@@ -39,9 +54,9 @@ interface Channel {
  * @param { token } token
  * @param { name } name
  * @param { isPublic } isPublic
- * @returns {{ channelId: channelid }}
+ * @returns {{ ChannelId }}
  */
-function channelsCreateV1(token: string, name: string, isPublic: boolean): { channelId: number } | { error: string } {
+function channelsCreateV1(token: string, name: string, isPublic: boolean): ChannelId | Error {
   if (!isValidToken(token)) {
     return { error: 'Invalid Token' };
   }
@@ -73,13 +88,74 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): { cha
 }
 
 /**
+ * channelsListAllV1
+ *
+ * Given a valid token, provides an array of all channels,
+ * including private channels containing their channelId and name
+ *
+ * @param { number } token
+ * @returns {{ channels: Channel[] }}
+ */
+function channelsListAllV1(token: string): ChannelsList | Error {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid User (User does not exist)' };
+  }
+
+  const data = getData();
+  const channelArray: Channels[] = [];
+
+  for (const channel of data.channels) {
+    const channelDetails = {
+      channelId: channel.channelId,
+      name: channel.name,
+    };
+    channelArray.push(channelDetails);
+  }
+
+  return { channels: channelArray };
+}
+
+/**
+ * channelsListV1
+ *
+ * Given a valid token, returns an array of all
+ * channels that the inputted token is a part of
+ *
+ * @param { number } token
+ * @returns {{ ChannelsList }}
+ */
+function channelsListV1 (token: string) {
+  if (!isValidToken(token)) {
+    return { error: 'Invalid User (User does not exist)' };
+  }
+
+  const data = getData();
+  const channelArray = [];
+  const userId = getIdFromToken(token);
+
+  for (const channel of data.channels) {
+    for (const user of channel.allMembers) {
+      if (user.uId === userId) {
+        const channelDetails = {
+          name: channel.name,
+          channelId: channel.channelId
+        };
+        channelArray.push(channelDetails);
+      }
+    }
+  }
+
+  return { channels: channelArray };
+}
+
+/**
  * isValidToken
  *
  * Given a token returns whether the token exists
  * within the dataStore or not.
  *
- * @param {string} token
- * @returns {boolean}
+ * @param { string } token
+ * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
   const data = getData();
@@ -100,8 +176,8 @@ function isValidToken(token: string): boolean {
  * associated with that token.
  * Errors should not occur due to previous error test
  *
- * @param {string} token
- * @returns {number}
+ * @param { string } token
+ * @returns { number }
  */
 function getIdFromToken(token: string): number {
   const data = getData();
@@ -138,71 +214,6 @@ function createUserObject(uId: number): UserObject {
   };
 
   return userObject;
-}
-
-/**
- * channelsListAllV1
- *
- * Given a valid token, provides an array of all channels,
- * including private channels containing their channelId and name
- *
- * @param { number } token
- * @returns {{ channels: Channel[] }}
- */
-function channelsListAllV1(token: string) {
-  if (!isValidToken(token)) {
-    return { error: 'Invalid User (User does not exist)' };
-  }
-
-  const data = getData();
-  const channelArray: Channel[] = [];
-
-  for (const channel of data.channels) {
-    const channelDetails: Channel = {
-      channelId: channel.channelId,
-      name: channel.name,
-      isPublic: channel.isPublic,
-      owners: channel.owners,
-      allMembers: channel.allMembers,
-      messages: channel.messages,
-    };
-    channelArray.push(channelDetails);
-  }
-
-  return { channels: channelArray };
-}
-
-/**
- * channelsListV1
- *
- * Given a valid token, returns an array of all
- * channels that the inputted token is a part of
- *
- * @param { number } token
- * @returns {{ channels: Array<{ name: string, channelId: number }> }}
- */
-function channelsListV1 (token: string) {
-  if (!isValidToken(token)) {
-    return { error: 'Invalid User (User does not exist)' };
-  }
-
-  const data = getData();
-  const channelArray = [];
-  const userId = getIdFromToken(token);
-
-  for (const channel of data.channels) {
-    for (const user of channel.allMembers) {
-      if (user.uId === userId) {
-        const channelDetails = {
-          name: channel.name,
-          channelId: channel.channelId
-        };
-        channelArray.push(channelDetails);
-      }
-    }
-  }
-
-  return { channels: channelArray };
 }
 
 export { channelsCreateV1, channelsListAllV1, channelsListV1 };

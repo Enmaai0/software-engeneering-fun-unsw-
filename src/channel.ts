@@ -6,10 +6,6 @@
 
 import { getData, setData } from './dataStore';
 
-const NO_MORE_MESSAGES = -1;
-const FIFTY_MESSAGES = 50;
-const GLOBALMEMBER = 2;
-
 interface Error {
   error: string
 }
@@ -41,6 +37,10 @@ interface DetailReturn {
   ownerMembers: Member[];
   allMembers: Member[];
 }
+
+const NO_MORE_MESSAGES = -1;
+const FIFTY_MESSAGES = 50;
+const GLOBALMEMBER = 2;
 
 /**
  * channelDetailsV1
@@ -83,7 +83,7 @@ function channelDetailsV1(token: string, channelId: number): Error | DetailRetur
  *
  * @param { number } authUserId
  * @param { number } channelId
- * @return {  }
+ * @return {{ }}
  */
 function channelJoinV1(token: string, channelId: number) : Error | Record<string, never> {
   if (!isValidToken(token)) {
@@ -131,7 +131,7 @@ function channelJoinV1(token: string, channelId: number) : Error | Record<string
  * @param { number } authUserId
  * @param { number } channelId
  * @param { number } uId
- * @return {  }
+ * @return {{ }}
  */
 function channelInviteV1(token: string, channelId: number, uId: number) : Error | Record<string, never> {
   if (!isValidToken(token)) {
@@ -199,13 +199,14 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   }
 
   const data = getData();
-  const messageArray = data.channels[channelId].messages;
+  const channel = data.channels[channelId];
 
-  if (start > messageArray.length) {
+  if (start > channel.messages.length) {
     return { error: 'Invalid Start (Start is greater than total messages)' };
   }
 
-  if (messageArray.length === 0) {
+  // If the messages array is empty, simply return empty messages
+  if (channel.messages.length === 0) {
     return {
       messages: [],
       start: start,
@@ -214,16 +215,26 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   }
 
   const returnMessages: Message[] = [];
-  const returnEnd = (start + FIFTY_MESSAGES > messageArray.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
+  const returnEnd = (start + FIFTY_MESSAGES > channel.messages.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
 
-  // Stops the loop from iterating througn negative array indexes
-  const realStart = (start < 0) ? 0 : start;
-  const realEnd = start + FIFTY_MESSAGES;
+  let realStart: number, realEnd: number;
+  realEnd = (channel.messages.length - start - 50 < 0) ? 0 : channel.messages.length - start - 50;
+  realStart = (start < 0) ? realEnd + start + 50 : channel.messages.length - start - 1;
+  realStart = (realStart >= channel.messages.length) ? channel.messages.length - 1 : realStart;
 
-  for (let i = realStart; i < realEnd; i++) {
-    if ((messageArray.length - i) >= 0) {
-      returnMessages.push(messageArray[messageArray.length - i]);
-    }
+  if (start < -50) {
+    realStart = -1;
+    realEnd = 0;
+  }
+
+  for (let i = realStart; i >= realEnd; i--) {
+    const message = {
+      messageId: channel.messages[i].messageId,
+      uId: channel.messages[i].uId,
+      message: channel.messages[i].message,
+      timeSent: Number(channel.messages[i].timeSent)
+    };
+    returnMessages.push(message);
   }
 
   return {
@@ -239,9 +250,9 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   * Takes a token and channelId, find the user via the token
   * and delete the user in this channel.
   *
-  * @param token
-  * @param channelId
-  * @returns {{}}
+  * @param { string } token
+  * @param { number } channelId
+  * @returns {{ }}
   */
 function channelLeaveV1(token: string, channelId: number): Error | Record<string, never> {
   if (!isChannelId(channelId)) {
@@ -278,17 +289,17 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
 
   setData(data);
 
-  return { };
+  return {};
 }
 
 /**
  * Takes a token, a channelId and a uId, add the user
  * to owner member if permitted.
  *
- * @param token
- * @param channelId
- * @param uId
- * @returns { }
+ * @param { string } token
+ * @param { number } channelId
+ * @param { number } uId
+ * @returns {{ }}
  */
 function channelAddOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
   const data = getData();
@@ -341,10 +352,10 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number): Error
  * Takes a token, a channelId and a uId, to remove a
  * specific owner member
  *
- * @param token
- * @param channelId
- * @param uId
- * @returns
+ * @param { string } token
+ * @param { number } channelId
+ * @param { number } uId
+ * @returns {{ }}
  */
 function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
   if (!isChannelId(channelId)) {
@@ -452,11 +463,13 @@ function isMember(token: string, channelId: number): boolean {
 }
 
 /**
+ * isValidToken
+ *
  * Given a token and to check if it is
  * a valid token owned by any user
  *
- * @param token
- * @returns {boolean}
+ * @param { string } token
+ * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
   const users = getData().users;
@@ -477,8 +490,8 @@ function isValidToken(token: string): boolean {
  * associated with that token.
  * Errors should not occur due to previous error test
  *
- * @param {string} token
- * @returns {number}
+ * @param { string } token
+ * @returns { number }
  */
 function getIdFromToken(token: string): number {
   const data = getData();

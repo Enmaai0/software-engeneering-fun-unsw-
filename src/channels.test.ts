@@ -15,44 +15,54 @@ import {
 
 const ERROR = { error: expect.any(String) };
 
+interface AuthReturn {
+  token: string;
+  authUserId: number;
+}
+
+interface ChannelsCreateReturn {
+  channelId: number;
+}
+
 /**
  * Clears the dataStore before each test is ran. Ensures that
- * tests do not rely on the results of others to ensure full 
+ * tests do not rely on the results of others to ensure full
  * functionality and correct implementation.
 */
 beforeEach(() => {
   testClear();
 });
 
-/////////////// channelsCreateV1 ///////////////
+/** channelsCreateV1 **/
 
-describe('channelsCreateV1: Error Testing', () => {
-  let user1;
+describe('/channels/create: Error Testing', () => {
+  let user1: AuthReturn;
   beforeEach(() => {
-    user1 = authRegisterV1('validemail@gmail.com', '123abc!@#','jake', 'Renzella');
+    user1 = testAuthRegister('validemail@gmail.com', '123abc!@#', 'jake', 'Renzella');
   });
 
-  test('authUserId: Invalid authUserId', () => {
-      expect(channelsCreateV1(user1.authUserId + 1, 'Channel', true)).toStrictEqual(ERROR);
+  test('Token: Invalid Token', () => {
+    expect(testChannelsCreate(user1.token + '1', 'Channel', true)).toStrictEqual(ERROR);
   });
 
   test('Name: Too Short', () => {
-      expect(channelsCreateV1(user1.authUserId, '', true)).toStrictEqual(ERROR);
+    expect(testChannelsCreate(user1.token, '', true)).toStrictEqual(ERROR);
   });
-  
+
   test('Name: Too Long', () => {
-    expect(channelsCreateV1(user1.authUserId, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', true)).toStrictEqual(ERROR);
+    expect(testChannelsCreate(user1.token, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', true)).toStrictEqual(ERROR);
   });
 });
 
-describe('channelsCreateV1: channelId Testing', () => {
-  let user1, channel1, channel2;
+describe('/channels/create: channelId Testing', () => {
+  let user1: AuthReturn;
+  let channel1: ChannelsCreateReturn, channel2: ChannelsCreateReturn;
   beforeEach(() => {
-    user1 = authRegisterV1('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
-    channel1 = channelsCreateV1(user1.authUserId, 'Channel 1', true);
-    channel2 = channelsCreateV1(user1.authUserId, 'Channel 2', true);
+    user1 = testAuthRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    channel1 = testChannelsCreate(user1.token, 'Channel 1', true);
+    channel2 = testChannelsCreate(user1.token, 'Channel 2', true);
   });
-  
+
   test('Correct Return: First Channel', () => {
     expect(channel1).toStrictEqual({ channelId: expect.any(Number) });
   });
@@ -66,83 +76,116 @@ describe('channelsCreateV1: channelId Testing', () => {
   });
 });
 
-/////////////// channelsListAllV1 ///////////////
+/** channelsListV1 **/
 
-describe('channelsListAllV1: Error Testing', () => {
-  test('authUserId: Invalid authUserId', () => {
-    let user1 = authRegisterV1('validemail@gmail.com', 'pass1234','Jake', 'Renzella')
-    expect(channelsListAllV1(user1.authUserId + 1)).toStrictEqual(ERROR)
-  });
-});
-
-describe('channelsListAllV1: Return List Testing', () => {
-  test('Correct Return: Two Channels', () => {
-    let user1 = authRegisterV1('validemail@gmail.com', '123abc!@#','jake', 'Renzella');
-    channelsCreateV1(user1.authUserId, 'Channel1', true);
-    channelsCreateV1(user1.authUserId, 'Channel2', false);
-    expect(channelsListAllV1(user1)).toStrictEqual({
-      channels: [
-        {
-          channelId: expect.any(Number),
-          name: 'Channel1'
-        },
-        {
-          channelId: expect.any(Number),
-          name: 'Channel2'
-        }
-      ]
-    });
-  });
-})
-
-/////////////// channelsListV1 ///////////////
-
-describe('channelsListV1" Error Testing', () => {
+describe('/channels/list: Error Testing', () => {
   test('authUserId is invalid', () => {
-    let user1 = authRegisterV1('validemail@gmail.com', 'pass1234', 'jake', 'Renzella');
-    expect(channelsListV1(user1.authUserId + 1)).toStrictEqual(ERROR)
+    const user1 = testAuthRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    testChannelsCreate(user1.token, 'Channel1', true);
+    expect(testChannelsListAll(user1.token + '1')).toStrictEqual(ERROR);
   });
 });
 
 describe('channelsListV1: Return List Testing', () => {
-  test('Testing User is in Public Channels Only', () => {
-    const user1 = authRegisterV1('validemail@gmail.com', '123abc!@#','jake', 'Renzella').authUserId
-    channelsCreateV1(user1, 'Channel1', true);
-    channelsCreateV1(user1, 'Channel2', true);
-    expect(channelsListV1(user1)).toStrictEqual({
-      channels: [
-        {
-          channelId: expect.any(Number),
-          name: 'Channel1'
-        },
-        {
-          channelId: expect.any(Number),
-          name: 'Channel2'
-        }
-      ]
+  let user1: AuthReturn, user2: AuthReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('validemail@gmail.com', '123abc!@#', 'Jake', 'Renzella');
+    user2 = testAuthRegister('anotheemail@gmail.com', '123abc!@#', 'Monty', 'Python');
+  });
+
+  test('Testing User is in No Channels (Zero Total)', () => {
+    expect(testChannelsList(user1.token)).toStrictEqual({ channels: [] });
+  });
+
+  test('Testing User is in No Channels (One Total)', () => {
+    testChannelsCreate(user2.token, 'Channel1', true);
+    expect(testChannelsList(user1.token)).toStrictEqual({ channels: [] });
+    expect(testChannelsList(user2.token)).toStrictEqual({
+      channels: [{
+        channelId: expect.any(Number),
+        name: 'Channel1'
+      }]
     });
   });
 
-  test('Testing User is in Public & Private Channels', () => {
-    const user1 = authRegisterV1('validemail@gmail.com', '123abc!@#','jake', 'Renzella').authUserId
-    channelsCreateV1(user1, 'Channel1', true);
-    channelsCreateV1(user1, 'Channel2', true);
-    channelsCreateV1(user1, 'Channel3', false);
-    expect(channelsListV1(user1)).toStrictEqual({
-      channels: [
-        {
-          channelId: expect.any(Number),
-          name: 'Channel1'
-        },
-        {
-          channelId: expect.any(Number),
-          name: 'Channel2'
-        },
-        {
-          channelId: expect.any(Number),
-          name: 'Channel3'
-        }
-      ]
+  test('Testing User is in Two Channels (Three Total)', () => {
+    testChannelsCreate(user1.token, 'Channel1', true);
+    testChannelsCreate(user2.token, 'Channel2', true);
+    testChannelsCreate(user1.token, 'Channel3', true);
+    expect(testChannelsList(user1.token)).toStrictEqual({
+      channels: [{
+        channelId: expect.any(Number),
+        name: 'Channel1'
+      }, {
+        channelId: expect.any(Number),
+        name: 'Channel3'
+      }]
+    });
+    expect(testChannelsList(user2.token)).toStrictEqual({
+      channels: [{
+        channelId: expect.any(Number),
+        name: 'Channel2'
+      }]
+    });
+  });
+});
+
+/** channelsListAllV1 **/
+
+describe('/channels/listall: Error Testing', () => {
+  test('authUserId: Invalid authUserId', () => {
+    const user1 = testAuthRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    testChannelsCreate(user1.token, 'Channel1', true);
+    expect(testChannelsList(user1.token + '1')).toStrictEqual(ERROR);
+  });
+});
+
+describe('/channels/listall: Return List Testing', () => {
+  let user1: AuthReturn, user2: AuthReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('validemail@gmail.com', '123abc!@#', 'Jake', 'Renzella');
+    user2 = testAuthRegister('anotheemail@gmail.com', '123abc!@#', 'Monty', 'Python');
+  });
+
+  test('Correct Return: No Channels', () => {
+    expect(testChannelsListAll(user1.token)).toStrictEqual({ channels: [] });
+  });
+
+  test('Correct Return: One Channels', () => {
+    testChannelsCreate(user1.token, 'Channel1', true);
+    expect(testChannelsListAll(user1.token)).toStrictEqual({
+      channels: [{
+        channelId: expect.any(Number),
+        name: 'Channel1'
+      }]
+    });
+  });
+
+  test('Correct Return: Two Channels (First User Token)', () => {
+    testChannelsCreate(user1.token, 'Channel1', true);
+    testChannelsCreate(user2.token, 'Channel2', false);
+    expect(testChannelsListAll(user1.token)).toStrictEqual({
+      channels: [{
+        channelId: expect.any(Number),
+        name: 'Channel1'
+      }, {
+        channelId: expect.any(Number),
+        name: 'Channel2'
+      }]
+    });
+  });
+
+  test('Correct Return: Two Channels (Second User Token)', () => {
+    testChannelsCreate(user1.token, 'Channel1', true);
+    testChannelsCreate(user2.token, 'Channel2', false);
+    expect(testChannelsListAll(user2.token)).toStrictEqual({
+      channels: [{
+        channelId: expect.any(Number),
+        name: 'Channel1'
+      }, {
+        channelId: expect.any(Number),
+        name: 'Channel2'
+      }]
     });
   });
 });

@@ -16,6 +16,7 @@ import {
   testClear,
   testAuthRegister,
   testChannelsCreate,
+  testMessageSend
 } from './testFunctions';
 
 const ERROR = { error: expect.any(String) };
@@ -151,14 +152,57 @@ describe('/channel/messages: Error Testing', () => {
 
 describe('/channel/messages: Return Testing', () => {
   let user1: AuthReturn;
-  let channel1: ChannelsCreateReturn;
-  test('Correct Return: No Message', () => {
-    user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
-    channel1 = testChannelsCreate(user1.token, 'channel1', true);
-    expect(testChannelMessages(user1.token, channel1.channelId, 0)).toStrictEqual({
+  let channel: ChannelsCreateReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('orangecat@gmail.com', 'ball0fYarn', 'Orange', 'Cat');
+    channel = testChannelsCreate(user1.token, 'channel1', true);
+  });
+
+  test('Channel with no Messages', () => {
+    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
       messages: [],
       start: 0,
-      end: -1,
+      end: -1
+    });
+  });
+
+  test('Channel with Single Message', () => {
+    const testMessage = testMessageSend(user1.token, channel.channelId, 'One Message');
+    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
+      messages: [{
+        messageId: testMessage.messageId,
+        uId: user1.authUserId,
+        message: 'One Message',
+        timeSent: expect.any(Number)
+      }],
+      start: 0,
+      end: -1
+    });
+  });
+
+  test('Channel with Multiple Messages', () => {
+    const testMessage1 = testMessageSend(user1.token, channel.channelId, 'First Message');
+    const testMessage2 = testMessageSend(user1.token, channel.channelId, 'Second Message');
+    const testMessage3 = testMessageSend(user1.token, channel.channelId, 'Third Message');
+    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
+      messages: [{
+        messageId: testMessage3.messageId,
+        uId: user1.authUserId,
+        message: 'Third Message',
+        timeSent: expect.any(Number)
+      }, {
+        messageId: testMessage2.messageId,
+        uId: user1.authUserId,
+        message: 'Second Message',
+        timeSent: expect.any(Number)
+      }, {
+        messageId: testMessage1.messageId,
+        uId: user1.authUserId,
+        message: 'First Message',
+        timeSent: expect.any(Number)
+      }],
+      start: 0,
+      end: -1
     });
   });
 });
@@ -416,7 +460,7 @@ describe('/channel/leave: Return Testing', () => {
 
 /** /channel/addOwner Testing **/
 
-describe('/channel/addOwner: Error Testing', () => {
+describe('/channel/addowner: Error Testing', () => {
   let user1: AuthReturn;
   let channel: ChannelsCreateReturn;
   beforeEach(() => {
@@ -459,7 +503,7 @@ describe('/channel/addOwner: Error Testing', () => {
   });
 });
 
-describe('/channel/addOwner: Return Testing', () => {
+describe('/channel/addowner: Return Testing', () => {
   let user1: AuthReturn;
   let user2: AuthReturn;
   let channel: ChannelsCreateReturn;
@@ -516,7 +560,7 @@ describe('/channel/addOwner: Return Testing', () => {
 
 /** /channel/removeOwner Testing **/
 
-describe('/channel/removeOwner: Error Testing', () => {
+describe('/channel/removeowner: Error Testing', () => {
   let user1: AuthReturn;
   let channel: ChannelsCreateReturn;
   beforeEach(() => {
@@ -560,7 +604,7 @@ describe('/channel/removeOwner: Error Testing', () => {
   });
 });
 
-describe('/channel/removeOwner: Return Testing', () => {
+describe('/channel/removeowner: Return Testing', () => {
   let user1: AuthReturn, user2: AuthReturn;
   let channel: ChannelsCreateReturn;
   beforeEach(() => {

@@ -44,8 +44,8 @@ const GLOBALMEMBER = 2;
  * Errors return { error: "error" } on incorrect or
  * invalid input.
  *
- * @param {string} email
- * @param {string} password
+ * @param { string } email
+ * @param { string } password
  * @return {{ authUserId: number }}
  */
 function authLoginV1(email: string, password: string): Error | AuthReturn {
@@ -76,8 +76,8 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
  * Given an active token, invalidates the token to log
  * the user out.
  *
- * @param {string} token
- * @returns {}
+ * @param { string } token
+ * @returns {{ }}
  */
 function authLogoutV1(token: string): Record<string, never> | Error {
   const data = getData();
@@ -102,27 +102,6 @@ function authLogoutV1(token: string): Record<string, never> | Error {
 }
 
 /**
- * isValidToken
- *
- * Given a token returns whether the token exists
- * within the dataStore or not.
- *
- * @param {string} token
- * @returns {boolean}
- */
-function isValidToken(token: string): boolean {
-  const data = getData();
-
-  for (const user of data.users) {
-    const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
  * authRegisterV1
  *
  * Takes in an email, password, first-name and last-name
@@ -134,10 +113,10 @@ function isValidToken(token: string): boolean {
  * Errors return { error: "error" } on incorrect or
  * invalid input.
  *
- * @param {string} email
- * @param {string} password
- * @param {string} nameFirst
- * @param {string} nameLast
+ * @param { string } email
+ * @param { string } password
+ * @param { string } nameFirst
+ * @param { string } nameLast
  * @return {{ authUserId: number }}
  */
 function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): Error | AuthReturn {
@@ -195,6 +174,27 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
 }
 
 /**
+ * isValidToken
+ *
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
+ *
+ * @param { string } token
+ * @returns { boolean }
+ */
+function isValidToken(token: string): boolean {
+  const data = getData();
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * emailToUserIndex
  *
  * Given an email, returns the index of the user
@@ -203,7 +203,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
  * Returns 0 on email not being in dataStore
  * (Should not occur due to error check).
  *
- * @param {string} email
+ * @param { string } email
  * @return { number }
  */
 function emailToUserIndex(email: string): number {
@@ -224,7 +224,7 @@ function emailToUserIndex(email: string): number {
  * depending on whether the email is already
  * contained within dataStore under a user.
  *
- * @param {string} email
+ * @param { string } email
  * @return { boolean }
  */
 function isRegisteredEmail(email: string): boolean {
@@ -245,8 +245,8 @@ function isRegisteredEmail(email: string): boolean {
  * and creates the unique userHandle as
  * described in the project spec.
  *
- * @param {string} nameFirst
- * @param {string} nameLast
+ * @param { string } nameFirst
+ * @param { string } nameLast
  * @return { string }
  */
 function generateUserHandle(nameFirst: string, nameLast: string): string {
@@ -279,7 +279,7 @@ function generateUserHandle(nameFirst: string, nameLast: string): string {
  * through the entire data base of users to
  * find if the userHandle already exists.
  *
- * @param {string} userHandle
+ * @param { string } userHandle
  * @return { boolean }
  */
 function isUserHandleTaken(userHandle: string): boolean {
@@ -299,7 +299,7 @@ function isUserHandleTaken(userHandle: string): boolean {
  * Generates a random number (between 0 - 9999999) converted
  * into a string to be used as the users current token.
  *
- * @param {} N.A
+ * @param { } N.A
  * @returns { string }
  */
 function generateToken(): string {
