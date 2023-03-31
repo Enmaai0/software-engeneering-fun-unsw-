@@ -158,7 +158,7 @@ describe('/channel/messages: Return Testing', () => {
     channel = testChannelsCreate(user1.token, 'channel1', true);
   });
 
-  test('Dm with no Messages', () => {
+  test('Channel with no Messages', () => {
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
       messages: [],
       start: 0,
@@ -166,7 +166,7 @@ describe('/channel/messages: Return Testing', () => {
     });
   });
 
-  test('Dm with Single Message', () => {
+  test('Channel with Single Message', () => {
     const testMessage = testMessageSend(user1.token, channel.channelId, 'One Message');
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
       messages: [{
@@ -180,7 +180,7 @@ describe('/channel/messages: Return Testing', () => {
     });
   });
 
-  test('Dm with Multiple Messages', () => {
+  test('Channel with Multiple Messages', () => {
     const testMessage1 = testMessageSend(user1.token, channel.channelId, 'First Message');
     const testMessage2 = testMessageSend(user1.token, channel.channelId, 'Second Message');
     const testMessage3 = testMessageSend(user1.token, channel.channelId, 'Third Message');
