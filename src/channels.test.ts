@@ -35,7 +35,7 @@ beforeEach(() => {
 
 /** channelsCreateV1 **/
 
-describe('channelsCreateV1: Error Testing', () => {
+describe('/channels/create: Error Testing', () => {
   let user1: AuthReturn;
   beforeEach(() => {
     user1 = testAuthRegister('validemail@gmail.com', '123abc!@#', 'jake', 'Renzella');
@@ -54,7 +54,7 @@ describe('channelsCreateV1: Error Testing', () => {
   });
 });
 
-describe('channelsCreateV1: channelId Testing', () => {
+describe('/channels/create: channelId Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn, channel2: ChannelsCreateReturn;
   beforeEach(() => {
@@ -78,7 +78,7 @@ describe('channelsCreateV1: channelId Testing', () => {
 
 /** channelsListV1 **/
 
-describe('channelsListV1" Error Testing', () => {
+describe('/channels/list: Error Testing', () => {
   test('authUserId is invalid', () => {
     const user1 = testAuthRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     testChannelsCreate(user1.token, 'Channel1', true);
@@ -132,7 +132,7 @@ describe('channelsListV1: Return List Testing', () => {
 
 /** channelsListAllV1 **/
 
-describe('channelsListAllV1: Error Testing', () => {
+describe('/channels/listall: Error Testing', () => {
   test('authUserId: Invalid authUserId', () => {
     const user1 = testAuthRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     testChannelsCreate(user1.token, 'Channel1', true);
@@ -140,7 +140,7 @@ describe('channelsListAllV1: Error Testing', () => {
   });
 });
 
-describe('channelsListAllV1: Return List Testing', () => {
+describe('/channels/listall: Return List Testing', () => {
   let user1: AuthReturn, user2: AuthReturn;
   beforeEach(() => {
     user1 = testAuthRegister('validemail@gmail.com', '123abc!@#', 'Jake', 'Renzella');

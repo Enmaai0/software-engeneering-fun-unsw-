@@ -416,7 +416,7 @@ describe('/channel/leave: Return Testing', () => {
 
 /** /channel/addOwner Testing **/
 
-describe('/channel/addOwner: Error Testing', () => {
+describe('/channel/addowner: Error Testing', () => {
   let user1: AuthReturn;
   let channel: ChannelsCreateReturn;
   beforeEach(() => {
@@ -459,7 +459,7 @@ describe('/channel/addOwner: Error Testing', () => {
   });
 });
 
-describe('/channel/addOwner: Return Testing', () => {
+describe('/channel/addowner: Return Testing', () => {
   let user1: AuthReturn;
   let user2: AuthReturn;
   let channel: ChannelsCreateReturn;
@@ -516,7 +516,7 @@ describe('/channel/addOwner: Return Testing', () => {
 
 /** /channel/removeOwner Testing **/
 
-describe('/channel/removeOwner: Error Testing', () => {
+describe('/channel/removeowner: Error Testing', () => {
   let user1: AuthReturn;
   let channel: ChannelsCreateReturn;
   beforeEach(() => {
@@ -560,7 +560,7 @@ describe('/channel/removeOwner: Error Testing', () => {
   });
 });
 
-describe('/channel/removeOwner: Return Testing', () => {
+describe('/channel/removeowner: Return Testing', () => {
   let user1: AuthReturn, user2: AuthReturn;
   let channel: ChannelsCreateReturn;
   beforeEach(() => {

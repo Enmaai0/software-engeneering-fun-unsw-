@@ -200,7 +200,7 @@ export function testChannelsList(token: string) {
 export function testChannelsListAll(token: string) {
   const res = request(
     'GET',
-    `${url}:${port}/channels/listAll/v2`,
+    `${url}:${port}/channels/listall/v2`,
     {
       qs: {
         token

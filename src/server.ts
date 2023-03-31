@@ -136,7 +136,7 @@ app.get('/channels/list/v2', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
-app.get('/channels/listAll/v2', (req: Request, res: Response) => {
+app.get('/channels/listall/v2', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const returnMessage = channelsListAllV1(token);
   saveData();
@@ -215,7 +215,7 @@ app.delete('/message/remove/v1', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
-app.post('/message/sendDm/v1', (req: Request, res: Response) => {
+app.post('/message/senddm/v1', (req: Request, res: Response) => {
   const { token, dmId, message } = req.body;
   const returnMessage = messageSendV1(token, dmId, message);
   saveData();
