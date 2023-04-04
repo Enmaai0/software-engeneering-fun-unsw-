@@ -1,13 +1,19 @@
 image: comp1531/basic:latest
 
 stages:
-  - checks
+  - Linting
+  - Checks
 
 before_script:
   - npm install
 
+linting:
+  stage: Linting
+  script: 
+    - npm run lint
+
 tests with coverage:
-  stage: checks
+  stage: Checks
   script:
     - SERVER_LOG=$(mktemp)
     - npm run ts-node-coverage >& $SERVER_LOG &
