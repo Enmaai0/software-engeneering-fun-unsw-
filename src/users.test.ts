@@ -315,7 +315,6 @@ describe('userSetHandleV1: Error Testing', () => {
   test('Token: Invalid Token 1', () => {
     expect(testSetEmail(user1.token + '1', 'handle')).toStrictEqual(ERROR);
   });
-  
 
   test('Handle: Invalid Handle (symbol)', () => {
     expect(testSetEmail(user1.token, 'invalidHandle!')).toStrictEqual(ERROR);
