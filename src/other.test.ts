@@ -24,6 +24,10 @@ interface AuthReturn {
   authUserId: number;
 }
 
+beforeEach(() => {
+  testClear();
+});
+
 describe('/clear Testing', () => {
   test('Clear Users', () => {
     testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
@@ -68,8 +72,8 @@ describe('/clear Testing', () => {
 describe('/notifications/get Testing', () => {
   let user1: AuthReturn, user2: AuthReturn;
   beforeEach(() => {
-    user1 = testAuthRegister('1@gmail.com', 'pass1234', '1', '1');
-    user2 = testAuthRegister('2@gmail.com', 'pass1234', '2', '2');
+    user1 = testAuthRegister('user1@gmail.com', 'pass1234', 'first1', 'last1');
+    user2 = testAuthRegister('user2@gmail.com', 'pass1234', 'first2', 'last2');
   });
 
   test('Error: Invalid Token', () => {
@@ -84,7 +88,7 @@ describe('/notifications/get Testing', () => {
   test('Tagged, Reacted, and Added (Channel)', () => {
     const channel = testChannelsCreate(user1.token, 'channel', true);
     expect(testChannelInvite(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
-    expect(testMessageSend(user1.token, channel.channelId, 'Yo! Come look at this @22, it is so cool')).toStrictEqual({ messageId: expect.any(Number) });
+    expect(testMessageSend(user1.token, channel.channelId, 'Yo! Come look at this @first2last2, it is so cool')).toStrictEqual({ messageId: expect.any(Number) });
 
     const user2message = testMessageSend(user2.token, channel.channelId, 'Second users message!');
     expect(user2message).toStrictEqual({ messageId: expect.any(Number) });
@@ -96,18 +100,18 @@ describe('/notifications/get Testing', () => {
         {
           channelId: channel.channelId,
           dmId: -1,
-          notificationMessage: '@11 tagged you in channel: Yo! Come look at thi'
+          notificationMessage: '@first1last1 tagged you in channel: Yo! Come look at thi'
         }, {
           channelId: channel.channelId,
           dmId: -1,
-          notificationMessage: '@11 added you to channel'
+          notificationMessage: '@first1last1 added you to channel'
         }]
     });
   });
 
   test('Tagged, Reacted, and Added (Dm)', () => {
     const dm = testDmCreate(user1.token, [user2.authUserId]);
-    expect(testMessageSendDm(user1.token, dm.dmId, 'Yo! Come look at this @22, it is so cool')).toStrictEqual({ messageId: expect.any(Number) });
+    expect(testMessageSendDm(user1.token, dm.dmId, 'Yo! Come look at this @first2last2, it is so cool')).toStrictEqual({ messageId: expect.any(Number) });
 
     const user2message = testMessageSendDm(user2.token, dm.dmId, 'Second users message!');
     expect(user2message).toStrictEqual({ messageId: expect.any(Number) });
@@ -119,25 +123,25 @@ describe('/notifications/get Testing', () => {
         {
           channelId: -1,
           dmId: dm.dmId,
-          notificationMessage: '@11 tagged you in 11, 22: Yo! Come look at thi'
+          notificationMessage: '@first1last1 tagged you in first1last1, first2last2: Yo! Come look at thi'
         }, {
           channelId: -1,
           dmId: dm.dmId,
-          notificationMessage: '@11 added you to 11, 22'
+          notificationMessage: '@first1last1 added you to first1last1, first2last2'
         }]
     });
   });
 
   test('Mixed Notications', () => {
     const dm = testDmCreate(user1.token, [user2.authUserId]);
-    const channel1 = testChannelsCreate(user1.token, 'channel', true);
-    const channel2 = testChannelsCreate(user1.token, 'channel', true);
+    const channel1 = testChannelsCreate(user1.token, 'channel1', true);
+    const channel2 = testChannelsCreate(user1.token, 'channel2', true);
 
     expect(testChannelInvite(user1.token, channel2.channelId, user2.authUserId)).toStrictEqual({});
-    testMessageSend(user1.token, channel2.channelId, '@22 Look a this graphhh!');
+    testMessageSend(user1.token, channel2.channelId, '@first2last2 Look a this graphhh!');
 
     expect(testChannelInvite(user1.token, channel1.channelId, user2.authUserId)).toStrictEqual({});
-    testMessageSendDm(user1.token, dm.dmId, 'Yo! This one is even better @22!');
+    testMessageSendDm(user1.token, dm.dmId, 'Yo! This one is even better @first2last2!');
 
     testMessageSendDm(user2.token, dm.dmId, 'That thing looks awesome! :O');
     // React to message
@@ -148,23 +152,23 @@ describe('/notifications/get Testing', () => {
         {
           channelId: channel1.channelId,
           dmId: -1,
-          notificationMessage: '@11 tagged you in channel1: Yo! This one is even'
+          notificationMessage: '@first1last1 tagged you in channel1: Yo! This one is even'
         }, {
           channelId: channel1.channelId,
           dmId: -1,
-          notificationMessage: '@11 added you to channel1'
+          notificationMessage: '@first1last1 added you to channel1'
         }, {
           channelId: channel2.channelId,
           dmId: -1,
-          notificationMessage: '@11 tagged you in channel2: @22 Look a this grap'
+          notificationMessage: '@first1last1 tagged you in channel2: @first2last2 Look a '
         }, {
           channelId: channel2.channelId,
           dmId: -1,
-          notificationMessage: '@11 added you to channel2'
+          notificationMessage: '@first1last1 added you to channel2'
         }, {
           channelId: -1,
           dmId: dm.dmId,
-          notificationMessage: '@11 added you to 11, 22'
+          notificationMessage: '@first1last1 added you to first1last1, first2last2'
         }]
     });
   });
@@ -173,7 +177,7 @@ describe('/notifications/get Testing', () => {
     const dm = testDmCreate(user1.token, [user2.authUserId]);
 
     for (let i = 0; i < 19; i++) {
-      testMessageSendDm(user1.token, dm.dmId, `@22 ${i}`);
+      testMessageSendDm(user1.token, dm.dmId, `@first2last2 ${i}`);
     }
 
     const notifications = testNotificationsGet(user2.token);
@@ -181,13 +185,13 @@ describe('/notifications/get Testing', () => {
     expect(notifications.notifications[0]).toStrictEqual({
       channelId: -1,
       dmId: dm.dmId,
-      notificationMessage: '@11 tagged you in 11, 22: @22 18'
+      notificationMessage: '@first1last1 tagged you in first1last1, first2last2: @first2last2 18'
     });
 
     expect(notifications.notifications[19]).toStrictEqual({
       channelId: -1,
       dmId: dm.dmId,
-      notificationMessage: '@11 added you to 11, 22'
+      notificationMessage: '@first1last1 added you to first1last1, first2last2'
     });
   });
 });

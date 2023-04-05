@@ -57,9 +57,9 @@ function clearV1(): Record<string, never> {
  * @param { string } token
  * @returns {{ notifications: [] }}
  */
-function notificationsGet(token: string): Notifications {
-  if (isValidToken(token)) {
-    throw HTTPError(403, 'Invalid Token');
+function notificationsGet(token: string): Notifications | { error: string }{
+  if (!isValidToken(token)) {
+    throw HTTPError('Invalid Token');
   }
 
   const uId = getIdFromToken(token);
@@ -101,11 +101,9 @@ function isValidToken(token: string): boolean {
 }
 
 /**
- * getIdFromToken
+ * findUId
  *
- * Given a token extracts the uId of the person
- * associated with that token.
- * Errors should not occur due to previous error test
+ * Given a token, find the corresponding uId
  *
  * @param { string } token
  * @returns { number }

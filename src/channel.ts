@@ -168,9 +168,35 @@ function channelInviteV1(token: string, channelId: number, uId: number) : Error 
 
   channel.allMembers.push(userObject);
 
+  // Creates a notification for the channel invite
+  channelInviteNotif(token, channelId, uId);
+
   setData(data);
 
   return {};
+}
+
+/**
+ * channelInviteNotif
+ *
+ * Given a token, channelId, and uId, generates and pushes a
+ * notification to the person being added to the channel.
+ *
+ * @param { string } token 
+ * @param { number } channelId 
+ * @param { number } uId 
+ */
+function channelInviteNotif(token: string, channelId: number, uId: number) {
+  const data = getData();
+  const addingId = getIdFromToken(token);
+
+  const notification = {
+    channelId: channelId,
+    dmId: -1,
+    notificationMessage: `@${data.users[addingId].userHandle} added you to ${data.channels[channelId].name}`
+  }
+
+  data.users[uId].notifications.push(notification);
 }
 
 /**
