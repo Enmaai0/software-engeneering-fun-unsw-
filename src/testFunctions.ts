@@ -439,3 +439,16 @@ export function testClear() {
   );
   return JSON.parse(res.getBody() as string);
 }
+
+export function testNotificationsGet(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/notifications/get/v1`,
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
