@@ -159,7 +159,7 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
   }
 
   // Checks if the string has non-alphanumeric characters
-  if (handle.match(/^[0-9a-z]$/)) {
+  if (handle.match(/^[0-9a-z]$/) !== null) {
     return { error: 'Invalid Handle (Must Contain Only Alphanumeric Characters' };
   }
 
@@ -175,8 +175,8 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
 /**
  * isValidToken
  *
- * Given a token returns whether the token exists
- * within the dataStore or not.
+ * Given a token and to check if it is
+ * a valid token owned by any user
  *
  * @param { string } token
  * @returns { boolean }
@@ -184,8 +184,10 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
 function isValidToken(token: string): boolean {
   const users = getData().users;
   for (const user of users) {
-    if (user.tokens.includes(token)) {
-      return true;
+    for (const theToken of user.tokens) {
+      if (theToken === token) {
+        return true;
+      }
     }
   }
   return false;

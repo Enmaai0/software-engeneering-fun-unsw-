@@ -274,19 +274,19 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
 /**
  * isValidToken
  *
- * Given a token returns whether the token exists
- * within the dataStore or not.
+ * Given a token and to check if it is
+ * a valid token owned by any user
  *
  * @param { string } token
  * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
-  const data = getData();
-
-  for (const user of data.users) {
-    const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
-      return true;
+  const users = getData().users;
+  for (const user of users) {
+    for (const theToken of user.tokens) {
+      if (theToken === token) {
+        return true;
+      }
     }
   }
   return false;
