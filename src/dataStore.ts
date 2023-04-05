@@ -21,6 +21,12 @@ interface Message {
   message: string;
   timeSent: number;
 }
+
+interface Notification {
+  channelId: number,
+  dmId: number,
+  notificationMessage: string
+}
 interface User {
   uId: number,
   email: string,
@@ -30,6 +36,7 @@ interface User {
   userHandle: string,
   permissionId: number,
   tokens: string[],
+  notifications: Notification[]
 }
 
 interface Channel {

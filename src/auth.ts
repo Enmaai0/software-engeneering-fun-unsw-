@@ -16,15 +16,22 @@ interface AuthReturn {
   authUserId: number;
 }
 
-interface UserObject {
+interface Notification {
+  channelId: number,
+  dmId: number,
+  notificationMessage: string
+}
+
+interface User {
   uId: number,
   email: string,
   password: string,
   nameFirst: string,
-  nameLast:string,
+  nameLast: string,
   userHandle: string,
   permissionId: number,
   tokens: string[],
+  notifications: Notification[]
 }
 
 const MAXTOKEN = 10000000;
@@ -152,7 +159,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   }
 
   const newUserIndex = data.users.length;
-  const userObject: UserObject = {
+  const userObject: User = {
     uId: newUserIndex,
     email: email,
     password: password,
@@ -161,6 +168,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     userHandle: generateUserHandle(nameFirst, nameLast),
     permissionId: permissionId,
     tokens: [generateToken()],
+    notifications: []
   };
 
   data.users.push(userObject);

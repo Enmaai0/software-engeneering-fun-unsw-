@@ -5,6 +5,7 @@
  * functions that are uncategorized.
  */
 
+import HTTPError from 'http-errors';
 import { getData, setData } from './dataStore';
 
 interface Notification {
@@ -43,24 +44,82 @@ function clearV1(): Record<string, never> {
 }
 
 /**
- * Array of objects, where each object contains types { channelId, dmId, notificationMessage } where
-
-  channelId is the id of the channel that the event happened in, and is -1 if it is being sent to a DM
-
-  dmId is the DM that the event happened in, and is -1 if it is being sent to a channel
-
-  notificationMessage is a string of the following format for each trigger action:
-
-  tagged: "{User’s handle} tagged you in {channel/DM name}: {first 20 characters of the message}"
-
-  reacted message: "{User’s handle} reacted to your message in {channel/DM name}"
-
-  added to a channel/DM: "{User’s handle} added you to {channel/DM name}"
+ * notificationsGet
+ *
+ * Given a token, returns an array of all the notifications
+ * that person has recieved.
+ *
+ * Notifications include:
+ * - Being added/invited to a channel or dm
+ * - Being tagged in a message in a channel or dm (see 6.10.2)
+ * - Having someone react to your message in a channel or dm
+ *
+ * @param { string } token
+ * @returns {{ notifications: [] }}
  */
 function notificationsGet(token: string): Notifications {
-  const notifications: Notification[] = [];
+  if (isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
 
-  return { notifications: notifications };
+  const uId = getIdFromToken(token);
+  const user = getData().users[uId];
+
+  const userNotifications = user.notifications;
+  const sortedUserNotifications = userNotifications.reverse();
+  const returnNotifications: Notification[] = [];
+
+  for (const notification of sortedUserNotifications) {
+    if (returnNotifications.length >= 20 || notification === undefined) {
+      break;
+    }
+    returnNotifications.push(notification);
+  }
+
+  return { notifications: returnNotifications };
+}
+
+/**
+ * isValidToken
+ *
+ * Given a token and to check if it is
+ * a valid token owned by any user
+ *
+ * @param { string } token
+ * @returns { boolean }
+ */
+function isValidToken(token: string): boolean {
+  const users = getData().users;
+  for (const user of users) {
+    for (const theToken of user.tokens) {
+      if (theToken === token) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * getIdFromToken
+ *
+ * Given a token extracts the uId of the person
+ * associated with that token.
+ * Errors should not occur due to previous error test
+ *
+ * @param { string } token
+ * @returns { number }
+ */
+function getIdFromToken(token: string): number {
+  const data = getData();
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return user.uId;
+    }
+  }
+  return -1;
 }
 
 export { clearV1, notificationsGet };
