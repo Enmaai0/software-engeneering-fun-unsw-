@@ -24,7 +24,6 @@ interface Message {
 
 const MAXMESSAGELENGTH = 1000;
 const MINMESSAGELENGTH = 1;
-const GLOBALOWNER = 1;
 
 /**
  * messageSendV1
@@ -185,7 +184,7 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
 
   let userAllowed = false;
 
-  if (data.users[userId].permissionId === GLOBALOWNER || userId === route[messageIndex].uId || isOwner) {
+  if (userId === route[messageIndex].uId || isOwner) {
     userAllowed = true;
   }
 
@@ -241,11 +240,11 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
     messageIndex = getMessageIndex(messageId, channelId, 'channel');
     messageObj = data.channels[channelId].messages[messageIndex];
 
-    if (isChannelOwner(userId, channelId) || data.users[userId].permissionId === GLOBALOWNER || userId === messageObj.uId) {
-      data.channels[channelId].messages.splice(messageIndex, 1);
-    } else {
+    if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
       return { error: 'User does not have Permission to Edit this Message' };
     }
+
+    data.channels[channelId].messages.splice(messageIndex, 1);
   }
 
   if (dmId > -1) {
@@ -256,11 +255,10 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
     messageIndex = getMessageIndex(messageId, dmId, 'dm');
     messageObj = data.dms[dmId].messages[messageIndex];
 
-    if (isDmOwner(userId, dmId) || data.users[userId].permissionId === GLOBALOWNER || userId === messageObj.uId) {
-      data.dms[dmId].messages.splice(messageIndex, 1);
-    } else {
+    if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
       return { error: 'User does not have Permission to Edit this Message' };
     }
+    data.dms[dmId].messages.splice(messageIndex, 1);
   }
 
   data.globalMessageCounter--;
