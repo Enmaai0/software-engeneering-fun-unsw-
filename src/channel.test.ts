@@ -556,6 +556,47 @@ describe('/channel/addowner: Return Testing', () => {
       ]
     });
   });
+
+  test('Correct Return: Global Owner Can Add Member', () => {
+    const user3 = testAuthRegister('user3@gmail.com', 'password3', 'First3', 'Last3');
+    const channel2 = testChannelsCreate(user2.token, 'secondChannel', true);
+    testChannelJoin(user3.token, channel2.channelId);
+    expect(testChannelAddOwner(user1.token, channel2.channelId, user3.authUserId)).toStrictEqual({});
+    expect(testChannelDetails(user2.token, channel2.channelId)).toStrictEqual({
+      name: 'secondChannel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: user2.authUserId,
+          email: 'user2Email@gmail.com',
+          nameFirst: 'First2',
+          nameLast: 'Last2',
+          handleStr: 'first2last2',
+        }, {
+          uId: user3.authUserId,
+          email: 'user3@gmail.com',
+          nameFirst: 'First3',
+          nameLast: 'Last3',
+          handleStr: 'first3last3',
+        }
+      ],
+      allMembers: [
+        {
+          uId: user2.authUserId,
+          email: 'user2Email@gmail.com',
+          nameFirst: 'First2',
+          nameLast: 'Last2',
+          handleStr: 'first2last2',
+        }, {
+          uId: user3.authUserId,
+          email: 'user3@gmail.com',
+          nameFirst: 'First3',
+          nameLast: 'Last3',
+          handleStr: 'first3last3',
+        }
+      ]
+    });
+  });
 });
 
 /** /channel/removeOwner Testing **/
@@ -648,6 +689,76 @@ describe('/channel/removeowner: Return Testing', () => {
           nameFirst: 'First2',
           nameLast: 'Last2',
           handleStr: 'first2last2',
+        }
+      ]
+    });
+  });
+
+  test('Correct Return: Global Owner Can Remove Member', () => {
+    const user3 = testAuthRegister('user3@gmail.com', 'password3', 'First3', 'Last3');
+    const channel2 = testChannelsCreate(user2.token, 'secondChannel', true);
+    testChannelJoin(user3.token, channel2.channelId);
+    expect(testChannelAddOwner(user2.token, channel2.channelId, user3.authUserId)).toStrictEqual({});
+    expect(testChannelDetails(user2.token, channel2.channelId)).toStrictEqual({
+      name: 'secondChannel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: user2.authUserId,
+          email: 'user2Email@gmail.com',
+          nameFirst: 'First2',
+          nameLast: 'Last2',
+          handleStr: 'first2last2',
+        }, {
+          uId: user3.authUserId,
+          email: 'user3@gmail.com',
+          nameFirst: 'First3',
+          nameLast: 'Last3',
+          handleStr: 'first3last3',
+        }
+      ],
+      allMembers: [
+        {
+          uId: user2.authUserId,
+          email: 'user2Email@gmail.com',
+          nameFirst: 'First2',
+          nameLast: 'Last2',
+          handleStr: 'first2last2',
+        }, {
+          uId: user3.authUserId,
+          email: 'user3@gmail.com',
+          nameFirst: 'First3',
+          nameLast: 'Last3',
+          handleStr: 'first3last3',
+        }
+      ]
+    });
+    expect(testChannelRemoveOwner(user1.token, channel2.channelId, user3.authUserId)).toStrictEqual({});
+    expect(testChannelDetails(user2.token, channel2.channelId)).toStrictEqual({
+      name: 'secondChannel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: user2.authUserId,
+          email: 'user2Email@gmail.com',
+          nameFirst: 'First2',
+          nameLast: 'Last2',
+          handleStr: 'first2last2',
+        }
+      ],
+      allMembers: [
+        {
+          uId: user2.authUserId,
+          email: 'user2Email@gmail.com',
+          nameFirst: 'First2',
+          nameLast: 'Last2',
+          handleStr: 'first2last2',
+        }, {
+          uId: user3.authUserId,
+          email: 'user3@gmail.com',
+          nameFirst: 'First3',
+          nameLast: 'Last3',
+          handleStr: 'first3last3',
         }
       ]
     });
