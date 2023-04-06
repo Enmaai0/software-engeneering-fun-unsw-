@@ -16,7 +16,8 @@ import {
   testDmList,
   testChannelInvite,
   testMessageSend,
-  testMessageSendDm
+  testMessageSendDm,
+  testChannelJoin
 } from './testFunctions';
 
 interface AuthReturn {
@@ -150,9 +151,9 @@ describe('/notifications/get Testing', () => {
       notifications: [
         // Reaction Notification when implemented
         {
-          channelId: channel1.channelId,
-          dmId: -1,
-          notificationMessage: '@first1last1 tagged you in channel1: Yo! This one is even'
+          channelId: -1,
+          dmId: dm.dmId,
+          notificationMessage: '@first1last1 tagged you in first1last1, first2last2: Yo! This one is even'
         }, {
           channelId: channel1.channelId,
           dmId: -1,
@@ -192,6 +193,26 @@ describe('/notifications/get Testing', () => {
       channelId: -1,
       dmId: dm.dmId,
       notificationMessage: '@first1last1 added you to first1last1, first2last2'
+    });
+  });
+
+  test('Multiple Users Tagged in One Message', () => {
+    const channel1 = testChannelsCreate(user1.token, 'channel1', true);
+    testChannelJoin(user2.token, channel1.channelId);
+    testMessageSend(user1.token, channel1.channelId, '@first1last1 Test Message @first2last2');
+    expect(testNotificationsGet(user1.token)).toStrictEqual({
+      notifications: [{
+        channelId: channel1.channelId,
+        dmId: -1,
+        notificationMessage: '@first1last1 tagged you in channel1: @first1last1 Test Me'
+      }]
+    });
+    expect(testNotificationsGet(user2.token)).toStrictEqual({
+      notifications: [{
+        channelId: channel1.channelId,
+        dmId: -1,
+        notificationMessage: '@first1last1 tagged you in channel1: @first1last1 Test Me'
+      }]
     });
   });
 });

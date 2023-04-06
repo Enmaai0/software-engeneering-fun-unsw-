@@ -57,7 +57,7 @@ function clearV1(): Record<string, never> {
  * @param { string } token
  * @returns {{ notifications: [] }}
  */
-function notificationsGet(token: string): Notifications | { error: string }{
+function notificationsGet(token: string): Notifications | { error: string } {
   if (!isValidToken(token)) {
     throw HTTPError('Invalid Token');
   }

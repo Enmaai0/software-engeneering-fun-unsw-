@@ -182,9 +182,9 @@ function channelInviteV1(token: string, channelId: number, uId: number) : Error 
  * Given a token, channelId, and uId, generates and pushes a
  * notification to the person being added to the channel.
  *
- * @param { string } token 
- * @param { number } channelId 
- * @param { number } uId 
+ * @param { string } token
+ * @param { number } channelId
+ * @param { number } uId
  */
 function channelInviteNotif(token: string, channelId: number, uId: number) {
   const data = getData();
@@ -194,7 +194,7 @@ function channelInviteNotif(token: string, channelId: number, uId: number) {
     channelId: channelId,
     dmId: -1,
     notificationMessage: `@${data.users[addingId].userHandle} added you to ${data.channels[channelId].name}`
-  }
+  };
 
   data.users[uId].notifications.push(notification);
 }
