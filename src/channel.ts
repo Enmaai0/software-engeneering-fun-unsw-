@@ -316,7 +316,7 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number): Error
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
-  const ownerId = getIdFromToken(token);
+  const adderId = getIdFromToken(token);
   const owners = data.channels[channelId].owners;
   const members = data.channels[channelId].allMembers;
 
@@ -328,13 +328,13 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number): Error
     return { error: 'User is not a member of the channel' };
   }
 
-  if (!owners.some(owner => owner.uId === ownerId)) {
+  if (!owners.some(owner => owner.uId === adderId) && data.users[adderId].permissionId === GLOBALMEMBER) {
     return { error: 'User does not have owner permissions' };
   }
 
   const user = data.users[uId];
   const userObject: Member = {
-    uId: user.uId,
+    uId: uId,
     email: user.email,
     nameFirst: user.nameFirst,
     nameLast: user.nameLast,
@@ -374,12 +374,12 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Er
   const data = getData();
   const owners = data.channels[channelId].owners;
 
-  if (!owners.some(owner => owner.uId === removerId)) {
+  if (!owners.some(owner => owner.uId === removerId) && data.users[removerId].permissionId === GLOBALMEMBER) {
     return { error: 'User does not have owner permissions' };
   }
 
   if (!owners.some(owner => owner.uId === uId)) {
-    return { error: 'User being removes is not an owner' };
+    return { error: 'User being removed is not an owner' };
   }
 
   if (data.channels[channelId].owners.length === 1) {

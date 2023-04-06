@@ -146,6 +146,13 @@ describe('/message/edit: Error Testing', () => {
     testChannelJoin(user2.token, channel.channelId);
     expect(testMessageEdit(user2.token, message.messageId, 'Valid change')).toStrictEqual(ERROR);
   });
+
+  test('User: User is a GlobalOwner but not Author or Channel Owner', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const channel2 = testChannelsCreate(user2.token, 'Second Channel', true);
+    const message2 = testMessageSend(user2.token, channel2.channelId, 'This message is valid');
+    expect(testMessageEdit(user1.token, message2.messageId, 'Meow meow I am a cat')).toStrictEqual(ERROR);
+  });
 });
 
 describe('/message/edit: Return Testing', () => {
@@ -237,6 +244,13 @@ describe('/message/remove: Error Testing', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
     testChannelJoin(user2.token, channel.channelId);
     expect(testMessageRemove(user2.token, message.messageId)).toStrictEqual(ERROR);
+  });
+
+  test('User: User is a GlobalOwner but not Author or Channel Owner', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const channel2 = testChannelsCreate(user2.token, 'Second Channel', true);
+    const message2 = testMessageSend(user2.token, channel2.channelId, 'This message is valid');
+    expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual(ERROR);
   });
 });
 

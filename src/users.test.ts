@@ -99,13 +99,8 @@ describe('usersAllV1: Error Testing', () => {
 });
 
 describe('Correct Return: All Users', () => {
-  let user1: AuthReturn;
-  let user2: AuthReturn;
-  beforeEach(() => {
-    user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
-  });
-
   test('All: One User', () => {
+    const user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -118,7 +113,8 @@ describe('Correct Return: All Users', () => {
   });
 
   test('All: Two Users', () => {
-    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
+    const user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
         uId: user1.authUserId,
@@ -134,6 +130,26 @@ describe('Correct Return: All Users', () => {
         handleStr: 'testbot0',
       }]
     });
+  });
+});
+
+test('All: Iter2 Failed Test', () => {
+  const userWoody = testAuthRegister('sherrif.woody@andysroom.com', 'qazwsx!!', 'sherrif', 'woody');
+  const userBuzz = testAuthRegister('buzz.ligthyear@starcommand.com', 'qazwsx@@', 'buzz', 'lightyear');
+  expect(testUsersAll(userWoody.token)).toStrictEqual({
+    users: [{
+      uId: userWoody.authUserId,
+      email: 'sherrif.woody@andysroom.com',
+      nameFirst: 'sherrif',
+      nameLast: 'woody',
+      handleStr: 'sherrifwoody',
+    }, {
+      uId: userBuzz.authUserId,
+      email: 'buzz.ligthyear@starcommand.com',
+      nameFirst: 'buzz',
+      nameLast: 'lightyear',
+      handleStr: 'buzzlightyear',
+    }]
   });
 });
 
@@ -300,8 +316,16 @@ describe('userSetHandleV1: Error Testing', () => {
     expect(testSetEmail(user1.token + '1', 'handle')).toStrictEqual(ERROR);
   });
 
-  test('Handle: Invalid Handle !', () => {
+  test('Handle: Invalid Handle (symbol)', () => {
     expect(testSetEmail(user1.token, 'invalidHandle!')).toStrictEqual(ERROR);
+  });
+
+  test('Handle: Invalid Handle (space)', () => {
+    expect(testSetEmail(user1.token, 'invalid handle')).toStrictEqual(ERROR);
+  });
+
+  test('Handle: Invalid Handle (symbol)', () => {
+    expect(testSetEmail(user1.token, 'invalidh@ndle')).toStrictEqual(ERROR);
   });
 
   test('Handle: Invalid Handle Too Long', () => {
