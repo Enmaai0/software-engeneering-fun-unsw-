@@ -37,6 +37,7 @@ interface User {
   permissionId: number,
   tokens: string[],
   notifications: Notification[]
+  resetCodes: string[]
 }
 
 interface Channel {

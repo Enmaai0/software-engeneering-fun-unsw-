@@ -4,8 +4,8 @@
  * Contains the functions of all auth* functions.
  */
 
-import { getData, setData } from './dataStore';
 import validator from 'validator';
+import { getData, setData } from './dataStore';
 
 interface Error {
   error: string;
@@ -32,6 +32,7 @@ interface User {
   permissionId: number,
   tokens: string[],
   notifications: Notification[]
+  resetCodes: string[],
 }
 
 const MAXTOKEN = 10000000;
@@ -168,7 +169,8 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     userHandle: generateUserHandle(nameFirst, nameLast),
     permissionId: permissionId,
     tokens: [generateToken()],
-    notifications: []
+    notifications: [],
+    resetCodes: []
   };
 
   data.users.push(userObject);
@@ -192,6 +194,19 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
  * @returns { }
  */
 function authPasswordResetRequest(email: string): Record<never, never> {
+  const resetCode = generateResetCode();
+  const data = getData();
+
+  for (const user of data.users) {
+    if (email === user.email) {
+      user.resetCodes.push(resetCode);
+      user.tokens = [];
+      break;
+    }
+  }
+
+  setData(data);
+
   return {};
 }
 
@@ -206,6 +221,32 @@ function authPasswordResetRequest(email: string): Record<never, never> {
  * @returns { }
  */
 function authPasswordResetReset(resetCode: string, newPassword: string): Record<never, never> {
+  const data = getData();
+
+  if (newPassword.length < 6) {
+    return { error: 'Invalid Password (Must be 6 Characters Long' };
+  }
+
+  let uId = -1;
+  let resetCodeIndex = -1;
+
+  for (const user of data.users) {
+    if (user.resetCodes.includes(resetCode)) {
+      uId = user.uId;
+      resetCodeIndex = user.resetCodes.indexOf(resetCode);
+      break;
+    }
+  }
+
+  if (uId === -1 || resetCodeIndex === -1) {
+    return { error: 'Invalid Reset Code' };
+  }
+
+  data.users[uId].password = newPassword;
+  data.users[uId].resetCodes.splice(resetCodeIndex, 1);
+
+  setData(data);
+
   return {};
 }
 
@@ -346,4 +387,23 @@ function generateToken(): string {
   const numToken = Math.floor(Math.random() * MAXTOKEN);
   const strToken = numToken.toString();
   return strToken;
+}
+
+/**
+ * generateResetCode
+ *
+ * When called returns a 20 character long string
+ * containing [a-zA-Z0-9] characters.
+ *
+ * @returns { string }
+ */
+function generateResetCode(): string {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  while (result.length < 20) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
 }
