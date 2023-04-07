@@ -182,6 +182,38 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
 }
 
 /**
+ * authPasswordResetRequest
+ *
+ * Given an email sends an email to that person containing a
+ * unique code that can be used to reset their passwords utelising
+ * the /auth/passwordreset/reset server call.
+ *
+ * @param { string } email
+ * @returns { }
+ */
+function authPasswordResetRequest(email: string): Record<never, never> {
+  return {};
+}
+
+/**
+ * authPasswordResetReset
+ *
+ * Given a valid reset code and new password, updates the
+ * password for the user that received the reset code.
+ *
+ * @param { string } resetCode
+ * @param { string } newPassword
+ * @returns { }
+ */
+function authPasswordResetReset(resetCode: string, newPassword: string): Record<never, never> {
+  return {};
+}
+
+export { authLoginV1, authRegisterV1, authLogoutV1, authPasswordResetRequest, authPasswordResetReset };
+
+/** Helper Functions **/
+
+/**
  * isValidToken
  *
  * Given a token returns whether the token exists
@@ -315,5 +347,3 @@ function generateToken(): string {
   const strToken = numToken.toString();
   return strToken;
 }
-
-export { authLoginV1, authRegisterV1, authLogoutV1 };

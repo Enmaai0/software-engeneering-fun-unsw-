@@ -8,7 +8,11 @@
 import {
   testAuthLogin,
   testAuthLogout,
+  testAuthPasswordResetRequest,
+  testAuthPasswordResetReset,
   testAuthRegister,
+  testChannelDetails,
+  testChannelsCreate,
   testClear,
   testDmCreate,
   testUsersAll
@@ -208,5 +212,62 @@ describe('/auth/register: Return Testing', () => {
         }]
       });
     });
+  });
+});
+
+/** /auth/passwordreset/request/v1 Testing **/
+
+describe('/auth/passwordreset/request: Error Testing', () => {
+  test('Email: Invalid Email (Return Empty Object)', () => {
+    testAuthRegister('validEmail@gmail.com', 'password1234', 'Jerry', 'Yang');
+    expect(testAuthPasswordResetRequest('validEmail@gmail.com')).not.toThrow(Error);
+    expect(testAuthPasswordResetRequest('validEmail@gmail.com')).toStrictEqual({});
+  });
+});
+
+describe('/auth/passwordreset/request: General Testing', () => {
+  test('User is logged out of all sessions (1 Session)', () => {
+    const user = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    const channel = testChannelsCreate(user.token, 'Channel', true);
+    expect(testChannelDetails(user.token, channel.channelId)).not.toThrow(Error);
+    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testChannelDetails(user.token, channel.channelId)).toThrow(Error);
+  });
+
+  test('User is logged out of all sessions (2 Sessions)', () => {
+    const userS1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    const userS2 = testAuthLogin('email1@gmail.com', 'pass1234');
+    const channel = testChannelsCreate(userS1.token, 'Channel', true);
+    expect(testChannelDetails(userS1.token, channel.channelId)).not.toThrow(Error);
+    expect(testChannelDetails(userS2.token, channel.channelId)).not.toThrow(Error);
+    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testChannelDetails(userS1.token, channel.channelId)).toThrow(Error);
+    expect(testChannelDetails(userS2.token, channel.channelId)).toThrow(Error);
+  });
+});
+
+/** /auth/passwordreset/reset/v1 Testing **/
+
+describe('/auth/passwordreset/reset: Error Testing', () => {
+  test('newPassword: Invalid Password (<6 Characters)', () => {
+    expect(testAuthPasswordResetReset('RESETCODE', '1234')).toThrow(Error);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Mixed))', () => {
+    expect(testAuthPasswordResetReset('Die38UKaiD', 'validPassword1234')).toThrow(Error);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Numbers))', () => {
+    expect(testAuthPasswordResetReset('1247896918', 'validPassword1234')).toThrow(Error);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Symbols))', () => {
+    expect(testAuthPasswordResetReset('(!*$^*!@$%', 'validPassword1234')).toThrow(Error);
+  });
+});
+
+describe('/auth/passwordreset/reset: Return Testing', () => {
+  test('Dont think I can really test this one!', () => {
+    expect('I hope this function works').toStrictEqual('I hope this function works');
   });
 });

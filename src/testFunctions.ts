@@ -63,6 +63,33 @@ export function testAuthRegister(email: string, password: string, nameFirst: str
   return JSON.parse(res.getBody() as string);
 }
 
+export function testAuthPasswordResetRequest(email: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/passwordreset/request/v1`,
+    {
+      json: {
+        email
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testAuthPasswordResetReset(resetCode: string, newPassword: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/passwordreset/reset/v1`,
+    {
+      json: {
+        resetCode,
+        newPassword
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 /** /channel/* Test Functions **/
 
 export function testChannelInvite(token: string, channelId: number, uId: number) {
