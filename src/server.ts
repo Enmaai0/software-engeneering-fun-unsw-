@@ -4,9 +4,9 @@ import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
 import errorHandler from 'middleware-http-errors';
-import { clearV1 } from './other';
+import { clearV1, notificationsGet } from './other';
 import { saveData, grabData } from './dataStore';
-import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
+import { authLoginV1, authLogoutV1, authRegisterV1, authPasswordResetRequest, authPasswordResetReset } from './auth';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
@@ -67,6 +67,20 @@ app.post('/auth/logout/v1', (req: Request, res: Response) => {
 app.post('/auth/register/v2', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
   const returnMessage = authRegisterV1(email, password, nameFirst, nameLast);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/auth/passwordreset/request/v1', (req: Request, res: Response) => {
+  const { email } = req.body;
+  const returnMessage = authPasswordResetRequest(email);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/auth/passwordreset/reset/v1', (req: Request, res: Response) => {
+  const { resetCode, newPassword } = req.body;
+  const returnMessage = authPasswordResetReset(resetCode, newPassword);
   saveData();
   res.json(returnMessage);
 });
@@ -269,6 +283,13 @@ app.put('/user/profile/sethandle/v1', (req: Request, res: Response) => {
 
 app.delete('/clear/v1', (req: Request, res: Response) => {
   const returnMessage = clearV1();
+  saveData();
+  res.json(returnMessage);
+});
+
+app.get('/notifications/get/v1', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const returnMessage = notificationsGet(token);
   saveData();
   res.json(returnMessage);
 });

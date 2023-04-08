@@ -103,9 +103,37 @@ function dmCreate(token: string, uIds: number[]): DmId | Error {
 
   data.dms.push(dmObject);
 
+  // Creates the notifications for all users in the uIds array
+  dmInviteNotif(token, dmId, uIds);
+
   setData(data);
 
   return { dmId: dmId };
+}
+
+/**
+ * dmInviteNotif
+ *
+ * Given a token, dmId, and array of uIds, generates and pushes
+ * a notification to each person being added to the dm.
+ *
+ * @param { string } token
+ * @param { number } dmId
+ * @param { number[] } uIds
+ */
+function dmInviteNotif(token: string, dmId: number, uIds: number[]) {
+  const data = getData();
+  const addingId = getIdFromToken(token);
+
+  const notification = {
+    channelId: -1,
+    dmId: dmId,
+    notificationMessage: `@${data.users[addingId].userHandle} added you to ${data.dms[dmId].name}`
+  };
+
+  for (const uId of uIds) {
+    data.users[uId].notifications.push(notification);
+  }
 }
 
 /**
