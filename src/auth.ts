@@ -228,7 +228,7 @@ function authPasswordResetReset(resetCode: string, newPassword: string): Record<
   }
 
   let uId = -1;
-  let resetCodeIndex = -1;
+  let resetCodeIndex;
 
   for (const user of data.users) {
     if (user.resetCodes.includes(resetCode)) {
@@ -238,7 +238,7 @@ function authPasswordResetReset(resetCode: string, newPassword: string): Record<
     }
   }
 
-  if (uId === -1 || resetCodeIndex === -1) {
+  if (resetCodeIndex === -1 || uId === -1) {
     return { error: 'Invalid Reset Code' };
   }
 

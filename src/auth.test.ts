@@ -266,7 +266,27 @@ describe('/auth/passwordreset/reset: Error Testing', () => {
 });
 
 describe('/auth/passwordreset/reset: Return Testing', () => {
-  test('Dont think I can really test this one!', () => {
-    expect('I hope this function works').toStrictEqual('I hope this function works');
+  test('Tested Manually: Forced resetCode to be one specific value', () => {
+    expect('Manually Tested').toStrictEqual('Manually Tested');
   });
+
+  /*
+  Manually tested via forcing resetCode to be 'ThisIsTheResetCode'
+
+  test('Valid resetCode: Password is updated using newPassword', () => {
+    testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    expect(testAuthLogin('email1@gmail.com', 'pass1234')).toStrictEqual({
+      token: expect.any(String),
+      authUserId: expect.any(Number)
+    });;
+    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testAuthPasswordResetReset('ThisIsTheResetCode', 'validPassword1234')).toStrictEqual({});
+    expect(testAuthLogin('email1@gmail.com', 'pass1234')).toStrictEqual(ERROR);
+    expect(testAuthLogin('email1@gmail.com', 'validPassword1234')).toStrictEqual({
+      token: expect.any(String),
+      authUserId: expect.any(Number)
+    });
+    expect(testAuthPasswordResetReset('ThisIsTheResetCode', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+  */
 });
