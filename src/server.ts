@@ -7,6 +7,7 @@ import errorHandler from 'middleware-http-errors';
 import { clearV1 } from './other';
 import { saveData, grabData } from './dataStore';
 import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
+import { adminUserRemove, adminUserPermissionChange } from './admin';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
@@ -31,10 +32,6 @@ app.get('/echo', (req: Request, res: Response, next) => {
   return res.json(echo(data));
 });
 
-// Keep this BENEATH route definitions
-// handles errors nicely
-app.use(errorHandler());
-
 // start server
 const server = app.listen(PORT, HOST, () => {
   grabData();
@@ -47,6 +44,22 @@ process.on('SIGINT', () => {
 });
 
 /** Server Routes Implementation **/
+
+/** /admin/* Routes **/
+
+app.delete('/admin/user/remove/v1', (req: Request, res: Response) => {
+  const uId = req.query.uId as string;
+  const returnMessage = adminUserRemove(Number(uId));
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/admin/userpermission/change/v1', (req: Request, res: Response) => {
+  const { uId, permissionId } = req.body;
+  const returnMessage = adminUserPermissionChange(uId, permissionId);
+  saveData();
+  res.json(returnMessage);
+});
 
 /** /auth/* Routes **/
 
@@ -272,3 +285,7 @@ app.delete('/clear/v1', (req: Request, res: Response) => {
   saveData();
   res.json(returnMessage);
 });
+
+// Keep this BENEATH route definitions
+// handles errors nicely
+app.use(errorHandler());
