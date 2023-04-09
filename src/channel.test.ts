@@ -205,6 +205,15 @@ describe('/channel/messages: Return Testing', () => {
       end: -1
     });
   });
+
+  test('Channel Message with Start = -60', () => {
+    testMessageSend(user1.token, channel.channelId, 'First Message');
+    expect(testChannelMessages(user1.token, channel.channelId, -60)).toStrictEqual({
+      messages: [],
+      start: -60,
+      end: -10
+    });
+  });
 });
 
 /** /channel/details Testing **/

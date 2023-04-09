@@ -118,9 +118,6 @@ function grabData() {
 function readData(): Data {
   const jsonData = fs.readFileSync(FILE, { flag: 'r' });
   const persData = JSON.parse(String(jsonData));
-  if (persData.length === 0) {
-    return data;
-  }
   return persData;
 }
 

@@ -119,6 +119,40 @@ describe('/message/send: Correct Return Testing', () => {
   });
 });
 
+describe('/message/send: Testing Removing and Editing for Channelss', () => {
+  let user1: AuthReturn;
+  let channel: ChannelsCreateReturn;
+  let message: MessageSendReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    channel = testChannelsCreate(user1.token, 'Channel', true);
+    message = testMessageSend(user1.token, channel.channelId, 'Valid Normal Message');
+  });
+
+  test('Editing Dm Message', () => {
+    expect(testMessageEdit(user1.token, message.messageId, 'Chad Edited Message')).toStrictEqual({});
+    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
+      messages: [{
+        messageId: message.messageId,
+        uId: user1.authUserId,
+        message: 'Chad Edited Message',
+        timeSent: expect.any(Number)
+      }],
+      start: 0,
+      end: -1
+    });
+  });
+
+  test('Removing Dm Message', () => {
+    expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
+    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1
+    });
+  });
+});
+
 /** /message/edit Testing **/
 
 describe('/message/edit: Error Testing', () => {
@@ -135,6 +169,18 @@ describe('/message/edit: Error Testing', () => {
 
   test('MessageId: Invalid MessageId', () => {
     expect(testMessageEdit(user1.token, message.messageId + 1, 'Valid change')).toStrictEqual(ERROR);
+  });
+
+  test('User: User is not in Channel', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    expect(testMessageEdit(user2.token, message.messageId, 'New MssagMessage')).toStrictEqual(ERROR);
+  });
+
+  test('User: User is not in Dm', () => {
+    const dm = testDmCreate(user1.token, []);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    expect(testMessageEdit(user2.token, message2.messageId, 'New MssagMessage')).toStrictEqual(ERROR);
   });
 
   test('Message: Invalid Length of Message (1000 Characters)', () => {
@@ -187,7 +233,7 @@ describe('/message/edit: Return Testing', () => {
     });
   });
 
-  test('Valid Message Edit (Not Creator of Message But Owner)', () => {
+  test('Valid Message Edit (Not Creator of Message But Owner) (Channel)', () => {
     const user2 = testAuthRegister('email@gmail.com', 'thisisapassword', 'Maximus', 'Minimus');
     testChannelJoin(user2.token, channel.channelId);
     const message = testMessageSend(user2.token, channel.channelId, 'This message is valid');
@@ -204,12 +250,84 @@ describe('/message/edit: Return Testing', () => {
     });
   });
 
-  test('Valid Message Edit (Creator of Message and Not Owner)', () => {
+  test('Valid Message Edit (Not Creator of Message But Owner) (DM)', () => {
+    const user2 = testAuthRegister('email@gmail.com', 'thisisapassword', 'Maximus', 'Minimus');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message = testMessageSendDm(user2.token, dm.dmId, 'This message is valid');
+    expect(testMessageEdit(user1.token, message.messageId, 'This message is changed')).toStrictEqual({});
+    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
+      messages: [{
+        message: 'This message is changed',
+        uId: user2.authUserId,
+        messageId: message.messageId,
+        timeSent: expect.any(Number),
+      }],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('Valid Message Edit (Creator of Message and Not Owner) (Channel)', () => {
     const user2 = testAuthRegister('email@gmail.com', 'thisisapassword', 'Maximus', 'Minimus');
     testChannelJoin(user2.token, channel.channelId);
     const message = testMessageSend(user2.token, channel.channelId, 'This message is valid');
     expect(testMessageEdit(user2.token, message.messageId, 'This message is changed')).toStrictEqual({});
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
+      messages: [{
+        message: 'This message is changed',
+        uId: user2.authUserId,
+        messageId: message.messageId,
+        timeSent: expect.any(Number),
+      }],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('Valid Message Edit (Creator of Message and Not Owner) (DM)', () => {
+    const user2 = testAuthRegister('email@gmail.com', 'thisisapassword', 'Maximus', 'Minimus');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message = testMessageSendDm(user2.token, dm.dmId, 'This message is valid');
+    expect(testMessageEdit(user2.token, message.messageId, 'This message is changed')).toStrictEqual({});
+    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
+      messages: [{
+        message: 'This message is changed',
+        uId: user2.authUserId,
+        messageId: message.messageId,
+        timeSent: expect.any(Number),
+      }],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('Valid Message Edit Multiple Channels', () => {
+    const user2 = testAuthRegister('email@gmail.com', 'thisisapassword', 'Maximus', 'Minimus');
+    testChannelsCreate(user1.token, 'Channel1', true);
+    const channel2 = testChannelsCreate(user1.token, 'Channel2', true);
+    testChannelsCreate(user2.token, 'Channel3', true);
+    const message = testMessageSend(user1.token, channel2.channelId, 'This message is valid');
+    expect(testMessageEdit(user1.token, message.messageId, 'This message is changed')).toStrictEqual({});
+    expect(testChannelMessages(user1.token, channel2.channelId, 0)).toStrictEqual({
+      messages: [{
+        message: 'This message is changed',
+        uId: user1.authUserId,
+        messageId: message.messageId,
+        timeSent: expect.any(Number),
+      }],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('Valid Message Edit Multiple Dms', () => {
+    const user2 = testAuthRegister('email@gmail.com', 'thisisapassword', 'Maximus', 'Minimus');
+    testDmCreate(user1.token, [user2.authUserId]);
+    const dm2 = testDmCreate(user1.token, [user2.authUserId]);
+    testDmCreate(user2.token, [user1.authUserId]);
+    const message = testMessageSendDm(user2.token, dm2.dmId, 'This message is valid');
+    expect(testMessageEdit(user2.token, message.messageId, 'This message is changed')).toStrictEqual({});
+    expect(testDmMessages(user1.token, dm2.dmId, 0)).toStrictEqual({
       messages: [{
         message: 'This message is changed',
         uId: user2.authUserId,
@@ -240,10 +358,29 @@ describe('/message/remove: Error Testing', () => {
     expect(testMessageRemove(user1.token, message.messageId + 1)).toStrictEqual(ERROR);
   });
 
+  test('User: User is not in Channel', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    expect(testMessageRemove(user2.token, message.messageId)).toStrictEqual(ERROR);
+  });
+
+  test('User: User is not in Dm', () => {
+    const dm = testDmCreate(user1.token, []);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    expect(testMessageRemove(user2.token, message2.messageId)).toStrictEqual(ERROR);
+  });
+
   test('User: User is not Author or Channel Owner', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
     testChannelJoin(user2.token, channel.channelId);
     expect(testMessageRemove(user2.token, message.messageId)).toStrictEqual(ERROR);
+  });
+
+  test('User: User is not Author or Dm Owner', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
+    expect(testMessageRemove(user2.token, message2.messageId)).toStrictEqual(ERROR);
   });
 
   test('User: User is a GlobalOwner but not Author or Channel Owner', () => {
@@ -262,7 +399,7 @@ describe('/message/remove: Return Testing', () => {
     channel = testChannelsCreate(user1.token, 'New Channel', true);
   });
 
-  test('Correct Message Removal (1 -> 0 Messages) by Author and Owner', () => {
+  test('Correct Message Removal (1 -> 0 Messages) by Author and Owner (Channel)', () => {
     const message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
     expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
@@ -272,7 +409,7 @@ describe('/message/remove: Return Testing', () => {
     });
   });
 
-  test('Correct Message Removal (1 -> 0 Messages) by Author but not Owner', () => {
+  test('Correct Message Removal (1 -> 0 Messages) by Author but not Owner (Channel)', () => {
     testChannelJoin(user2.token, channel.channelId);
     const message = testMessageSend(user2.token, channel.channelId, 'This message is valid');
     expect(testMessageRemove(user2.token, message.messageId)).toStrictEqual({});
@@ -283,7 +420,18 @@ describe('/message/remove: Return Testing', () => {
     });
   });
 
-  test('Correct Message Removal (1 -> 0 Messages) by Owner but not Author', () => {
+  test('Correct Message Removal (1 -> 0 Messages) by Author but not Owner (Dm)', () => {
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message = testMessageSendDm(user2.token, dm.dmId, 'This message is valid');
+    expect(testMessageRemove(user2.token, message.messageId)).toStrictEqual({});
+    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('Correct Message Removal (1 -> 0 Messages) by Owner but not Author (Channel)', () => {
     testChannelJoin(user2.token, channel.channelId);
     const message = testMessageSend(user2.token, channel.channelId, 'This message is valid');
     expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
@@ -294,7 +442,18 @@ describe('/message/remove: Return Testing', () => {
     });
   });
 
-  test('Correct Message Removal (3 -> 2 Messages)', () => {
+  test('Correct Message Removal (1 -> 0 Messages) by Owner but not Author (Dm)', () => {
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message = testMessageSendDm(user2.token, dm.dmId, 'This message is valid');
+    expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
+    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('Correct Message Removal (3 -> 2 Messages) (Channel)', () => {
     testChannelJoin(user2.token, channel.channelId);
     const message1 = testMessageSend(user1.token, channel.channelId, 'First');
     const message2 = testMessageSend(user1.token, channel.channelId, 'Second');
@@ -321,6 +480,49 @@ describe('/message/remove: Return Testing', () => {
     });
     expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual({});
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
+      messages: [{
+        message: 'Third',
+        uId: user2.authUserId,
+        messageId: message3.messageId,
+        timeSent: expect.any(Number),
+      }, {
+        message: 'First',
+        uId: user1.authUserId,
+        messageId: message1.messageId,
+        timeSent: expect.any(Number),
+      }],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('Correct Message Removal (3 -> 2 Messages) (Dm)', () => {
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message1 = testMessageSendDm(user1.token, dm.dmId, 'First');
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'Second');
+    const message3 = testMessageSendDm(user2.token, dm.dmId, 'Third');
+    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
+      messages: [{
+        message: 'Third',
+        uId: user2.authUserId,
+        messageId: message3.messageId,
+        timeSent: expect.any(Number),
+      }, {
+        message: 'Second',
+        uId: user1.authUserId,
+        messageId: message2.messageId,
+        timeSent: expect.any(Number),
+      }, {
+        message: 'First',
+        uId: user1.authUserId,
+        messageId: message1.messageId,
+        timeSent: expect.any(Number),
+      }],
+      start: 0,
+      end: -1,
+    });
+    expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual({});
+    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
       messages: [{
         message: 'Third',
         uId: user2.authUserId,

@@ -248,7 +248,7 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   realStart = (start < 0) ? realEnd + start + 50 : channel.messages.length - start - 1;
   realStart = (realStart >= channel.messages.length) ? channel.messages.length - 1 : realStart;
 
-  if (start < -50) {
+  if (start <= -50) {
     realStart = -1;
     realEnd = 0;
   }
@@ -528,7 +528,6 @@ function getIdFromToken(token: string): number {
       return user.uId;
     }
   }
-  return -1;
 }
 
 /**

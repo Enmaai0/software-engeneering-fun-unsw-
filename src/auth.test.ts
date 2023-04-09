@@ -182,6 +182,25 @@ describe('/auth/register: Return Testing', () => {
       user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
     });
 
+    test('One Users List All ((FirstName + LastName).length > 20)', () => {
+      const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Thisdudehas', 'aSuperLongNameLikeSheeeeesh');
+      expect(testUsersAll(user2.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }, {
+          uId: user2.authUserId,
+          email: 'email2@gmail.com',
+          nameFirst: 'Thisdudehas',
+          nameLast: 'aSuperLongNameLikeSheeeeesh',
+          handleStr: 'thisdudehasasuperlon'
+        }]
+      });
+    });
+
     test('One Users List All', () => {
       expect(testUsersAll(user1.token)).toStrictEqual({
         users: [{
@@ -272,6 +291,7 @@ describe('/auth/passwordreset/reset: Return Testing', () => {
 
   /*
   Manually tested via forcing resetCode to be 'ThisIsTheResetCode'
+  NOTE: Cannot create tests to ensure this is covered
 
   test('Valid resetCode: Password is updated using newPassword', () => {
     testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
