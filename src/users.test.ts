@@ -251,6 +251,11 @@ describe('userSetEmailV1: Error Testing', () => {
   test('Email: Invalid Email', () => {
     expect(testSetEmail(user1.token, 'invalidEmail')).toStrictEqual(ERROR);
   });
+
+  test('Email: Email Already in Use', () => {
+    const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    expect(testSetEmail(user2.token, 'email@gmail.com')).toStrictEqual(ERROR);
+  });
 });
 
 describe('Correct SetEmail: Correct Return Testing', () => {
@@ -309,36 +314,36 @@ describe('userSetHandleV1: Error Testing', () => {
   });
 
   test('Token: Invalid Token A', () => {
-    expect(testSetEmail(user1.token + 'A', 'handle')).toStrictEqual(ERROR);
+    expect(testSetHandle(user1.token + 'A', 'handle')).toStrictEqual(ERROR);
   });
 
   test('Token: Invalid Token 1', () => {
-    expect(testSetEmail(user1.token + '1', 'handle')).toStrictEqual(ERROR);
+    expect(testSetHandle(user1.token + '1', 'handle')).toStrictEqual(ERROR);
   });
 
   test('Handle: Invalid Handle (symbol)', () => {
-    expect(testSetEmail(user1.token, 'invalidHandle!')).toStrictEqual(ERROR);
+    expect(testSetHandle(user1.token, 'invalidHandle!')).toStrictEqual(ERROR);
   });
 
   test('Handle: Invalid Handle (space)', () => {
-    expect(testSetEmail(user1.token, 'invalid handle')).toStrictEqual(ERROR);
+    expect(testSetHandle(user1.token, 'invalid handle')).toStrictEqual(ERROR);
   });
 
   test('Handle: Invalid Handle (symbol)', () => {
-    expect(testSetEmail(user1.token, 'invalidh@ndle')).toStrictEqual(ERROR);
+    expect(testSetHandle(user1.token, 'invalidh@ndle')).toStrictEqual(ERROR);
   });
 
   test('Handle: Invalid Handle Too Long', () => {
-    expect(testSetEmail(user1.token, 'invalidHandleinvalidHandle')).toStrictEqual(ERROR);
+    expect(testSetHandle(user1.token, 'invalidHandleinvalidHandle')).toStrictEqual(ERROR);
   });
 
   test('Handle: Invalid Handle Too Short', () => {
-    expect(testSetEmail(user1.token, 'in')).toStrictEqual(ERROR);
+    expect(testSetHandle(user1.token, 'in')).toStrictEqual(ERROR);
   });
 
   test('Handle: Invalid Handle Already Taken', () => {
-    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
-    expect(testSetEmail(user2.token, 'testbot')).toStrictEqual(ERROR);
+    user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    expect(testSetHandle(user2.token, 'testbot')).toStrictEqual(ERROR);
   });
 });
 

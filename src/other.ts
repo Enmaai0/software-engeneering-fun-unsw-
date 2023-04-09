@@ -117,7 +117,6 @@ function getIdFromToken(token: string): number {
       return user.uId;
     }
   }
-  return -1;
 }
 
 export { clearV1, notificationsGet };

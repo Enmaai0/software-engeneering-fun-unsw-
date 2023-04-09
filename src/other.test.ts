@@ -177,7 +177,7 @@ describe('/notifications/get Testing', () => {
   test('More than 20 Notifications Test', () => {
     const dm = testDmCreate(user1.token, [user2.authUserId]);
 
-    for (let i = 0; i < 19; i++) {
+    for (let i = 0; i < 21; i++) {
       testMessageSendDm(user1.token, dm.dmId, `@first2last2 ${i}`);
     }
 
@@ -186,13 +186,13 @@ describe('/notifications/get Testing', () => {
     expect(notifications.notifications[0]).toStrictEqual({
       channelId: -1,
       dmId: dm.dmId,
-      notificationMessage: '@first1last1 tagged you in first1last1, first2last2: @first2last2 18'
+      notificationMessage: '@first1last1 tagged you in first1last1, first2last2: @first2last2 20'
     });
 
     expect(notifications.notifications[19]).toStrictEqual({
       channelId: -1,
       dmId: dm.dmId,
-      notificationMessage: '@first1last1 added you to first1last1, first2last2'
+      notificationMessage: '@first1last1 tagged you in first1last1, first2last2: @first2last2 1'
     });
   });
 

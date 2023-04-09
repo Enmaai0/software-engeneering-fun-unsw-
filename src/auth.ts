@@ -295,7 +295,6 @@ function emailToUserIndex(email: string): number {
       return user.uId;
     }
   }
-  return 0;
 }
 
 /**

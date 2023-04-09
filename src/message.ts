@@ -113,9 +113,7 @@ function channelMessageNotif(uId: number, channelId: number, message: string) {
 
   for (const handle of taggedHandles) {
     const handleId = getIdfromHandle(handle);
-    if (handleId !== -1) {
-      taggedIds.push(handleId);
-    }
+    taggedIds.push(handleId);
   }
 
   for (const id of taggedIds) {
@@ -159,7 +157,6 @@ function getIdfromHandle(handle: string): number {
       return user.uId;
     }
   }
-  return -1;
 }
 
 /**
@@ -252,9 +249,7 @@ function dmMessageNotif(uId: number, dmId: number, message: string) {
 
   for (const handle of taggedHandles) {
     const handleId = getIdfromHandle(handle);
-    if (handleId !== -1) {
-      taggedIds.push(handleId);
-    }
+    taggedIds.push(handleId);
   }
 
   for (const id of taggedIds) {
@@ -369,7 +364,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
   const data = getData();
   let messageObj: Message, messageIndex;
 
-  if (channelId > -1) {
+  if (channelId > -1 && dmId === -1) {
     if (!isMemberChannel(userId, channelId)) {
       return { error: 'User is not a Member of the Channel' };
     }
@@ -384,7 +379,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
     data.channels[channelId].messages.splice(messageIndex, 1);
   }
 
-  if (dmId > -1) {
+  if (dmId > -1 && channelId === -1) {
     if (!isMemberDm(userId, dmId)) {
       return { error: 'User is not a Member of the Dm' };
     }
@@ -395,6 +390,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
     if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
       return { error: 'User does not have Permission to Edit this Message' };
     }
+
     data.dms[dmId].messages.splice(messageIndex, 1);
   }
 
@@ -446,7 +442,6 @@ function getIdFromToken(token: string): number {
       return user.uId;
     }
   }
-  return -1;
 }
 
 /**
@@ -558,7 +553,6 @@ function checkMessageInChannels(messageId: number): number {
  * within a dm, otherwise returns -1.
  *
  * @param { number } messageId
- * @param { number }
  */
 function checkMessageInDms(messageId: number): number {
   const data = getData();
@@ -629,16 +623,6 @@ function isChannelOwner(uId: number, channelId: number): boolean {
 function getMessageIndex(messageId: number, routeId: number, identifier: string): number {
   const data = getData();
 
-  if (identifier === 'dm') {
-    const dm = data.dms[routeId];
-
-    for (const message of dm.messages) {
-      if (message.messageId === messageId) {
-        return dm.messages.indexOf(message);
-      }
-    }
-  }
-
   if (identifier === 'channel') {
     const channel = data.channels[routeId];
 
@@ -649,7 +633,15 @@ function getMessageIndex(messageId: number, routeId: number, identifier: string)
     }
   }
 
-  return -1;
+  if (identifier === 'dm') {
+    const dm = data.dms[routeId];
+
+    for (const message of dm.messages) {
+      if (message.messageId === messageId) {
+        return dm.messages.indexOf(message);
+      }
+    }
+  }
 }
 
 export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1 };

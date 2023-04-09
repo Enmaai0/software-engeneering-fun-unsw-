@@ -279,9 +279,7 @@ function dmLeave(token: string, dmId: number): Record<string, never> | Error {
 
   const dmMembers = data.dms[dmId].members;
   const idIndex = dmMembers.indexOf(id);
-  if (idIndex > -1) {
-    dmMembers.splice(idIndex, 1);
-  }
+  dmMembers.splice(idIndex, 1);
 
   setData(data);
 
@@ -337,7 +335,7 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages | Er
   realStart = (start < 0) ? realEnd + start + 50 : dm.messages.length - start - 1;
   realStart = (realStart >= dm.messages.length) ? dm.messages.length - 1 : realStart;
 
-  if (start < -50) {
+  if (start <= -50) {
     realStart = -1;
     realEnd = 0;
   }
@@ -435,7 +433,6 @@ function getIdFromToken(token: string): number {
       return user.uId;
     }
   }
-  return -1;
 }
 
 /**
