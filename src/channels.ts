@@ -188,7 +188,6 @@ function getIdFromToken(token: string): number {
       return user.uId;
     }
   }
-  return -1;
 }
 
 /**

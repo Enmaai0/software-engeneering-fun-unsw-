@@ -69,9 +69,94 @@ function messageSendV1(token: string, channelId: number, message: string): Messa
 
   data.channels[channelId].messages.push(messageObj);
 
+  channelMessageNotif(userId, channelId, message);
+
   setData(data);
 
   return { messageId: messageId };
+}
+
+/**
+ * channelMessageNotif
+ *
+ * Given a uId, channelId, and message, creates a notification for
+ * all user that have been tagged in the message.
+ *
+ * @param { number } uId
+ * @param { number } channelId
+ * @param { string } message
+ */
+function channelMessageNotif(uId: number, channelId: number, message: string) {
+  const data = getData();
+
+  let cutMessage: string;
+  if (message.length > 20) {
+    cutMessage = message.slice(0, 20);
+  } else {
+    cutMessage = message;
+  }
+
+  const notifMsg = `@${data.users[uId].userHandle} tagged you in ${data.channels[channelId].name}: ${cutMessage}`;
+
+  const notification = {
+    channelId: channelId,
+    dmId: -1,
+    notificationMessage: notifMsg
+  };
+
+  const taggedHandles = getUserHandles(message);
+  const taggedIds: number[] = [];
+
+  if (taggedHandles === null) {
+    return;
+  }
+
+  for (const handle of taggedHandles) {
+    const handleId = getIdfromHandle(handle);
+    taggedIds.push(handleId);
+  }
+
+  for (const id of taggedIds) {
+    data.users[id].notifications.push(notification);
+  }
+}
+
+/**
+ * getUserHandles
+ *
+ * Given a message, extracts all possible user handles from the
+ * message inputted.
+ *
+ * Note: Grabs handles containing '_' however due to constraints
+ * on what valid user handles are should not cuase errors
+ *
+ * @param { string } message
+ * @returns { string[] }
+ */
+function getUserHandles(message: string): string[] {
+  const handles = message.match(/[@]\w+/g);
+  return handles;
+}
+
+/**
+ * getIdFromhandle
+ *
+ * Given a handle extracts the uId of the person
+ * associated with that handle.
+ * Errors should not occur due to previous error test
+ *
+ * @param { string } handle
+ * @returns { number }
+ */
+function getIdfromHandle(handle: string): number {
+  const data = getData();
+
+  for (const user of data.users) {
+    const userHandle = '@' + user.userHandle;
+    if (userHandle === handle) {
+      return user.uId;
+    }
+  }
 }
 
 /**
@@ -118,11 +203,58 @@ function messageSendDmV1(token: string, dmId: number, message: string): MessageS
 
   data.dms[dmId].messages.push(messageObj);
 
+  dmMessageNotif(userId, dmId, message);
+
   setData(data);
 
   return {
     messageId: messageId,
   };
+}
+
+/**
+ * channelMessageNotif
+ *
+ * Given a uId, channelId, and message, creates a notification for
+ * all user that have been tagged in the message.
+ *
+ * @param { number } uId
+ * @param { number } dmId
+ * @param { string } message
+ */
+function dmMessageNotif(uId: number, dmId: number, message: string) {
+  const data = getData();
+
+  let cutMessage: string;
+  if (message.length > 20) {
+    cutMessage = message.slice(0, 20);
+  } else {
+    cutMessage = message;
+  }
+
+  const notifMsg = `@${data.users[uId].userHandle} tagged you in ${data.dms[dmId].name}: ${cutMessage}`;
+
+  const notification = {
+    channelId: -1,
+    dmId: dmId,
+    notificationMessage: notifMsg
+  };
+
+  const taggedHandles = getUserHandles(message);
+  const taggedIds: number[] = [];
+
+  if (taggedHandles === null) {
+    return;
+  }
+
+  for (const handle of taggedHandles) {
+    const handleId = getIdfromHandle(handle);
+    taggedIds.push(handleId);
+  }
+
+  for (const id of taggedIds) {
+    data.users[id].notifications.push(notification);
+  }
 }
 
 /**
@@ -232,7 +364,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
   const data = getData();
   let messageObj: Message, messageIndex;
 
-  if (channelId > -1) {
+  if (channelId > -1 && dmId === -1) {
     if (!isMemberChannel(userId, channelId)) {
       return { error: 'User is not a Member of the Channel' };
     }
@@ -247,7 +379,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
     data.channels[channelId].messages.splice(messageIndex, 1);
   }
 
-  if (dmId > -1) {
+  if (dmId > -1 && channelId === -1) {
     if (!isMemberDm(userId, dmId)) {
       return { error: 'User is not a Member of the Dm' };
     }
@@ -258,6 +390,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
     if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
       return { error: 'User does not have Permission to Edit this Message' };
     }
+
     data.dms[dmId].messages.splice(messageIndex, 1);
   }
 
@@ -309,7 +442,6 @@ function getIdFromToken(token: string): number {
       return user.uId;
     }
   }
-  return -1;
 }
 
 /**
@@ -421,7 +553,6 @@ function checkMessageInChannels(messageId: number): number {
  * within a dm, otherwise returns -1.
  *
  * @param { number } messageId
- * @param { number }
  */
 function checkMessageInDms(messageId: number): number {
   const data = getData();
@@ -492,16 +623,6 @@ function isChannelOwner(uId: number, channelId: number): boolean {
 function getMessageIndex(messageId: number, routeId: number, identifier: string): number {
   const data = getData();
 
-  if (identifier === 'dm') {
-    const dm = data.dms[routeId];
-
-    for (const message of dm.messages) {
-      if (message.messageId === messageId) {
-        return dm.messages.indexOf(message);
-      }
-    }
-  }
-
   if (identifier === 'channel') {
     const channel = data.channels[routeId];
 
@@ -512,7 +633,15 @@ function getMessageIndex(messageId: number, routeId: number, identifier: string)
     }
   }
 
-  return -1;
+  if (identifier === 'dm') {
+    const dm = data.dms[routeId];
+
+    for (const message of dm.messages) {
+      if (message.messageId === messageId) {
+        return dm.messages.indexOf(message);
+      }
+    }
+  }
 }
 
 export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1 };

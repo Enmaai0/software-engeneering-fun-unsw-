@@ -20,11 +20,14 @@ const url = config.url;
 
 /** /admin/* Test Functions **/
 
-export function testAdminUserRemove(uId: number) {
+export function testAdminUserRemove(token: string, uId: number) {
   const res = request(
     'DELETE',
     `${url}:${port}/admin/user/remove/v1`,
-    {
+    { 
+      headers: {
+        token
+      },
       qs: {
         uId
       }
@@ -33,11 +36,14 @@ export function testAdminUserRemove(uId: number) {
   return JSON.parse(res.getBody() as string);
 }
 
-export function testAdminUserPermissionChange(uId: number, permissionId: number) {
+export function testAdminUserPermissionChange(token: string, uId: number, permissionId: number) {
   const res = request(
     'POST',
     `${url}:${port}/admin/userpermission/change/v1`,
-    {
+    { 
+      headers: {
+        token
+      },
       json: {
         uId,
         permissionId
@@ -86,6 +92,33 @@ export function testAuthRegister(email: string, password: string, nameFirst: str
         password,
         nameFirst,
         nameLast
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testAuthPasswordResetRequest(email: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/passwordreset/request/v1`,
+    {
+      json: {
+        email
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testAuthPasswordResetReset(resetCode: string, newPassword: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/passwordreset/reset/v1`,
+    {
+      json: {
+        resetCode,
+        newPassword
       }
     }
   );
@@ -465,6 +498,19 @@ export function testClear() {
     'DELETE',
     `${url}:${port}/clear/v1`,
     { qs: {} }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testNotificationsGet(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/notifications/get/v1`,
+    {
+      qs: {
+        token
+      }
+    }
   );
   return JSON.parse(res.getBody() as string);
 }

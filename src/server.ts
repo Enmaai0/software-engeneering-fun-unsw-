@@ -4,9 +4,9 @@ import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
 import errorHandler from 'middleware-http-errors';
-import { clearV1 } from './other';
+import { clearV1, notificationsGet } from './other';
 import { saveData, grabData } from './dataStore';
-import { authLoginV1, authLogoutV1, authRegisterV1 } from './auth';
+import { authLoginV1, authLogoutV1, authRegisterV1, authPasswordResetRequest, authPasswordResetReset } from './auth';
 import { adminUserRemove, adminUserPermissionChange } from './admin';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
@@ -48,15 +48,17 @@ process.on('SIGINT', () => {
 /** /admin/* Routes **/
 
 app.delete('/admin/user/remove/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
   const uId = req.query.uId as string;
-  const returnMessage = adminUserRemove(Number(uId));
+  const returnMessage = adminUserRemove(token, Number(uId));
   saveData();
   res.json(returnMessage);
 });
 
 app.post('/admin/userpermission/change/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
   const { uId, permissionId } = req.body;
-  const returnMessage = adminUserPermissionChange(uId, permissionId);
+  const returnMessage = adminUserPermissionChange(token, uId, permissionId);
   saveData();
   res.json(returnMessage);
 });
@@ -80,6 +82,20 @@ app.post('/auth/logout/v1', (req: Request, res: Response) => {
 app.post('/auth/register/v2', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
   const returnMessage = authRegisterV1(email, password, nameFirst, nameLast);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/auth/passwordreset/request/v1', (req: Request, res: Response) => {
+  const { email } = req.body;
+  const returnMessage = authPasswordResetRequest(email);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/auth/passwordreset/reset/v1', (req: Request, res: Response) => {
+  const { resetCode, newPassword } = req.body;
+  const returnMessage = authPasswordResetReset(resetCode, newPassword);
   saveData();
   res.json(returnMessage);
 });
@@ -282,6 +298,13 @@ app.put('/user/profile/sethandle/v1', (req: Request, res: Response) => {
 
 app.delete('/clear/v1', (req: Request, res: Response) => {
   const returnMessage = clearV1();
+  saveData();
+  res.json(returnMessage);
+});
+
+app.get('/notifications/get/v1', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const returnMessage = notificationsGet(token);
   saveData();
   res.json(returnMessage);
 });

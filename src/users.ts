@@ -159,7 +159,7 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
   }
 
   // Checks if the string has non-alphanumeric characters
-  if (handle.match(/^[0-9a-z]$/) !== null) {
+  if (!/^[0-9a-z]+$/.test(handle)) {
     return { error: 'Invalid Handle (Must Contain Only Alphanumeric Characters' };
   }
 
@@ -252,7 +252,6 @@ function findUId(token: string): number {
       return user.uId;
     }
   }
-  return -1;
 }
 
 export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 };
