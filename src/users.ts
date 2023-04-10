@@ -92,7 +92,9 @@ function usersAllV1(token: string) : Error | UserArray {
       handleStr: user.userHandle
     };
 
-    returnArray.push(userProfile);
+    if (user.nameFirst !== 'Removed' && user.nameFirst !== 'user') {
+      returnArray.push(userProfile);
+    }
   }
 
   return { users: returnArray };

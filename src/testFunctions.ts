@@ -24,12 +24,12 @@ export function testAdminUserRemove(token: string, uId: number) {
   const res = request(
     'DELETE',
     `${url}:${port}/admin/user/remove/v1`,
-    { 
+    {
       headers: {
-        token
+        token: token,
       },
       qs: {
-        uId
+        uId,
       }
     }
   );
@@ -40,13 +40,14 @@ export function testAdminUserPermissionChange(token: string, uId: number, permis
   const res = request(
     'POST',
     `${url}:${port}/admin/userpermission/change/v1`,
-    { 
+    {
       headers: {
-        token
+        token: token,
       },
       json: {
+        token,
         uId,
-        permissionId
+        permissionId,
       }
     }
   );
