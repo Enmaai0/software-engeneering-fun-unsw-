@@ -347,7 +347,7 @@ describe('/admin/userpermission/change: Error Testing', () => {
 
   test('User: User is Already a Global Owner', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    testAdminUserPermissionChange(user1.token, user2.authUserId, GLOBALOWNER)
+    testAdminUserPermissionChange(user1.token, user2.authUserId, GLOBALOWNER);
     expect(() => testAdminUserPermissionChange(user1.token, user2.authUserId, GLOBALOWNER)).toThrow(Error);
   });
 });
