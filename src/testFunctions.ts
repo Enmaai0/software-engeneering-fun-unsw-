@@ -18,6 +18,42 @@ import config from './config.json';
 const port = config.port;
 const url = config.url;
 
+/** /admin/* Test Functions **/
+
+export function testAdminUserRemove(token: string, uId: number) {
+  const res = request(
+    'DELETE',
+    `${url}:${port}/admin/user/remove/v1`,
+    {
+      headers: {
+        token: token,
+      },
+      qs: {
+        uId,
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testAdminUserPermissionChange(token: string, uId: number, permissionId: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/admin/userpermission/change/v1`,
+    {
+      headers: {
+        token: token,
+      },
+      json: {
+        token,
+        uId,
+        permissionId,
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 /** /auth/* Test Functions **/
 
 export function testAuthLogin(email: string, password: string) {

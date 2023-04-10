@@ -59,7 +59,7 @@ function clearV1(): Record<string, never> {
  */
 function notificationsGet(token: string): Notifications | { error: string } {
   if (!isValidToken(token)) {
-    throw HTTPError('Invalid Token');
+    throw HTTPError(403, 'Invalid Token');
   }
 
   const uId = getIdFromToken(token);
