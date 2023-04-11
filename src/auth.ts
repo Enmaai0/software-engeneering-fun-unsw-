@@ -49,6 +49,9 @@ const GLOBALMEMBER = 2;
  * both match the same user, the user 'logs in' and the
  * function returns the authUserId of the associated user.
  *
+ * A hashed token is stored in the dataStore with the original
+ * token being returned to the user.
+ *
  * Errors return { error: "error" } on incorrect or
  * invalid input.
  *
@@ -67,7 +70,7 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
 
   if (data.users[userIndex].password === password) {
     const newToken = generateToken();
-    data.users[userIndex].tokens.push(newToken);
+    data.users[userIndex].tokens.push(getHashOf(newToken));
     return {
       token: newToken,
       authUserId: userIndex
@@ -95,10 +98,12 @@ function authLogoutV1(token: string): Record<string, never> | Error {
     return { error: 'Invalid Token' };
   }
 
+  const hashedToken = getHashOf(token);
+
   for (const user of data.users) {
     for (const userToken of user.tokens) {
-      if (userToken === token) {
-        const index = user.tokens.indexOf(token);
+      if (userToken === hashedToken) {
+        const index = user.tokens.indexOf(hashedToken);
         user.tokens.splice(index, 1);
         break;
       }
@@ -161,6 +166,8 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   }
 
   const newUserIndex = data.users.length;
+  const newToken = generateToken();
+
   const userObject: User = {
     uId: newUserIndex,
     email: email,
@@ -169,7 +176,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     nameLast: nameLast,
     userHandle: generateUserHandle(nameFirst, nameLast),
     permissionId: permissionId,
-    tokens: [generateToken()],
+    tokens: [getHashOf(newToken)],
     notifications: [],
     resetCodes: []
   };
@@ -179,8 +186,8 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   setData(data);
 
   return {
-    token: userObject.tokens[0],
-    authUserId: userObject.uId
+    token: newToken,
+    authUserId: newUserIndex
   };
 }
 
@@ -200,7 +207,7 @@ function authPasswordResetRequest(email: string): Record<never, never> {
 
   for (const user of data.users) {
     if (email === user.email) {
-      user.resetCodes.push(resetCode);
+      user.resetCodes.push(getHashOf(resetCode));
       user.tokens = [];
       break;
     }
@@ -230,11 +237,12 @@ function authPasswordResetReset(resetCode: string, newPassword: string): Record<
 
   let uId = -1;
   let resetCodeIndex;
+  const hashedResetCode = getHashOf(resetCode);
 
   for (const user of data.users) {
-    if (user.resetCodes.includes(resetCode)) {
+    if (user.resetCodes.includes(hashedResetCode)) {
       uId = user.uId;
-      resetCodeIndex = user.resetCodes.indexOf(resetCode);
+      resetCodeIndex = user.resetCodes.indexOf(hashedResetCode);
       break;
     }
   }
@@ -266,10 +274,11 @@ export { authLoginV1, authRegisterV1, authLogoutV1, authPasswordResetRequest, au
  */
 function isValidToken(token: string): boolean {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return true;
     }
   }
