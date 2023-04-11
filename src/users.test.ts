@@ -30,7 +30,7 @@ interface AuthReturn {
   authUserId: number;
 }
 
-/// //////////// UserProfileV1 Function ///////////////
+/* UserProfileV1 Function */
 
 describe('usersProfileV1: Error Testing', () => {
   let user1: AuthReturn;
