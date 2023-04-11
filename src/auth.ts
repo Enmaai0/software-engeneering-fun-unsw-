@@ -7,6 +7,8 @@
 import validator from 'validator';
 import { getData, setData } from './dataStore';
 
+const nodemailer = require('nodemailer');
+
 interface Error {
   error: string;
 }
@@ -200,6 +202,7 @@ function authPasswordResetRequest(email: string): Record<never, never> {
   for (const user of data.users) {
     if (email === user.email) {
       user.resetCodes.push(resetCode);
+      sendEmail(email, resetCode);
       user.tokens = [];
       break;
     }
@@ -405,4 +408,36 @@ function generateResetCode(): string {
   }
 
   return result;
+}
+
+/**
+ * sendEmail
+ *
+ * Given an email address and a resetCode, sends an email to that email address
+ * with the message stated below. Giving them the resetCode to reset their password.
+ *
+ * @param { string } email
+ * @param { string } resetCode
+ */
+async function sendEmail(email: string, resetCode: string) {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: 'estel.hoeger@ethereal.email', // generated ethereal user
+      pass: '95KuTtSnCNVErXZ4cD', // generated ethereal password
+    },
+  });
+
+  // send mail with defined transport object
+  await transporter.sendMail({
+    from: '"HO9A_DREAM" <estel.hoeger@ethereal.email>', // sender address
+    to: `${email}`, // list of receivers
+    subject: 'Password Reset Code', // Subject line
+    text: `Hello ${email}, someone (hopefuly you) has requested a password reset on your UNSW Memes account. Please go to this link:
+      'I dont know the link LMAO', and enter the code below to reset your password. If this wasnt you then you can safely ignore this email.
+      
+      Reset Code: ${resetCode}`,
+  });
 }
