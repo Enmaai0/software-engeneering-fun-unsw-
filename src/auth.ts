@@ -5,7 +5,7 @@
  */
 
 import validator from 'validator';
-import { getData, setData } from './dataStore';
+import { getData, setData, getHashOf } from './dataStore';
 
 interface Error {
   error: string;
@@ -63,6 +63,7 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
 
   const data = getData();
   const userIndex = emailToUserIndex(email);
+  password = getHashOf(password);
 
   if (data.users[userIndex].password === password) {
     const newToken = generateToken();
@@ -163,7 +164,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   const userObject: User = {
     uId: newUserIndex,
     email: email,
-    password: password,
+    password: getHashOf(password),
     nameFirst: nameFirst,
     nameLast: nameLast,
     userHandle: generateUserHandle(nameFirst, nameLast),
