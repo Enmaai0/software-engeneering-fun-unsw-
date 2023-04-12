@@ -42,15 +42,15 @@ describe('/auth/login: Error Testing', () => {
   });
 
   test('Email: Invalid Email', () => {
-    expect(testAuthLogin('invalidEmail', 'pass1234')).toStrictEqual(ERROR);
+    expect(() => testAuthLogin('invalidEmail', 'pass1234')).toThrow(Error);
   });
 
   test('Email: No User with Email', () => {
-    expect(testAuthLogin('nonExistantEmail@gmail.com', 'pass1234')).toStrictEqual(ERROR);
+    expect(() => testAuthLogin('nonExistantEmail@gmail.com', 'pass1234')).toThrow(Error);
   });
 
   test('Password: Incorrect Password', () => {
-    expect(testAuthLogin('email@gmail.com', '1234pass')).toStrictEqual(ERROR);
+    expect(() => testAuthLogin('email@gmail.com', '1234pass')).toThrow(Error);
   });
 });
 
@@ -82,13 +82,13 @@ describe('/auth/login: Return Testing', () => {
 
 describe('/auth/logout: Error Testing', () => {
   test('Email: Invalid Token (No Users)', () => {
-    expect(testAuthLogout('someRandomTokenIDK?')).toStrictEqual(ERROR);
+    expect(() => testAuthLogout('someRandomTokenIDK?')).toThrow(Error);
   });
 
   test('Email: Invalid Token (With Users)', () => {
     const user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    expect(testAuthLogout(user1.token + user2.token)).toStrictEqual(ERROR);
+    expect(() => testAuthLogout(user1.token + user2.token)).toThrow(Error);
   });
 });
 
@@ -115,36 +115,36 @@ describe('/auth/logout: Token Removal Testing', () => {
 
 describe('/auth/register: Error Testing', () => {
   test('Email: Invalid Email', () => {
-    expect(testAuthRegister('invalidEmail', 'pass1234', 'Test', 'Bot')).toStrictEqual(ERROR);
+    expect(() => testAuthRegister('invalidEmail', 'pass1234', 'Test', 'Bot')).toThrow(Error);
   });
 
   test('Email: Email Already in Use', () => {
     testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
-    expect(testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot')).toStrictEqual(ERROR);
+    expect(() => testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot')).toThrow(Error);
   });
 
   test('Password: Too Short (Empty Password)', () => {
-    expect(testAuthRegister('email@gmail.com', '', 'Test', 'Bot')).toStrictEqual(ERROR);
+    expect(() => testAuthRegister('email@gmail.com', '', 'Test', 'Bot')).toThrow(Error);
   });
 
   test('Password: Too Short (Non Empty Password)', () => {
-    expect(testAuthRegister('email@gmail.com', 'Pass', 'Test', 'Bot')).toStrictEqual(ERROR);
+    expect(() => testAuthRegister('email@gmail.com', 'Pass', 'Test', 'Bot')).toThrow(Error);
   });
 
   test('First Name: Empty', () => {
-    expect(testAuthRegister('email@gmail.com', 'pass1234', '', 'Bot')).toStrictEqual(ERROR);
+    expect(() => testAuthRegister('email@gmail.com', 'pass1234', '', 'Bot')).toThrow(Error);
   });
 
   test('Last Name: Empty', () => {
-    expect(testAuthRegister('email@gmail.com', 'pass1234', 'Test', '')).toStrictEqual(ERROR);
+    expect(() => testAuthRegister('email@gmail.com', 'pass1234', 'Test', '')).toThrow(Error);
   });
 
   test('First Name: Too Long', () => {
-    expect(testAuthRegister('email@gmail.com', 'pass1234', '1ZdP8qqutEVebdstDOtjqzZjIA1f4Oe3KQdYFHbakVSYodzEP6w', 'Bot')).toStrictEqual(ERROR);
+    expect(() => testAuthRegister('email@gmail.com', 'pass1234', '1ZdP8qqutEVebdstDOtjqzZjIA1f4Oe3KQdYFHbakVSYodzEP6w', 'Bot')).toThrow(Error);
   });
 
   test('Last Name: Too Long', () => {
-    expect(testAuthRegister('email@gmail.com', 'pass1234', 'Test', '1ZdP8qqutEVebdstDOtjqzZjIA1f4Oe3KQdYFHbakVSYodzEP6w')).toStrictEqual(ERROR);
+    expect(() => testAuthRegister('email@gmail.com', 'pass1234', 'Test', '1ZdP8qqutEVebdstDOtjqzZjIA1f4Oe3KQdYFHbakVSYodzEP6w')).toThrow(Error);
   });
 });
 
@@ -249,20 +249,20 @@ describe('/auth/passwordreset/request: General Testing', () => {
   test('User is logged out of all sessions (1 Session)', () => {
     const user = testAuthRegister('useremail@gmail.com', 'pass1234', 'Jerry', 'Yang');
     const channel = testChannelsCreate(user.token, 'Channel', true);
-    expect(testChannelDetails(user.token, channel.channelId)).not.toStrictEqual(ERROR);
+    expect(() => testChannelDetails(user.token, channel.channelId)).not.toThrow(Error);
     expect(testAuthPasswordResetRequest('useremail@gmail.com')).toStrictEqual({});
-    expect(testChannelDetails(user.token, channel.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelDetails(user.token, channel.channelId)).toThrow(Error);
   });
 
   test('User is logged out of all sessions (2 Sessions)', () => {
     const userS1 = testAuthRegister('useremail@gmail.com', 'pass1234', 'Jerry', 'Yang');
     const userS2 = testAuthLogin('useremail@gmail.com', 'pass1234');
     const channel = testChannelsCreate(userS1.token, 'Channel', true);
-    expect(testChannelDetails(userS1.token, channel.channelId)).not.toStrictEqual(ERROR);
-    expect(testChannelDetails(userS2.token, channel.channelId)).not.toStrictEqual(ERROR);
+    expect(() => testChannelDetails(userS1.token, channel.channelId)).not.toThrow(Error);
+    expect(() => testChannelDetails(userS2.token, channel.channelId)).not.toThrow(Error);
     expect(testAuthPasswordResetRequest('useremail@gmail.com')).toStrictEqual({});
-    expect(testChannelDetails(userS1.token, channel.channelId)).toStrictEqual(ERROR);
-    expect(testChannelDetails(userS2.token, channel.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelDetails(userS1.token, channel.channelId)).toThrow(Error);
+    expect(() => testChannelDetails(userS2.token, channel.channelId)).toThrow(Error);
   });
 });
 
@@ -270,19 +270,19 @@ describe('/auth/passwordreset/request: General Testing', () => {
 
 describe('/auth/passwordreset/reset: Error Testing', () => {
   test('newPassword: Invalid Password (<6 Characters)', () => {
-    expect(testAuthPasswordResetReset('RESETCODE', '1234')).toStrictEqual(ERROR);
+    expect(() => testAuthPasswordResetReset('RESETCODE', '1234')).toThrow(Error);
   });
 
   test('resetCode: Invalid resetCode (Random String (Mixed))', () => {
-    expect(testAuthPasswordResetReset('Die38UKaiD', 'validPassword1234')).toStrictEqual(ERROR);
+    expect(() => testAuthPasswordResetReset('Die38UKaiD', 'validPassword1234')).toThrow(Error);
   });
 
   test('resetCode: Invalid resetCode (Random String (Numbers))', () => {
-    expect(testAuthPasswordResetReset('1247896918', 'validPassword1234')).toStrictEqual(ERROR);
+    expect(() => testAuthPasswordResetReset('1247896918', 'validPassword1234')).toThrow(Error);
   });
 
   test('resetCode: Invalid resetCode (Random String (Symbols))', () => {
-    expect(testAuthPasswordResetReset('(!*$^*!@$%', 'validPassword1234')).toStrictEqual(ERROR);
+    expect(() => testAuthPasswordResetReset('(!*$^*!@$%', 'validPassword1234')).toThrow(Error);
   });
 });
 
