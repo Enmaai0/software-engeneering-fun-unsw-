@@ -1,37 +1,21 @@
 /**
  * channels.ts
- * 
+ *
  * Contains the function implementations of all channels* functions.
  */
 
-import { authRegisterV1 } from './auth.ts';
-import { getData, setData } from './dataStore.ts';
+import { getData, setData } from './dataStore';
+import HTTPError from 'http-errors';
 
-/**
- * channelsCreateV1
- * 
- * Creates a channel given a valid token and 
- * creates either a public or private channel based 
- * on isPublic with a given name. 
- * 
- * @param { token } token 
- * @param { name } name 
- * @param { isPublic } isPublic 
- * @returns {{ channelId: channelid }}
- */
 
-interface UserObject {
-  userId: string;
-  username: string;
+interface Error {
+  error: string
 }
-
-interface Channel {
-  channelId: number;
-  name: string;
-  isPublic: boolean;
-  owners: UserObject[];
-  allMembers: UserObject[];
-  messages: string[];
+interface Message {
+  messageId: number;
+  uId: number;
+  message: string;
+  timeSent: number;
 }
 
 interface UserObject {
@@ -41,27 +25,62 @@ interface UserObject {
   nameLast: string;
   handleStr: string;
 }
+interface Channel {
+  channelId: number;
+  name: string;
+  isPublic: boolean;
+  owners: UserObject[];
+  allMembers: UserObject[];
+  messages: Message[];
+}
 
-function channelsCreateV1(token: string, name: string, isPublic: boolean): { channelId: number } | { error: string } {
-  if (!isValidUserId(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+interface Channels {
+  channelId: number;
+  name: string;
+}
+
+interface ChannelsList {
+  channels: Channels[]
+}
+interface ChannelId {
+  channelId: number
+}
+
+/**
+ * channelsCreateV1
+ *
+ * Creates a channel given a valid token and
+ * creates either a public or private channel based
+ * on isPublic with a given name.
+ *
+ * @param { token } token
+ * @param { name } name
+ * @param { isPublic } isPublic
+ * @returns {{ ChannelId }}
+ */
+function channelsCreateV3(token: string, name: string, isPublic: boolean): ChannelId | Error {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'invalid token');
   }
 
   if (name.length < 1 || name.length > 20) {
-    return { error: 'Invalid Name (Name must be 1 - 20 characters long)' };
+    throw HTTPError(400, 'Channel Name length invalid');
   }
 
-  let data = getData();
+  const data = getData();
   const channelId = data.channels.length;
-  const userObject = createUserObject(token);
 
-  let channel: Channel = {
+  const uId = getIdFromToken(token);
+  const userObject = createUserObject(uId);
+  const messageArray: Message[] = [];
+
+  const channel: Channel = {
     channelId: channelId,
     name: name,
     isPublic: isPublic,
     owners: [userObject],
     allMembers: [userObject],
-    messages: [],
+    messages: messageArray,
   };
 
   data.channels.push(channel);
@@ -71,57 +90,27 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): { cha
 }
 
 /**
- * createUserObject
- * 
- * Given a valid token, returns an object that
- * contains all information to be stored in either
- * channel.owners or channel.allMembers.
- * 
- * @param { number } token 
- * @returns { UserObject }
- */
-function createUserObject(token: number): UserObject {
-  const data = getData();
-
-  const user = data.users[token];
-
-  let userObject: UserObject = {
-    uId: token,
-    email: user.email,
-    nameFirst: user.nameFirst,
-    nameLast: user.nameLast,
-    handleStr: user.userHandle
-  }
-
-  return userObject;
-}
-
-/**
  * channelsListAllV1
- * 
+ *
  * Given a valid token, provides an array of all channels,
  * including private channels containing their channelId and name
- * 
- * @param { number } token 
+ *
+ * @param { number } token
  * @returns {{ channels: Channel[] }}
  */
-function channelsListAllV1(token: number) {
-  if (!isValidUserId(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+function channelsListAllV3(token: string): ChannelsList | Error {
+  if (!isValidToken(token)) {
+     throw HTTPError(403,  'Invalid User (User does not exist)');
   }
 
-  let data = getData();
-  let channelArray: Channel[] = [];
+  const data = getData();
+  const channelArray: Channels[] = [];
 
   for (const channel of data.channels) {
-    let channelDetails: Channel = {
+    const channelDetails = {
       channelId: channel.channelId,
       name: channel.name,
-      isPublic: channel.isPublic,
-      owners: channel.owners,
-      allMembers: channel.allMembers,
-      messages: channel.messages,
-    }
+    };
     channelArray.push(channelDetails);
   }
 
@@ -130,29 +119,29 @@ function channelsListAllV1(token: number) {
 
 /**
  * channelsListV1
- * 
- * Given a valid token, returns an array of all 
+ *
+ * Given a valid token, returns an array of all
  * channels that the inputted token is a part of
- * 
- * @param { number } token 
- * @returns {{ channels: Array<{ name: string, channelId: number }> }}
+ *
+ * @param { number } token
+ * @returns {{ ChannelsList }}
  */
-function channelsListV1 (token: number) {
-  if (!isValidUserId(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+function channelsListV3 (token: string) {
+  if (!isValidToken(token)) {
+    throw HTTPError(403,  'Invalid User (User does not exist)');
   }
 
-  let data = getData();
-  let channelArray = [];
-  const userId = token;
+  const data = getData();
+  const channelArray = [];
+  const userId = getIdFromToken(token);
 
   for (const channel of data.channels) {
     for (const user of channel.allMembers) {
-      if (user.uId === token) {
-        let channelDetails = {
+      if (user.uId === userId) {
+        const channelDetails = {
           name: channel.name,
           channelId: channel.channelId
-        }
+        };
         channelArray.push(channelDetails);
       }
     }
@@ -162,22 +151,70 @@ function channelsListV1 (token: number) {
 }
 
 /**
- * isValidUserId
- * 
- * Given a id of a user, returns whether that
- * id exists within the dataStore. 
- * 
- * @param { number } id
+ * isValidToken
+ *
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
+ *
+ * @param { string } token
  * @returns { boolean }
  */
-function isValidUserId(id: number): boolean {
+function isValidToken(token: string): boolean {
   const data = getData();
 
-  if (id >= data.users.length) {
-    return false;
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return true;
+    }
   }
+  return false;
+}
 
-  return true;
-} 
+/**
+ * getIdFromToken
+ *
+ * Given a token extracts the uId of the person
+ * associated with that token.
+ * Errors should not occur due to previous error test
+ *
+ * @param { string } token
+ * @returns { number }
+ */
+function getIdFromToken(token: string): number {
+  const data = getData();
 
-export { channelsCreateV1, channelsListAllV1, channelsListV1 }
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return user.uId;
+    }
+  }
+}
+
+/**
+ * createUserObject
+ *
+ * Given a valid token, returns an object that
+ * contains all information to be stored in either
+ * channel.owners or channel.allMembers.
+ *
+ * @param { number } uId
+ * @returns { UserObject }
+ */
+function createUserObject(uId: number): UserObject {
+  const data = getData();
+  const user = data.users[uId];
+
+  const userObject: UserObject = {
+    uId: uId,
+    email: user.email,
+    nameFirst: user.nameFirst,
+    nameLast: user.nameLast,
+    handleStr: user.userHandle
+  };
+
+  return userObject;
+}
+
+export { channelsCreateV1, channelsListAllV1, channelsListV1 };
