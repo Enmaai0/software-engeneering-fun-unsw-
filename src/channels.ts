@@ -150,6 +150,10 @@ function channelsListV3 (token: string) {
   return { channels: channelArray };
 }
 
+export { channelsCreateV1, channelsListAllV1, channelsListV1 };
+
+/** Helper Functions **/
+
 /**
  * isValidToken
  *
@@ -161,6 +165,7 @@ function channelsListV3 (token: string) {
  */
 function isValidToken(token: string): boolean {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
