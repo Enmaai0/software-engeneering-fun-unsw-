@@ -4,7 +4,7 @@
  * Contains the function implementations of all channels* functions.
  */
 
-import { getData, setData } from './dataStore';
+import { getData, getHashOf, setData } from './dataStore';
 
 interface Error {
   error: string
@@ -148,6 +148,10 @@ function channelsListV1 (token: string) {
   return { channels: channelArray };
 }
 
+export { channelsCreateV1, channelsListAllV1, channelsListV1 };
+
+/** Helper Functions **/
+
 /**
  * isValidToken
  *
@@ -159,10 +163,11 @@ function channelsListV1 (token: string) {
  */
 function isValidToken(token: string): boolean {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return true;
     }
   }
@@ -181,10 +186,11 @@ function isValidToken(token: string): boolean {
  */
 function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
@@ -214,5 +220,3 @@ function createUserObject(uId: number): UserObject {
 
   return userObject;
 }
-
-export { channelsCreateV1, channelsListAllV1, channelsListV1 };

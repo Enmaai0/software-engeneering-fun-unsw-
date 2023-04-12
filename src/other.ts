@@ -6,7 +6,7 @@
  */
 
 import HTTPError from 'http-errors';
-import { getData, setData } from './dataStore';
+import { getData, getHashOf, setData } from './dataStore';
 
 interface Notification {
   channelId: number,
@@ -79,44 +79,50 @@ function notificationsGet(token: string): Notifications | { error: string } {
   return { notifications: returnNotifications };
 }
 
+export { clearV1, notificationsGet };
+
+/** Helper Functions **/
+
 /**
  * isValidToken
  *
- * Given a token and to check if it is
- * a valid token owned by any user
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
  *
  * @param { string } token
  * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
-  const users = getData().users;
-  for (const user of users) {
-    for (const theToken of user.tokens) {
-      if (theToken === token) {
-        return true;
-      }
+  const data = getData();
+  const hashedToken = getHashOf(token);
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(hashedToken)) {
+      return true;
     }
   }
   return false;
 }
 
 /**
- * findUId
+ * getIdFromToken
  *
- * Given a token, find the corresponding uId
+ * Given a token extracts the uId of the person
+ * associated with that token.
+ * Errors should not occur due to previous error test
  *
  * @param { string } token
  * @returns { number }
  */
 function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
 }
-
-export { clearV1, notificationsGet };
