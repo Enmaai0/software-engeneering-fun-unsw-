@@ -4,7 +4,7 @@
  * Contains the functions of all dm* functions.
  */
 
-import { getData, setData } from './dataStore';
+import { getData, getHashOf, setData } from './dataStore';
 
 interface Error {
   error: string;
@@ -357,22 +357,27 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages | Er
   };
 }
 
+export { dmCreate, dmLeave, dmMessages, dmDetails, dmRemove, dmList };
+
+/** Helper Functions **/
+
 /**
  * isValidToken
  *
- * Given a token and to check if it is
- * a valid token owned by any user
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
  *
  * @param { string } token
  * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
-  const users = getData().users;
-  for (const user of users) {
-    for (const theToken of user.tokens) {
-      if (theToken === token) {
-        return true;
-      }
+  const data = getData();
+  const hashedToken = getHashOf(token);
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(hashedToken)) {
+      return true;
     }
   }
   return false;
@@ -426,10 +431,11 @@ function hasDuplicates(array: any[]): boolean {
  */
 function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
@@ -575,5 +581,3 @@ function createUserObject(uId: number) {
 
   return userObject;
 }
-
-export { dmCreate, dmLeave, dmMessages, dmDetails, dmRemove, dmList };
