@@ -43,7 +43,6 @@ function requestHelper(method: HttpVerb, path: string, token: string, payload: o
   return JSON.parse(res.getBody() as string);
 }
 
-
 /** /admin/* Test Functions **/
 
 export function testAdminUserRemove(token: string, uId: number) {
