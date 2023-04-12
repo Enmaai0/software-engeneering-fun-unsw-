@@ -18,8 +18,6 @@ import {
   testUsersAll
 } from './testFunctions';
 
-const ERROR = { error: expect.any(String) };
-
 interface AuthReturn {
   token: string;
   authUserId: number;
@@ -107,7 +105,7 @@ describe('/auth/logout: Token Removal Testing', () => {
 
   test('Creating Dm with Deleted Token', () => {
     testClear();
-    expect(testDmCreate(user1.token, [])).toStrictEqual(ERROR);
+    expect(() => testDmCreate(user1.token, [])).toThrow(Error);
   });
 });
 

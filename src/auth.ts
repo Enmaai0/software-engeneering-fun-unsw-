@@ -10,10 +10,6 @@ import { getData, setData, getHashOf } from './dataStore';
 
 const nodemailer = require('nodemailer');
 
-interface Error {
-  error: string;
-}
-
 interface AuthReturn {
   token: string;
   authUserId: number;
@@ -59,7 +55,7 @@ const GLOBALMEMBER = 2;
  * @param { string } password
  * @return {{ authUserId: number }}
  */
-function authLoginV1(email: string, password: string): Error | AuthReturn {
+function authLoginV1(email: string, password: string): AuthReturn {
   if (!isRegisteredEmail(email)) {
     throw HTTPError(400, 'Invalid Email (No existing user with that email)');
   }
@@ -91,7 +87,7 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
  * @param { string } token
  * @returns {{ }}
  */
-function authLogoutV1(token: string): Record<string, never> | Error {
+function authLogoutV1(token: string): Record<string, never> {
   const data = getData();
 
   if (!isValidToken(token)) {
@@ -133,7 +129,7 @@ function authLogoutV1(token: string): Record<string, never> | Error {
  * @param { string } nameLast
  * @return {{ authUserId: number }}
  */
-function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): Error | AuthReturn {
+function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): AuthReturn {
   if (!validator.isEmail(email)) {
     throw HTTPError(400, 'Invalid Email (Enter a Valid Email)');
   }
