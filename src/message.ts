@@ -1,647 +1,384 @@
-/**
- * message.ts
- *
- * Contains all the function implementations
- * to be used by the server routes.
- */
 
 import { getData, setData } from './dataStore';
 
-interface Error {
-  error: string
-}
-
-interface MessageSendReturn {
-  messageId: number
-}
-
-interface Message {
-  messageId: number;
-  uId: number;
-  message: string;
-  timeSent: number;
-}
-
-const MAXMESSAGELENGTH = 1000;
-const MINMESSAGELENGTH = 1;
-
+interface Error { error: string };
+interface MessageSendReturn { messageId: number};
+const CHAR = 1000;
 /**
- * messageSendV1
- *
  * Sends a given message to a given channel
  *
- * @param { string } token
- * @param { number } channelId
- * @param { string } message
- * @returns {{ messageId: number }}
+ * @param {string} token - user session
+ * @param {number} channelId - channel Id number
+ * @param {string} message - message to comment
+ * @returns {{messageId: number}}  - Id number for sent message
+ * @returns {{error: string}} - if any inputs are invalid
  */
-function messageSendV1(token: string, channelId: number, message: string): MessageSendReturn | Error {
-  if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+export function messageSendV1(token: string, channelId: number, message: string) : MessageSendReturn|Error{
+  let data = getData();
+
+  // Checks the token is valid and gives uId else returns error
+  const authUserId = findTokenId(token);
+  if (authUserId === false) {
+    return { error: 'token is not valid' };
   }
 
-  if (!checkChannelId(channelId)) {
-    return { error: 'Invalid ChannelId' };
+  // Check whether the channelId is valid
+  const channelInvalid = checkChannelId(channelId);
+  if (channelInvalid !== true) {
+    return { error: 'channel is not valid' };
   }
 
-  if (message.length < MINMESSAGELENGTH || message.length > MAXMESSAGELENGTH) {
-    return { error: 'Invalid Message Length' };
+  // Check valid message length
+  if (message.length < 1 || message.length > 1000) {
+    return { error: 'invalid message length' };
   }
 
-  const userId = getIdFromToken(token);
-
-  if (!isMemberChannel(userId, channelId)) {
-    return { error: 'User is Not a Member of the Channel' };
+  // Check whether a user is in the channel
+  const userEnrolled = checkEnrolled(authUserId, channelId);
+  if (userEnrolled === false) {
+    return { error: 'authUser is not a member of this channel' };
   }
-
-  const data = getData();
-
-  // Message Id's start at 0
-  const messageId = data.globalMessageCounter;
-  data.globalMessageCounter++;
-
-  const messageObj = {
+  const messageCountId = data.channels[channelId].messages.length;
+  const newmessage = {
     message: message,
-    uId: userId,
-    messageId: messageId,
+    uId: authUserId,
+    messageId: messageCountId,
     timeSent: Math.floor(Date.now() / 1000),
   };
 
-  data.channels[channelId].messages.push(messageObj);
-
-  channelMessageNotif(userId, channelId, message);
+  data.channels[channelId].messages.push(newmessage);
 
   setData(data);
-
-  return { messageId: messageId };
-}
-
-/**
- * channelMessageNotif
- *
- * Given a uId, channelId, and message, creates a notification for
- * all user that have been tagged in the message.
- *
- * @param { number } uId
- * @param { number } channelId
- * @param { string } message
- */
-function channelMessageNotif(uId: number, channelId: number, message: string) {
-  const data = getData();
-
-  let cutMessage: string;
-  if (message.length > 20) {
-    cutMessage = message.slice(0, 20);
-  } else {
-    cutMessage = message;
-  }
-
-  const notifMsg = `@${data.users[uId].userHandle} tagged you in ${data.channels[channelId].name}: ${cutMessage}`;
-
-  const notification = {
-    channelId: channelId,
-    dmId: -1,
-    notificationMessage: notifMsg
+  return {
+    messageId: messageCountId,
   };
-
-  const taggedHandles = getUserHandles(message);
-  const taggedIds: number[] = [];
-
-  if (taggedHandles === null) {
-    return;
-  }
-
-  for (const handle of taggedHandles) {
-    const handleId = getIdfromHandle(handle);
-    taggedIds.push(handleId);
-  }
-
-  for (const id of taggedIds) {
-    data.users[id].notifications.push(notification);
-  }
 }
 
 /**
- * getUserHandles
- *
- * Given a message, extracts all possible user handles from the
- * message inputted.
- *
- * Note: Grabs handles containing '_' however due to constraints
- * on what valid user handles are should not cuase errors
- *
- * @param { string } message
- * @returns { string[] }
- */
-function getUserHandles(message: string): string[] {
-  const handles = message.match(/[@]\w+/g);
-  return handles;
-}
-
-/**
- * getIdFromhandle
- *
- * Given a handle extracts the uId of the person
- * associated with that handle.
- * Errors should not occur due to previous error test
- *
- * @param { string } handle
- * @returns { number }
- */
-function getIdfromHandle(handle: string): number {
-  const data = getData();
-
-  for (const user of data.users) {
-    const userHandle = '@' + user.userHandle;
-    if (userHandle === handle) {
-      return user.uId;
-    }
-  }
-}
-
-/**
- * messageSendDmV1
- *
  * Sends a given message to a given dm
  *
- * @param { string } token
- * @param { number } dmId
- * @param { string } message
- * @returns {{ messageId: number }}
+ * @param {string} token - user session
+ * @param {number} dmId - Id of dm to send message to
+ * @param {string} message - message to send
+ * @returns {{messageId: number}} - Id number for sent message
+ * @returns {{error: string}} - any invalid input
  */
-function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn | Error {
-  if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
-  }
-
-  if (!isValidDmId(dmId)) {
-    return { error: 'Invalid DmId' };
-  }
-
-  if (message.length < MINMESSAGELENGTH || message.length > MAXMESSAGELENGTH) {
-    return { error: 'Invalid Message Length' };
-  }
-
-  const userId = getIdFromToken(token);
-
-  if (!isMemberDm(userId, dmId)) {
-    return { error: 'User is Not a Member of the Dm' };
-  }
-
+export function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn|Error {
   const data = getData();
 
-  // Message Id's start at 0
-  const messageId = data.globalMessageCounter;
-  data.globalMessageCounter++;
+  // Checks the token is valid and gives uId else returns error
+  const authUserId = findTokenId(token);
+  if (authUserId === false) {
+    return { error: 'token is not valid' };
+  }
 
-  const messageObj = {
+  // Check whether the dmId is valid
+  const dmInvalid = checkDmId(dmId);
+  if (dmInvalid !== true) {
+    return dmInvalid;
+  }
+
+  // Check valid message length
+  if (message.length < 1 || message.length > 1000) {
+    return { error: 'invalid message length' };
+  }
+
+  // Check whether a user is in the channel
+  const userEnrolled = checkEnrolledDm(authUserId, dmId);
+  if (userEnrolled === false) {
+    return { error: 'authUser is not a member of this channel' };
+  }
+
+  const messageCountId = data.dms[dmId].messages.length;
+  const newmessage = {
     message: message,
-    uId: userId,
-    messageId: messageId,
+    uId: authUserId,
+    messageId: messageCountId,
     timeSent: Math.floor(Date.now() / 1000),
   };
 
-  data.dms[dmId].messages.push(messageObj);
-
-  dmMessageNotif(userId, dmId, message);
+  data.dms[dmId].messages.push(newmessage);
 
   setData(data);
-
   return {
-    messageId: messageId,
+    messageId: messageCountId,
   };
 }
 
 /**
- * channelMessageNotif
- *
- * Given a uId, channelId, and message, creates a notification for
- * all user that have been tagged in the message.
- *
- * @param { number } uId
- * @param { number } dmId
- * @param { string } message
- */
-function dmMessageNotif(uId: number, dmId: number, message: string) {
-  const data = getData();
-
-  let cutMessage: string;
-  if (message.length > 20) {
-    cutMessage = message.slice(0, 20);
-  } else {
-    cutMessage = message;
-  }
-
-  const notifMsg = `@${data.users[uId].userHandle} tagged you in ${data.dms[dmId].name}: ${cutMessage}`;
-
-  const notification = {
-    channelId: -1,
-    dmId: dmId,
-    notificationMessage: notifMsg
-  };
-
-  const taggedHandles = getUserHandles(message);
-  const taggedIds: number[] = [];
-
-  if (taggedHandles === null) {
-    return;
-  }
-
-  for (const handle of taggedHandles) {
-    const handleId = getIdfromHandle(handle);
-    taggedIds.push(handleId);
-  }
-
-  for (const id of taggedIds) {
-    data.users[id].notifications.push(notification);
-  }
-}
-
-/**
- * messageEditV1
- *
  * Edits given message
  *
- * @param { string } token
- * @param { number } messageId
- * @param { string } message
- * @returns {{ }}
+ * @param {string} token - user session
+ * @param {number} messageId - Id of message to be edited
+ * @param {string} message - new edit of existing message
+ * @returns {{}} - an empty object
+ * @returns {{error: string}} - any invalid input
  */
-function messageEditV1(token: string, messageId: number, message: string): Record<string, never> | Error {
-  if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
-  }
-
-  const channelId = checkMessageInChannels(messageId);
-  const dmId = checkMessageInDms(messageId);
-
-  if (channelId === -1 && dmId === -1) {
-    return { error: 'Invalid Message Id' };
-  }
-
-  if (message.length > MAXMESSAGELENGTH) {
-    return { error: 'Invalid Message Length' };
-  }
-
-  const userId = getIdFromToken(token);
-
+export function messageEditV1(token: string, messageId: number, message: string): Record<string, never> |Error {
   const data = getData();
-  let messageIndex, isOwner, route;
 
-  if (channelId > -1) {
-    if (!isMemberChannel(userId, channelId)) {
-      return { error: 'User is not a Member of the Channel' };
-    }
+  // Checks the token is valid and gives uId else returns error
+  const authUserId = findTokenId(token);
+  if (authUserId === false) return { error: 'token is not valid' };
 
-    if (isChannelOwner(userId, channelId)) {
-      isOwner = true;
-    }
+  // Check whether the messageId is valid
+  const messageValid = checkMessageId(messageId);
 
-    messageIndex = getMessageIndex(messageId, channelId, 'channel');
-    route = data.channels[channelId].messages;
+  if (messageValid.route === 'empty') return { error: 'invalid messageId' };
+
+  // Check valid message length
+  if (message.length > CHAR) return { error: 'invalid message length' };
+
+  // Check whether a user is in the channel
+  if (messageValid.uId !== authUserId) {
+    const perms = checkPermissions(authUserId, messageValid.routeId, messageValid.route);
+    if (!perms) return { error: 'incorrect permissions for this action' };
   }
 
-  if (dmId > -1) {
-    if (!isMemberDm(userId, dmId)) {
-      return { error: 'User is not a Member of the Dm' };
-    }
+  // Remove message if the edit is an empty string
+  if (message.length < 1) return messageRemoveV1(token, messageId);
 
-    if (isDmOwner(userId, dmId)) {
-      isOwner = true;
-    }
-
-    messageIndex = getMessageIndex(messageId, dmId, 'dm');
-    route = data.dms[dmId].messages;
+  // Different path if message is a dm or channel
+  if (messageValid.route === 'channel') {
+    data.channels[messageValid.index1].messages[messageValid.index2].message = message;
+  } else if (messageValid.route === 'dms') {
+    data.dms[messageValid.index1].messages[messageValid.index2].message = message;
   }
-
-  let userAllowed = false;
-
-  if (userId === route[messageIndex].uId || isOwner) {
-    userAllowed = true;
-  }
-
-  if (!userAllowed) {
-    return { error: 'User does not have Permission to Edit this Message' };
-  }
-
-  // If the message is empty it simply calls message remove
-  // and returns early.
-  if (message.length === 0) {
-    messageRemoveV1(token, messageId);
-    return {};
-  }
-
-  route[messageIndex].message = message;
 
   setData(data);
-
   return {};
 }
 
 /**
- * messageRemoveV1
- *
  * Removes a message from a channel/dm
  *
- * @param { string } token
- * @param { number } messageId
- * @returns {{ }}
+ * @param {string} token - user session
+ 
+ * @param {any} messageId - Id of message sent (given as a string)
+ * @returns {{}}
+ * @returns {{error: string}} - any invalid input
  */
-function messageRemoveV1(token: string, messageId: number): Record<string, never> | Error {
-  if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
-  }
-
-  const channelId = checkMessageInChannels(messageId);
-  const dmId = checkMessageInDms(messageId);
-
-  if (channelId === -1 && dmId === -1) {
-    return { error: 'Invalid Message Id' };
-  }
-
-  const userId = getIdFromToken(token);
-
+export function messageRemoveV1(token: string, messageId: any):  Record<string, never> |Error {
   const data = getData();
-  let messageObj: Message, messageIndex;
+  messageId = parseInt(messageId);
 
-  if (channelId > -1 && dmId === -1) {
-    if (!isMemberChannel(userId, channelId)) {
-      return { error: 'User is not a Member of the Channel' };
-    }
+ 
+  // Checks the token is valid and gives uId else returns error
+  const authUserId = findTokenId(token);
+    if (authUserId === false) return { error: 'token is not valid' };
 
-    messageIndex = getMessageIndex(messageId, channelId, 'channel');
-    messageObj = data.channels[channelId].messages[messageIndex];
+  // Check whether the messageId is valid
+  const messageValid = checkMessageId(messageId);
+  if (messageValid.route === 'empty') return { error: 'invalid messageId' };
 
-    if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
-      return { error: 'User does not have Permission to Edit this Message' };
-    }
-
-    data.channels[channelId].messages.splice(messageIndex, 1);
+  // Check whether a user is in the channel
+ 
+  if (messageValid.uId !== authUserId) {
+    const perms = checkPermissions(authUserId, messageValid.routeId, messageValid.route);
+    if (!perms) return { error: 'incorrect permissions for this action' };
   }
 
-  if (dmId > -1 && channelId === -1) {
-    if (!isMemberDm(userId, dmId)) {
-      return { error: 'User is not a Member of the Dm' };
-    }
-
-    messageIndex = getMessageIndex(messageId, dmId, 'dm');
-    messageObj = data.dms[dmId].messages[messageIndex];
-
-    if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
-      return { error: 'User does not have Permission to Edit this Message' };
-    }
-
-    data.dms[dmId].messages.splice(messageIndex, 1);
+  // Different path if message is a dm or channel
+  if (messageValid.route === 'channel') {
+ 
+    data.channels[messageValid.index1].messages.splice(messageValid.index2, 1);
+  } else if (messageValid.route === 'dms') {
+    data.dms[messageValid.index1].messages.splice(messageValid.index2, 1);
   }
 
-  data.globalMessageCounter--;
   setData(data);
-
   return {};
 }
 
-/** Helper Functions **/
+/// ////////// Helper Functions //////////////
 
 /**
- * isValidToken
+* Checks if token is valid, and if it is gives the uId of the session
+*
+* @param token
+* @returns {false | number}
+*/
+export function findTokenId(token: string) {
+    const data = getData();
+    for (const user of data.users) {
+        for (const session of user.tokens) {
+            if (token === session) return user.uId;
+        }
+            }
+    return false;
+}
+
+/**
+ * Checks whether the channelId exists and is valid
  *
- * Given a token and to check if it is
- * a valid token owned by any user
- *
- * @param { string } token
- * @returns { boolean }
+ * @param {number} channelId
+ * @returns {boolean}
  */
-function isValidToken(token: string): boolean {
-  const users = getData().users;
-  for (const user of users) {
-    for (const theToken of user.tokens) {
-      if (theToken === token) {
-        return true;
-      }
+export function checkChannelId(channelId: number): boolean {
+  let inBank = false;
+  const data = getData();
+  for (let i = 0; i < data.channels.length; i++) {
+    if (data.channels[i].channelId === channelId && data.channels[i].channelId !== undefined) {
+      inBank = true;
+      break;
+    }
+  }   
+  if (inBank === false) return false;
+  return true;
+}
+
+/**
+* Checks if the authUser is a member of the channel with ID channelId
+*
+* @param {number} authUserId
+* @param {number} channelId
+* @returns {boolean}
+*/
+export function checkEnrolled(authUserId: number, channelId: number) {
+    const data = getData();
+    let i = 0;
+    for (i = 0; i < data.channels.length; i++) {
+    if (data.channels[i].channelId === channelId) break;
+    }
+    for (let j = 0; j < data.channels[i].allMembers.length; j++) {
+    if (authUserId === data.channels[i].allMembers[j].uId) {
+
+    return true;
+    }
+}
+    return false;
+}
+
+/**
+ 
+ * Checks given dmId exists
+ *
+ * @param {number} dmId - Id of a dm
+ * @returns {true} - if dmId is found
+ * @returns {{error: string}} - dmId not found
+ */
+export function checkDmId(dmId: number) {
+  
+ 
+  const data = getData();
+  for (let i = 0; i < data.dms.length; i++) {
+    if (data.dms[i].dmId === dmId) {
+      return true;
     }
   }
+ 
+ return { error: 'Invalid dmId' };   
+}
+
+/**
+ * Checks if user is in a given DM
+ *
+ * @param {number} authUserId
+ * @param {number} dmId
+ * @returns {boolean} - true if user is in DM, false otherwise
+ */
+export function checkEnrolledDm(authUserId: number, dmId: number): boolean {
+  const data = getData();
+  let i = 0;
+  for (i = 0; i < data.dms.length; i++) {
+    if (data.dms[i].dmId === dmId) {
+      break;
+    }
+  }
+
+  for (let j = 0; j < data.dms[i].members.length; j++) {
+    if (authUserId === data.dms[i].members[j]) {
+      return true;
+    }
+  }
+
   return false;
 }
 
 /**
- * getIdFromToken
+ * Check if given message ID exists
  *
- * Given a token extracts the uId of the person
- * associated with that token.
- * Errors should not occur due to previous error test
- *
- * @param { string } token
- * @returns { number }
+ * @param {number} messageId
+ * @returns {
+ *    route: string,
+ *    index1: number,
+ *    index2: number,
+ *    uId: number,
+ *    routeId: number,
+ * } - if message ID is found
+ * @returns {{route: 'empty'}} - if message ID not found
  */
-function getIdFromToken(token: string): number {
+export function checkMessageId(messageId: number): { route: string, index1: number, index2: number, uId: number, routeId: number } | { route: 'empty' } {
   const data = getData();
+  for (let i = 0; i < data.channels.length; i++) {
+    for (let j = 0; j < data.channels[i].messages.length; j++) {
+      if (data.channels[i].messages[j].messageId === messageId) {
+        return {
+          route: 'channel',
+          index1: i,
+          index2: j,
+          uId: data.channels[i].messages[j].uId,
+          routeId: data.channels[i].channelId,
+        };
+      }
+    }
+  }
+
+  for (let i = 0; i < data.dms.length; i++) {
+    for (let j = 0; j < data.dms[i].messages.length; j++) {
+      if (data.dms[i].messages[j].messageId === messageId) {
+        return {
+          route: 'dms',
+          index1: i,
+          index2: j,
+          uId: data.dms[i].messages[j].uId,
+          routeId: data.dms[i].dmId,
+        };
+      }
+    }
+  }
+
+  return { route: 'empty' };
+}
+
+/**
+ * Checks the permissions of the user in a channel/dm/global
+ *
+ * @param {number} uId
+ * @param {number} routeId
+ * @param {string} route
+ * @returns {boolean} - whether user is a global owner or owner of a channel/dm
+ */
+export function checkPermissions(uId: number, routeId: number, route: string) {
+  const data = getData();
+
+  if (route === 'channel') {
+    for (const channel of data.channels) {
+      if (channel.channelId === routeId) {
+        for (const member of channel.allMembers) {
+          if (member.uId === uId) {
+            return member.
+          }
+        }
+      }
+    }
+  } else if (route === 'dms') {
+    for (const dm of data.dms) {
+      if (dm.dmId === routeId) {
+        for (const member of dm.members) {
+          if (member === uId) {
+            return member.
+          }
+        }
+      }
+    }
+  }
 
   for (const user of data.users) {
-    const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
-      return user.uId;
+    if (user.uId === uId) {
+      return user.permissionId;
     }
-  }
-}
-
-/**
- * checkChannelId
- *
- * Checks whether the channelId exists
- *
- * @param { number } channelId
- * @returns { boolean }
- */
-function checkChannelId(channelId: number): boolean {
-  const data = getData();
-
-  for (const channel of data.channels) {
-    if (channel.channelId === channelId) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * isMemberChannel
- *
- * Checks if the authUser is a member of the channel with ID channelId
- *
- * @param { number } uId
- * @param { number } channelId
- * @returns { boolean }
-*/
-function isMemberChannel(uId: number, channelId: number) {
-  const data = getData();
-
-  for (const channel of data.channels) {
-    const members = channel.allMembers;
-    if (members.some(user => user.uId === uId)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * isValidDmId
- *
- * Given a dmId returns whether it exists or not
- *
- * @param { number } dmId
- * @returns { boolean }
- */
-function isValidDmId(dmId: number) {
-  const data = getData();
-
-  for (const dm of data.dms) {
-    if (dm.dmId === dmId) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * isMemberDm
- *
- * Given a userId and dmId, returns whether the user is
- * in the dm.
- *
- * @param { number } uId
- * @param { number } dmId
- * @returns { boolean }
- */
-function isMemberDm(uId: number, dmId: number): boolean {
-  const dm = getData().dms[dmId];
-
-  for (const member of dm.members) {
-    if (member === uId) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * checkMessageInChannels
- *
- * Given a messageId, returns a channelId if the message is
- * within a channel, otherwise returns -1.
- *
- * @param { number } messageId
- * @param { number }
- */
-function checkMessageInChannels(messageId: number): number {
-  const data = getData();
-
-  for (const channel of data.channels) {
-    const messages = channel.messages;
-    if (messages.some(message => message.messageId === messageId)) {
-      return data.channels.indexOf(channel);
-    }
-  }
-
-  return -1;
-}
-
-/**
- * checkMessageInDms
- *
- * Given a messageId, returns a dmId if the message is
- * within a dm, otherwise returns -1.
- *
- * @param { number } messageId
- */
-function checkMessageInDms(messageId: number): number {
-  const data = getData();
-
-  for (const dm of data.dms) {
-    const messages = dm.messages;
-    if (messages.some(message => message.messageId === messageId)) {
-      return data.dms.indexOf(dm);
-    }
-  }
-
-  return -1;
-}
-
-/**
- * isDmOwner
- *
- * Given a uId and a dmId, checks if that user
- * is a owner in the Dm.
- *
- * @param { number } uId
- * @param { number } dmId
- * @returns { boolean }
- */
-function isDmOwner(uId: number, dmId: number): boolean {
-  const data = getData();
-  const dm = data.dms[dmId];
-
-  if (dm.owner === uId) {
-    return true;
   }
 
   return false;
 }
-
-/**
- * isChannelOwner
- *
- * Given a uId and a channelId, checks if that user
- * is a owner in the channel.
- *
- * @param { number } uId
- * @param { number } channelId
- * @returns { boolean }
- */
-function isChannelOwner(uId: number, channelId: number): boolean {
-  const data = getData();
-  const channel = data.channels[channelId];
-
-  if (channel.owners.some(owner => owner.uId === uId)) {
-    return true;
-  }
-
-  return false;
-}
-
-/**
- * getMessageIndex
- *
- * Finds the index of a message in either the
- * channels message array of dms message array
- *
- * @param { number } messageId
- * @param { number } routeId
- * @param { string } identifier
- * @returns { number }
- */
-function getMessageIndex(messageId: number, routeId: number, identifier: string): number {
-  const data = getData();
-
-  if (identifier === 'channel') {
-    const channel = data.channels[routeId];
-
-    for (const message of channel.messages) {
-      if (message.messageId === messageId) {
-        return channel.messages.indexOf(message);
-      }
-    }
-  }
-
-  if (identifier === 'dm') {
-    const dm = data.dms[routeId];
-
-    for (const message of dm.messages) {
-      if (message.messageId === messageId) {
-        return dm.messages.indexOf(message);
-      }
-    }
-  }
-}
-
-export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1 };
