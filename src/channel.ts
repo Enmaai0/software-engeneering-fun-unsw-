@@ -4,7 +4,7 @@
  * Contains the stub code functions of all channel* functions.
  */
 
-import { getData, setData } from './dataStore';
+import { getData, getHashOf, setData } from './dataStore';
 
 interface Error {
   error: string
@@ -424,6 +424,32 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Er
   return {};
 }
 
+export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };
+
+/** Helper Functions **/
+
+/**
+ * isValidToken
+ *
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
+ *
+ * @param { string } token
+ * @returns { boolean }
+ */
+function isValidToken(token: string): boolean {
+  const data = getData();
+  const hashedToken = getHashOf(token);
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(hashedToken)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * isUserId
  *
@@ -489,27 +515,6 @@ function isMember(token: string, channelId: number): boolean {
 }
 
 /**
- * isValidToken
- *
- * Given a token and to check if it is
- * a valid token owned by any user
- *
- * @param { string } token
- * @returns { boolean }
- */
-function isValidToken(token: string): boolean {
-  const users = getData().users;
-  for (const user of users) {
-    for (const theToken of user.tokens) {
-      if (theToken === token) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-/**
  * getIdFromToken
  *
  * Given a token extracts the uId of the person
@@ -521,10 +526,11 @@ function isValidToken(token: string): boolean {
  */
 function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
@@ -551,5 +557,3 @@ function isUIdMember(uId: number, channelId: number): boolean {
 
   return false;
 }
-
-export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };

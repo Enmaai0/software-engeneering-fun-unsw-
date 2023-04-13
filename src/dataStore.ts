@@ -7,6 +7,8 @@
  * and appear under their respective area.
  */
 
+import crypto from 'crypto';
+
 interface Users {
   uId: number,
   email: string,
@@ -130,4 +132,12 @@ function writeData(data: Data) {
   fs.writeFileSync(FILE, persData, { flag: 'w' });
 }
 
-export { getData, setData, saveData, grabData };
+/**
+ * When called utelises the 'crypto' node package to hash the string
+ * put as a parameter for the function.
+ */
+function getHashOf(string: string): string {
+  return crypto.createHash('sha512').update(string).digest('hex');
+}
+
+export { getData, setData, saveData, grabData, getHashOf };

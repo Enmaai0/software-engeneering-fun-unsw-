@@ -107,7 +107,7 @@ describe('/auth/logout: Token Removal Testing', () => {
 
   test('Creating Dm with Deleted Token', () => {
     testClear();
-    expect(testDmCreate(user1.token, [])).toStrictEqual(ERROR);
+    expect(() => testDmCreate(user1.token, [])).toThrow(Error);
   });
 });
 
@@ -243,22 +243,24 @@ describe('/auth/passwordreset/request: Error Testing', () => {
   });
 });
 
+// NOTE: These tests use ethereal.email to test email sending. To use account, go to auth.ts sendEmail Helper.
+// NOTE: Confirmed Emails do Send through NodeMailer
 describe('/auth/passwordreset/request: General Testing', () => {
   test('User is logged out of all sessions (1 Session)', () => {
-    const user = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    const user = testAuthRegister('useremail@gmail.com', 'pass1234', 'Jerry', 'Yang');
     const channel = testChannelsCreate(user.token, 'Channel', true);
     expect(testChannelDetails(user.token, channel.channelId)).not.toStrictEqual(ERROR);
-    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testAuthPasswordResetRequest('useremail@gmail.com')).toStrictEqual({});
     expect(testChannelDetails(user.token, channel.channelId)).toStrictEqual(ERROR);
   });
 
   test('User is logged out of all sessions (2 Sessions)', () => {
-    const userS1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
-    const userS2 = testAuthLogin('email1@gmail.com', 'pass1234');
+    const userS1 = testAuthRegister('useremail@gmail.com', 'pass1234', 'Jerry', 'Yang');
+    const userS2 = testAuthLogin('useremail@gmail.com', 'pass1234');
     const channel = testChannelsCreate(userS1.token, 'Channel', true);
     expect(testChannelDetails(userS1.token, channel.channelId)).not.toStrictEqual(ERROR);
     expect(testChannelDetails(userS2.token, channel.channelId)).not.toStrictEqual(ERROR);
-    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testAuthPasswordResetRequest('useremail@gmail.com')).toStrictEqual({});
     expect(testChannelDetails(userS1.token, channel.channelId)).toStrictEqual(ERROR);
     expect(testChannelDetails(userS2.token, channel.channelId)).toStrictEqual(ERROR);
   });

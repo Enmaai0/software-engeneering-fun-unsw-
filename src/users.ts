@@ -4,7 +4,7 @@
  * Contains the function implementation of all users* functions.
  */
 
-import { getData, setData } from './dataStore';
+import { getData, getHashOf, setData } from './dataStore';
 import validator from 'validator';
 import HTTPError from 'http-errors';
 
@@ -115,7 +115,7 @@ function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Err
   }
 
   const data = getData();
-  const uId = findUId(token);
+  const uId = getIdFromToken(token);
 
   data.users[uId].nameFirst = nameFirst;
   data.users[uId].nameLast = nameLast;
@@ -136,7 +136,7 @@ function userSetEmailV1(token: string, email: string) : Error | Record<string, n
     throw HTTPError( 400, 'Invalid Email (Email Already in Use)' );
   }
 
-  const uId = findUId(token);
+  const uId = getIdFromToken(token);
 
   const data = getData();
   data.users[uId].email = email;
@@ -166,7 +166,7 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
     throw HTTPError( 400, 'Invalid Handle (Must Contain Only Alphanumeric Characters' );
   }
 
-  const uId = findUId(token);
+  const uId = getIdFromToken(token);
 
   const data = getData();
   data.users[uId].userHandle = handle;
@@ -175,22 +175,27 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
   return {};
 }
 
+export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 };
+
+/** Helper Functions **/
+
 /**
  * isValidToken
  *
- * Given a token and to check if it is
- * a valid token owned by any user
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
  *
  * @param { string } token
  * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
-  const users = getData().users;
-  for (const user of users) {
-    for (const theToken of user.tokens) {
-      if (theToken === token) {
-        return true;
-      }
+  const data = getData();
+  const hashedToken = getHashOf(token);
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(hashedToken)) {
+      return true;
     }
   }
   return false;
@@ -239,19 +244,22 @@ function isUserHandleTaken(userHandle: string): boolean {
 }
 
 /**
- * findUId
+ * getIdFromToken
  *
- * Given a token, find the corresponding uId
+ * Given a token extracts the uId of the person
+ * associated with that token.
+ * Errors should not occur due to previous error test
  *
  * @param { string } token
  * @returns { number }
  */
-function findUId(token: string): number {
+function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
@@ -276,5 +284,3 @@ function isUserId(uId: number): boolean {
 
   return false;
 }
-
-export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 };

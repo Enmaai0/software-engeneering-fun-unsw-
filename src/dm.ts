@@ -4,11 +4,8 @@
  * Contains the functions of all dm* functions.
  */
 
-import { getData, setData } from './dataStore';
-
-interface Error {
-  error: string;
-}
+import HTTPError from 'http-errors';
+import { getData, getHashOf, setData } from './dataStore';
 
 interface DmId {
   dmId: number;
@@ -70,18 +67,18 @@ const FIFTY_MESSAGES = 50;
  * @param { number[] } uIds
  * @returns {{ DmId: number }}
  */
-function dmCreate(token: string, uIds: number[]): DmId | Error {
+function dmCreate(token: string, uIds: number[]): DmId {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (hasDuplicates(uIds)) {
-    return { error: 'uId array cannot contain duplicates' };
+    throw HTTPError(400, 'uId array cannot contain duplicates');
   }
 
-  for (let i = 0; i < uIds.length; i++) {
-    if (!isUserId(uIds[i])) {
-      return { error: 'A user Id given does not exist' };
+  for (const user of uIds) {
+    if (!isUserId(user)) {
+      throw HTTPError(400, 'A user Id given does not exist');
     }
   }
 
@@ -145,9 +142,9 @@ function dmInviteNotif(token: string, dmId: number, uIds: number[]) {
  * @param { string } token
  * @returns { dms: [] }
  */
-function dmList(token: string): Dms | Error {
+function dmList(token: string): Dms {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   const uId = getIdFromToken(token);
@@ -181,24 +178,24 @@ function dmList(token: string): Dms | Error {
  * @param { number } dmId
  * @returns {{ }}
  */
-function dmRemove(token: string, dmId: number): Record<string, never> | Error {
+function dmRemove(token: string, dmId: number): Record<string, never> {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (!isValidDmId(dmId)) {
-    return { error: 'Invalid dmId' };
+    throw HTTPError(400, 'Invalid dmId');
   }
 
   const data = getData();
   const removerId = getIdFromToken(token);
 
   if (!isMember(removerId, dmId)) {
-    return { error: 'User is not a member of the DM' };
+    throw HTTPError(400, 'User is not a member of the DM');
   }
 
   if (!isOwner(removerId, dmId)) {
-    return { error: 'User is not the owner of the DM' };
+    throw HTTPError(400, 'User is not the owner of the DM');
   }
 
   data.dms[dmId].members = [];
@@ -218,20 +215,20 @@ function dmRemove(token: string, dmId: number): Record<string, never> | Error {
  * @param { number } dmId
  * @returns {{ DmDetails }}
  */
-function dmDetails(token: string, dmId: number): DmDetails | Error {
+function dmDetails(token: string, dmId: number): DmDetails {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (!isValidDmId(dmId)) {
-    return { error: 'Invalid dmId' };
+    throw HTTPError(400, 'Invalid dmId');
   }
 
   const dm = getData().dms[dmId];
   const id = getIdFromToken(token);
 
   if (!isMember(id, dmId)) {
-    return { error: 'User is not a member of the DM' };
+    throw HTTPError(400, 'User is not a member of the DM');
   }
 
   const usersArray = [];
@@ -261,20 +258,20 @@ function dmDetails(token: string, dmId: number): DmDetails | Error {
  * @param { number } dmId
  * @returns {{ }}
  */
-function dmLeave(token: string, dmId: number): Record<string, never> | Error {
+function dmLeave(token: string, dmId: number): Record<string, never> {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (!isValidDmId(dmId)) {
-    return { error: 'Invalid dmId' };
+    throw HTTPError(400, 'Invalid dmId');
   }
 
   const data = getData();
   const id = getIdFromToken(token);
 
   if (!data.dms[dmId].members.includes(id)) {
-    return { error: 'User is not a member of the DM' };
+    throw HTTPError(400, 'User is not a member of the DM');
   }
 
   const dmMembers = data.dms[dmId].members;
@@ -297,13 +294,13 @@ function dmLeave(token: string, dmId: number): Record<string, never> | Error {
  * @param { number } start
  * @returns {{ DmMessages }}
  */
-function dmMessages(token: string, dmId: number, start: number): DmMessages | Error {
+function dmMessages(token: string, dmId: number, start: number): DmMessages {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (!isValidDmId(dmId)) {
-    return { error: 'Invalid dmId' };
+    throw HTTPError(400, 'Invalid dmId');
   }
 
   const data = getData();
@@ -311,11 +308,11 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages | Er
   const id = getIdFromToken(token);
 
   if (!data.dms[dmId].members.includes(id)) {
-    return { error: 'User is not a member of the DM' };
+    throw HTTPError(400, 'User is not a member of the DM');
   }
 
   if (start > data.dms[dmId].messages.length) {
-    return { error: 'Invalid Start (Start is greater than total messages)' };
+    throw HTTPError(400, 'Invalid Start (Start is greater than total messages)');
   }
 
   // If the messages array is empty, simply return empty messages
@@ -330,8 +327,16 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages | Er
   const returnMessages: Message[] = [];
   const returnEnd = (start + FIFTY_MESSAGES > dm.messages.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
 
+  // As messages are returned from most recent (greatest index) to least recent (lowest index)
+  // the start and end of the messages returned are different to those stated in the returned object.
   let realStart: number, realEnd: number;
+
+  // If there are less than 50 total messages sent, ensures the loop adding messages into the return
+  // does not access negative array indexes.
   realEnd = (dm.messages.length - start - 50 < 0) ? 0 : dm.messages.length - start - 50;
+
+  // Used to determine the index of the first message being added into the returned messages array.
+  // Accounts for negative start indexes as well.
   realStart = (start < 0) ? realEnd + start + 50 : dm.messages.length - start - 1;
   realStart = (realStart >= dm.messages.length) ? dm.messages.length - 1 : realStart;
 
@@ -357,22 +362,27 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages | Er
   };
 }
 
+export { dmCreate, dmLeave, dmMessages, dmDetails, dmRemove, dmList };
+
+/** Helper Functions **/
+
 /**
  * isValidToken
  *
- * Given a token and to check if it is
- * a valid token owned by any user
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
  *
  * @param { string } token
  * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
-  const users = getData().users;
-  for (const user of users) {
-    for (const theToken of user.tokens) {
-      if (theToken === token) {
-        return true;
-      }
+  const data = getData();
+  const hashedToken = getHashOf(token);
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(hashedToken)) {
+      return true;
     }
   }
   return false;
@@ -426,10 +436,11 @@ function hasDuplicates(array: any[]): boolean {
  */
 function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
@@ -575,5 +586,3 @@ function createUserObject(uId: number) {
 
   return userObject;
 }
-
-export { dmCreate, dmLeave, dmMessages, dmDetails, dmRemove, dmList };
