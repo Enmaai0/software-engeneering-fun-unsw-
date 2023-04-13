@@ -1,17 +1,14 @@
 /**
- * auth.js
+ * auth.ts
  *
  * Contains the functions of all auth* functions.
  */
 
 import validator from 'validator';
+import HTTPError from 'http-errors';
 import { getData, setData, getHashOf } from './dataStore';
 
 const nodemailer = require('nodemailer');
-
-interface Error {
-  error: string;
-}
 
 interface AuthReturn {
   token: string;
@@ -54,16 +51,13 @@ const GLOBALMEMBER = 2;
  * A hashed token is stored in the dataStore with the original
  * token being returned to the user.
  *
- * Errors return { error: "error" } on incorrect or
- * invalid input.
- *
  * @param { string } email
  * @param { string } password
  * @return {{ authUserId: number }}
  */
-function authLoginV1(email: string, password: string): Error | AuthReturn {
+function authLoginV1(email: string, password: string): AuthReturn {
   if (!isRegisteredEmail(email)) {
-    return { error: 'Invalid Email (No existing user with that email)' };
+    throw HTTPError(400, 'Invalid Email (No existing user with that email)');
   }
 
   const data = getData();
@@ -81,7 +75,7 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
 
   setData(data);
 
-  return { error: 'Incorrect Password' };
+  throw HTTPError(400, 'Incorrect Password');
 }
 
 /**
@@ -93,11 +87,11 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
  * @param { string } token
  * @returns {{ }}
  */
-function authLogoutV1(token: string): Record<string, never> | Error {
+function authLogoutV1(token: string): Record<string, never> {
   const data = getData();
 
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   const hashedToken = getHashOf(token);
@@ -135,25 +129,25 @@ function authLogoutV1(token: string): Record<string, never> | Error {
  * @param { string } nameLast
  * @return {{ authUserId: number }}
  */
-function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): Error | AuthReturn {
+function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): AuthReturn {
   if (!validator.isEmail(email)) {
-    return { error: 'Invalid Email (Enter a Valid Email)' };
+    throw HTTPError(400, 'Invalid Email (Enter a Valid Email)');
   }
 
   if (isRegisteredEmail(email)) {
-    return { error: 'Invalid Email (Email Already in Use)' };
+    throw HTTPError(400, 'Invalid Email (Email Already in Use)');
   }
 
   if (password.length < MINPASSLENGTh) {
-    return { error: 'Invalid Password (Minimum 6 Characters)' };
+    throw HTTPError(400, 'Invalid Password (Minimum 6 Characters)');
   }
 
   if (nameFirst.length < MINNAMELENGTH || nameLast.length < MINNAMELENGTH) {
-    return { error: 'Invalid Name (Name Cannot be Empty)' };
+    throw HTTPError(400, 'Invalid Name (Name Cannot be Empty)');
   }
 
   if (nameFirst.length > MAXNAMELENGTH || nameLast.length > MAXNAMELENGTH) {
-    return { error: 'Invalid Name (Maximum 50 Characters)' };
+    throw HTTPError(400, 'Invalid Name (Maximum 50 Characters)');
   }
 
   const data = getData();
@@ -235,7 +229,7 @@ function authPasswordResetReset(resetCode: string, newPassword: string): Record<
   const data = getData();
 
   if (newPassword.length < 6) {
-    return { error: 'Invalid Password (Must be 6 Characters Long' };
+    throw HTTPError(400, 'Invalid Password (Must be 6 Characters Long');
   }
 
   let uId = -1;
@@ -251,7 +245,7 @@ function authPasswordResetReset(resetCode: string, newPassword: string): Record<
   }
 
   if (resetCodeIndex === -1 || uId === -1) {
-    return { error: 'Invalid Reset Code' };
+    throw HTTPError(400, 'Invalid Reset Code');
   }
 
   data.users[uId].password = newPassword;

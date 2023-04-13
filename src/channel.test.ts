@@ -425,6 +425,10 @@ describe('/channel/leave: Error Testing', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     expect(() => testChannelLeave(user2.token, channel.channelId)).toThrow(Error);
   });
+
+  test('Invalid user: (User is the starter of this channel)', () => {
+    expect(() => testChannelLeave(user1.token, channel.channelId)).toThrow(Error);
+  });
 });
 
 describe('/channel/leave: Return Testing', () => {
@@ -433,11 +437,6 @@ describe('/channel/leave: Return Testing', () => {
   beforeEach(() => {
     user1 = testAuthRegister('user1Email@gmail.com', 'password1', 'First1', 'Last1');
     channel = testChannelsCreate(user1.token, 'firstChannel', true);
-  });
-
-  test('Correct Return: Only User Leaves', () => {
-    expect(testChannelLeave(user1.token, channel.channelId)).toStrictEqual({});
-    expect(() => testChannelDetails(user1.token, channel.channelId)).toThrow(Error);
   });
 
   test('Correct Return: Other User Leaves', () => {
@@ -449,12 +448,24 @@ describe('/channel/leave: Return Testing', () => {
   test('Correct Return: Test with testChannelDetails', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     expect(testChannelInvite(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
-    expect(testChannelLeave(user1.token, channel.channelId)).toStrictEqual({});
     expect(testChannelDetails(user2.token, channel.channelId)).toStrictEqual({
       name: expect.any(String),
       isPublic: true,
-      ownerMembers: [],
+      ownerMembers: [{
+        uId: user1.authUserId,
+        email: 'user1Email@gmail.com',
+        nameFirst: 'First1',
+        nameLast: 'Last1',
+        handleStr: 'first1last1',
+      }],
       allMembers: [{
+        uId: user1.authUserId,
+        email: 'user1Email@gmail.com',
+        nameFirst: 'First1',
+        nameLast: 'Last1',
+        handleStr: 'first1last1',
+      },
+      {
         uId: user2.authUserId,
         email: 'user2Email@gmail.com',
         nameFirst: 'First2',
@@ -506,7 +517,7 @@ describe('/channel/addowner: Error Testing', () => {
     const user3 = testAuthRegister('user3Email@gmail.com', 'password3', 'First3', 'Last3');
     testChannelJoin(user2.token, channel.channelId);
     testChannelJoin(user3.token, channel.channelId);
-    expect(testChannelAddOwner(user3.token, channel.channelId, user2.authUserId));
+    expect(() => testChannelAddOwner(user3.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 });
 
@@ -642,13 +653,13 @@ describe('/channel/removeowner: Error Testing', () => {
     const user3 = testAuthRegister('user3Email@gmail.com', 'password3', 'First3', 'Last3');
     testChannelJoin(user2.token, channel.channelId);
     testChannelJoin(user3.token, channel.channelId);
-    expect(testChannelRemoveOwner(user3.token, channel.channelId, user1.authUserId));
+    expect(() => testChannelRemoveOwner(user3.token, channel.channelId, user1.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid Token: (Not an owner)', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     testChannelJoin(user2.token, channel.channelId);
-    expect(testChannelRemoveOwner(user1.token, channel.channelId, user2.authUserId));
+    expect(() => testChannelRemoveOwner(user1.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 });
 

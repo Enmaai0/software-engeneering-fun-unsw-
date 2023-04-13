@@ -52,7 +52,7 @@ describe('/clear Testing', () => {
     const channelCreator = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
     testChannelsCreate(channelCreator.token, 'Carrot Farm', true);
     testChannelsCreate(channelCreator.token, 'Another Carrot Farm', true);
-    testChannelsCreate(channelCreator.token, 'Exclusive Carrot Club', false);
+    testChannelsCreate(channelCreator.token, 'Exclusive CarrotClub', false);
     testClear();
     const testUser = testAuthRegister('bunnybugs@gmail.com', 'iLoveCarrots', 'Bugs', 'Bunny');
     expect(testChannelsList(testUser.token)).toStrictEqual({ channels: [] });
