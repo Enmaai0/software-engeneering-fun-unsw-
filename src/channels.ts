@@ -59,11 +59,11 @@ interface ChannelId {
  */
 function channelsCreateV1(token: string, name: string, isPublic: boolean): ChannelId | Error {
   if (!isValidToken(token)) {
-    throw HTTPError(403, 'invalid token');
+    return { error: 'Invalid Token' };
   }
 
   if (name.length < 1 || name.length > 20) {
-    throw HTTPError(400, 'Channel Name length invalid');
+    return { error: 'Invalid Name (Name must be 1 - 20 characters long)' };
   }
 
   const data = getData();
@@ -187,10 +187,11 @@ function isValidToken(token: string): boolean {
  */
 function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
