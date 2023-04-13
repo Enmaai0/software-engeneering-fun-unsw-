@@ -96,17 +96,16 @@ describe('/notifications/get Testing', () => {
     // React to a message that the second user has sent
 
     expect(testNotificationsGet(user2.token)).toStrictEqual({
-      notifications: [
+      notifications: [{
         // Reaction notification here
-        {
-          channelId: channel.channelId,
-          dmId: -1,
-          notificationMessage: '@first1last1 tagged you in channel: Yo! Come look at thi'
-        }, {
-          channelId: channel.channelId,
-          dmId: -1,
-          notificationMessage: '@first1last1 added you to channel'
-        }]
+        channelId: channel.channelId,
+        dmId: -1,
+        notificationMessage: '@first1last1 tagged you in channel: Yo! Come look at thi'
+      }, {
+        channelId: channel.channelId,
+        dmId: -1,
+        notificationMessage: '@first1last1 added you to channel'
+      }]
     });
   });
 
@@ -119,18 +118,39 @@ describe('/notifications/get Testing', () => {
     // React to a message that the second user has sent
 
     expect(testNotificationsGet(user2.token)).toStrictEqual({
-      notifications: [
+      notifications: [{
         // Reaction notification here
-        {
-          channelId: -1,
-          dmId: dm.dmId,
-          notificationMessage: '@first1last1 tagged you in first1last1, first2last2: Yo! Come look at thi'
-        }, {
-          channelId: -1,
-          dmId: dm.dmId,
-          notificationMessage: '@first1last1 added you to first1last1, first2last2'
-        }]
+        channelId: -1,
+        dmId: dm.dmId,
+        notificationMessage: '@first1last1 tagged you in first1last1, first2last2: Yo! Come look at thi'
+      }, {
+        channelId: -1,
+        dmId: dm.dmId,
+        notificationMessage: '@first1last1 added you to first1last1, first2last2'
+      }]
     });
+  });
+
+  test('Tagged Twice in Same Message', () => {
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    expect(testMessageSendDm(user1.token, dm.dmId, 'Yo! Come look at this @first2last2, it is so cool @first2last2')).toStrictEqual({ messageId: expect.any(Number) });
+    expect(testNotificationsGet(user2.token)).toStrictEqual({
+      notifications: [{
+        channelId: -1,
+        dmId: dm.dmId,
+        notificationMessage: '@first1last1 tagged you in first1last1, first2last2: Yo! Come look at thi'
+      }, {
+        channelId: -1,
+        dmId: dm.dmId,
+        notificationMessage: '@first1last1 added you to first1last1, first2last2'
+      }]
+    });
+  });
+
+  test('Tagged Message but not in the DM', () => {
+    const dm = testDmCreate(user1.token, []);
+    expect(testMessageSendDm(user1.token, dm.dmId, 'Yo! Come look at this @first2last2, it is so cool@fi')).toStrictEqual({ messageId: expect.any(Number) });
+    expect(testNotificationsGet(user2.token)).toStrictEqual({ notifications: [] });
   });
 
   test('Mixed Notications', () => {
@@ -148,29 +168,28 @@ describe('/notifications/get Testing', () => {
     // React to message
 
     expect(testNotificationsGet(user2.token)).toStrictEqual({
-      notifications: [
+      notifications: [{
         // Reaction Notification when implemented
-        {
-          channelId: -1,
-          dmId: dm.dmId,
-          notificationMessage: '@first1last1 tagged you in first1last1, first2last2: Yo! This one is even'
-        }, {
-          channelId: channel1.channelId,
-          dmId: -1,
-          notificationMessage: '@first1last1 added you to channel1'
-        }, {
-          channelId: channel2.channelId,
-          dmId: -1,
-          notificationMessage: '@first1last1 tagged you in channel2: @first2last2 Look a '
-        }, {
-          channelId: channel2.channelId,
-          dmId: -1,
-          notificationMessage: '@first1last1 added you to channel2'
-        }, {
-          channelId: -1,
-          dmId: dm.dmId,
-          notificationMessage: '@first1last1 added you to first1last1, first2last2'
-        }]
+        channelId: -1,
+        dmId: dm.dmId,
+        notificationMessage: '@first1last1 tagged you in first1last1, first2last2: Yo! This one is even'
+      }, {
+        channelId: channel1.channelId,
+        dmId: -1,
+        notificationMessage: '@first1last1 added you to channel1'
+      }, {
+        channelId: channel2.channelId,
+        dmId: -1,
+        notificationMessage: '@first1last1 tagged you in channel2: @first2last2 Look a '
+      }, {
+        channelId: channel2.channelId,
+        dmId: -1,
+        notificationMessage: '@first1last1 added you to channel2'
+      }, {
+        channelId: -1,
+        dmId: dm.dmId,
+        notificationMessage: '@first1last1 added you to first1last1, first2last2'
+      }]
     });
   });
 
