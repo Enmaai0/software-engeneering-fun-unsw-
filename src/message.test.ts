@@ -19,8 +19,6 @@ import {
   testDmMessages
 } from './testFunctions';
 
-const ERROR = { error: expect.any(String) };
-
 const ONE_THOUSAND_CHARS = (
   'The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex nymphs. Waltz, bad nymph, for quick jigs vex!  Fox nymphs grab quick-jived waltz. Brick quiz whangs jumpy veldt fox. Bright vixens jump; dozy fowl quack. Quick wafting zephyrs vex bold Jim. Quick zephyrs blow, vexing daft Jim. Sex-charged fop blew my junk TV quiz. How quickly daft jumping zebras vex. Two driven jocks help fax my big quiz. Quick, Baz, get my woven flax jodhpurs! "Now fax quiz Jack!" my brave ghost pled. Five quacking zephyrs jolt my wax bed. Flummoxed by job, kvetching W. zaps Iraq. Cozy sphinx waves quart jug of bad milk. A very bad quack might jinx zippy fowls. Few quips galvanized the mock jury box. Quick brown dogs jump over the lazy fox. The jay, pig, fox, zebra, and my wolves quack! Blowzy red vixens fight for a quick jump. Joaquin Phoenix was gazed by MTV for luck. A wizards job is to vex chumps quickly in fog. Watch "Jeopardy!", Alex Trebeks fun TV quiz game. Woven silk pyjamas exchanged for blue quartz.'
 );
@@ -61,24 +59,24 @@ describe('/message/send: Error Testing', () => {
   });
 
   test('ChannelId: Invalid ChannelId', () => {
-    expect(testMessageSend(user.token, channel.channelId + 1, 'This message is valid')).toStrictEqual(ERROR);
+    expect(() => testMessageSend(user.token, channel.channelId + 1, 'This message is valid')).toThrow(Error);
   });
 
   test('Message: Invalid Length of Message (Empty)', () => {
-    expect(testMessageSend(user.token, channel.channelId, '')).toStrictEqual(ERROR);
+    expect(() => testMessageSend(user.token, channel.channelId, '')).toThrow(Error);
   });
 
   test('Message: Invalid Length of Message (Over 1000 Characters)', () => {
-    expect(testMessageSend(user.token, channel.channelId, ONE_THOUSAND_CHARS)).toStrictEqual(ERROR);
+    expect(() => testMessageSend(user.token, channel.channelId, ONE_THOUSAND_CHARS)).toThrow(Error);
   });
 
   test('Token: Token is Invalid', () => {
-    expect(testMessageSend(user.token + '1', channel.channelId, 'This message is valid')).toStrictEqual(ERROR);
+    expect(() => testMessageSend(user.token + '1', channel.channelId, 'This message is valid')).toThrow(Error);
   });
 
   test('Token: Not a Member of the Channel', () => {
     const user2 = testAuthRegister('hello2@gmail.com', 'thisisapassword', 'James', 'Does');
-    expect(testMessageSend(user2.token, channel.channelId, 'This message is valid')).toStrictEqual(ERROR);
+    expect(() => testMessageSend(user2.token, channel.channelId, 'This message is valid')).toThrow(Error);
   });
 });
 
@@ -164,40 +162,40 @@ describe('/message/edit: Error Testing', () => {
   });
 
   test('Token: Invalid Token', () => {
-    expect(testMessageEdit(user1.token + '1', message.messageId, 'Valid change')).toStrictEqual(ERROR);
+    expect(() => testMessageEdit(user1.token + '1', message.messageId, 'Valid change')).toThrow(Error);
   });
 
   test('MessageId: Invalid MessageId', () => {
-    expect(testMessageEdit(user1.token, message.messageId + 1, 'Valid change')).toStrictEqual(ERROR);
+    expect(() => testMessageEdit(user1.token, message.messageId + 1, 'Valid change')).toThrow(Error);
   });
 
   test('User: User is not in Channel', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    expect(testMessageEdit(user2.token, message.messageId, 'New MssagMessage')).toStrictEqual(ERROR);
+    expect(() => testMessageEdit(user2.token, message.messageId, 'New MssagMessage')).toThrow(Error);
   });
 
   test('User: User is not in Dm', () => {
     const dm = testDmCreate(user1.token, []);
     const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    expect(testMessageEdit(user2.token, message2.messageId, 'New MssagMessage')).toStrictEqual(ERROR);
+    expect(() => testMessageEdit(user2.token, message2.messageId, 'New MssagMessage')).toThrow(Error);
   });
 
   test('Message: Invalid Length of Message (1000 Characters)', () => {
-    expect(testMessageEdit(user1.token, message.messageId, ONE_THOUSAND_CHARS)).toStrictEqual(ERROR);
+    expect(() => testMessageEdit(user1.token, message.messageId, ONE_THOUSAND_CHARS)).toThrow(Error);
   });
 
   test('Invalid Permission: Editing Another Message While Not Owner', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
     testChannelJoin(user2.token, channel.channelId);
-    expect(testMessageEdit(user2.token, message.messageId, 'Valid change')).toStrictEqual(ERROR);
+    expect(() => testMessageEdit(user2.token, message.messageId, 'Valid change')).toThrow(Error);
   });
 
   test('User: User is a GlobalOwner but not Author or Channel Owner', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
     const channel2 = testChannelsCreate(user2.token, 'Second Channel', true);
     const message2 = testMessageSend(user2.token, channel2.channelId, 'This message is valid');
-    expect(testMessageEdit(user1.token, message2.messageId, 'Meow meow I am a cat')).toStrictEqual(ERROR);
+    expect(() => testMessageEdit(user1.token, message2.messageId, 'Meow meow I am a cat')).toThrow(Error);
   });
 });
 
@@ -351,43 +349,43 @@ describe('/message/remove: Error Testing', () => {
   });
 
   test('Token: Invalid Token', () => {
-    expect(testMessageRemove(user1.token + '1', message.messageId)).toStrictEqual(ERROR);
+    expect(() => testMessageRemove(user1.token + '1', message.messageId)).toThrow(Error);
   });
 
   test('MessageId: Invalid MessageId', () => {
-    expect(testMessageRemove(user1.token, message.messageId + 1)).toStrictEqual(ERROR);
+    expect(() => testMessageRemove(user1.token, message.messageId + 1)).toThrow(Error);
   });
 
   test('User: User is not in Channel', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    expect(testMessageRemove(user2.token, message.messageId)).toStrictEqual(ERROR);
+    expect(() => testMessageRemove(user2.token, message.messageId)).toThrow(Error);
   });
 
   test('User: User is not in Dm', () => {
     const dm = testDmCreate(user1.token, []);
     const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    expect(testMessageRemove(user2.token, message2.messageId)).toStrictEqual(ERROR);
+    expect(() => testMessageRemove(user2.token, message2.messageId)).toThrow(Error);
   });
 
   test('User: User is not Author or Channel Owner', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
     testChannelJoin(user2.token, channel.channelId);
-    expect(testMessageRemove(user2.token, message.messageId)).toStrictEqual(ERROR);
+    expect(() => testMessageRemove(user2.token, message.messageId)).toThrow(Error);
   });
 
   test('User: User is not Author or Dm Owner', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
     const dm = testDmCreate(user1.token, [user2.authUserId]);
     const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
-    expect(testMessageRemove(user2.token, message2.messageId)).toStrictEqual(ERROR);
+    expect(() => testMessageRemove(user2.token, message2.messageId)).toThrow(Error);
   });
 
   test('User: User is a GlobalOwner but not Author or Channel Owner', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
     const channel2 = testChannelsCreate(user2.token, 'Second Channel', true);
     const message2 = testMessageSend(user2.token, channel2.channelId, 'This message is valid');
-    expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual(ERROR);
+    expect(() => testMessageRemove(user1.token, message2.messageId)).toThrow(Error);
   });
 });
 
@@ -550,24 +548,24 @@ describe('/message/senddm: Error Testing', () => {
   });
 
   test('ChannelId: Invalid ChannelId', () => {
-    expect(testMessageSendDm(user1.token, dm.dmId + 1, 'This message is valid')).toStrictEqual(ERROR);
+    expect(() => testMessageSendDm(user1.token, dm.dmId + 1, 'This message is valid')).toThrow(Error);
   });
 
   test('Message: Invalid Length of Message (Empty)', () => {
-    expect(testMessageSendDm(user1.token, dm.dmId, '')).toStrictEqual(ERROR);
+    expect(() => testMessageSendDm(user1.token, dm.dmId, '')).toThrow(Error);
   });
 
   test('Message: Invalid Length of Message (Over 1000 Characters)', () => {
-    expect(testMessageSendDm(user1.token, dm.dmId, ONE_THOUSAND_CHARS)).toStrictEqual(ERROR);
+    expect(() => testMessageSendDm(user1.token, dm.dmId, ONE_THOUSAND_CHARS)).toThrow(Error);
   });
 
   test('Token: Token is Invalid', () => {
-    expect(testMessageSendDm(user1.token + '1', dm.dmId, 'This message is valid')).toStrictEqual(ERROR);
+    expect(() => testMessageSendDm(user1.token + '1', dm.dmId, 'This message is valid')).toThrow(Error);
   });
 
   test('Token: Not a Member of the Channel', () => {
     const user2 = testAuthRegister('email@gmail.com', 'alsoapassword', 'Johnny', 'Depp');
-    expect(testMessageSendDm(user2.token, dm.dmId, 'This message is valid')).toStrictEqual(ERROR);
+    expect(() => testMessageSendDm(user2.token, dm.dmId, 'This message is valid')).toThrow(Error);
   });
 });
 
