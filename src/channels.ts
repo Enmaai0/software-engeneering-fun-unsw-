@@ -58,7 +58,7 @@ interface ChannelId {
  * @param { isPublic } isPublic
  * @returns {{ ChannelId }}
  */
-function channelsCreateV3(token: string, name: string, isPublic: boolean): ChannelId | Error {
+function channelsCreateV1(token: string, name: string, isPublic: boolean): ChannelId | Error {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'invalid token');
   }
@@ -98,7 +98,7 @@ function channelsCreateV3(token: string, name: string, isPublic: boolean): Chann
  * @param { number } token
  * @returns {{ channels: Channel[] }}
  */
-function channelsListAllV3(token: string): ChannelsList | Error {
+function channelsListAllV1(token: string): ChannelsList | Error {
   if (!isValidToken(token)) {
      throw HTTPError(403,  'Invalid User (User does not exist)');
   }
@@ -126,7 +126,7 @@ function channelsListAllV3(token: string): ChannelsList | Error {
  * @param { number } token
  * @returns {{ ChannelsList }}
  */
-function channelsListV3 (token: string) {
+function channelsListV1 (token: string) {
   if (!isValidToken(token)) {
     throw HTTPError(403,  'Invalid User (User does not exist)');
   }
