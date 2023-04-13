@@ -4,7 +4,9 @@
  * Contains the function implementations of all channels* functions.
  */
 
-import { getData, getHashOf, setData } from './dataStore';
+import { getData, setData } from './dataStore';
+import HTTPError from 'http-errors';
+
 
 interface Error {
   error: string
@@ -58,11 +60,11 @@ interface ChannelId {
  */
 function channelsCreateV1(token: string, name: string, isPublic: boolean): ChannelId | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   if (name.length < 1 || name.length > 20) {
-    return { error: 'Invalid Name (Name must be 1 - 20 characters long)' };
+    throw HTTPError(400, 'Channel Name length invalid');
   }
 
   const data = getData();
@@ -98,7 +100,7 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): Chann
  */
 function channelsListAllV1(token: string): ChannelsList | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+     throw HTTPError(403,  'Invalid User (User does not exist)');
   }
 
   const data = getData();
@@ -126,7 +128,7 @@ function channelsListAllV1(token: string): ChannelsList | Error {
  */
 function channelsListV1 (token: string) {
   if (!isValidToken(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+    throw HTTPError(403,  'Invalid User (User does not exist)');
   }
 
   const data = getData();
@@ -167,7 +169,7 @@ function isValidToken(token: string): boolean {
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(hashedToken)) {
+    if (userTokenArray.includes(token)) {
       return true;
     }
   }
@@ -186,11 +188,10 @@ function isValidToken(token: string): boolean {
  */
 function getIdFromToken(token: string): number {
   const data = getData();
-  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(hashedToken)) {
+    if (userTokenArray.includes(token)) {
       return user.uId;
     }
   }
@@ -220,3 +221,5 @@ function createUserObject(uId: number): UserObject {
 
   return userObject;
 }
+
+export { channelsCreateV1, channelsListAllV1, channelsListV1 };
