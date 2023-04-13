@@ -8,6 +8,9 @@
 import HTTPError from 'http-errors';
 import { getData, getHashOf, setData } from './dataStore';
 
+const MINSTRINGLENGTH = 1;
+const MAXSTRINGLENGTH = 1000;
+
 interface Notification {
   channelId: number,
   dmId: number,
@@ -96,8 +99,23 @@ function notificationsGet(token: string): Notifications | { error: string } {
  * @param { string } queryString
  * @returns {{ messages: Message[] }}
  */
-function search(token: string, queryString: string): Message[] {
-  return [];
+function search(token: string, queryString: string): { messages: Message[] } {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  if (queryString.length < MINSTRINGLENGTH) {
+    throw HTTPError(400, 'String Cannot be Empty');
+  }
+
+  if (queryString.length > MAXSTRINGLENGTH) {
+    throw HTTPError(400, 'String Cannot be Over 1000 Characters');
+  }
+
+  const channelMessages = getSearchMessages(token, queryString, 'channel');
+  const dmMessages = getSearchMessages(token, queryString, 'dms');
+
+  return { messages: channelMessages.concat(dmMessages) };
 }
 
 export { clearV1, notificationsGet, search };
@@ -146,4 +164,99 @@ function getIdFromToken(token: string): number {
       return user.uId;
     }
   }
+}
+
+function getSearchMessages(token: string, queryString: string, route: string): Message[] {
+  let dataArea;
+
+  if (route === 'channel') {
+    dataArea = getData().channels;
+  } else {
+    // if route === 'dms'
+    dataArea = getData().dms;
+  }
+
+  const messages: Message[] = [];
+
+  for (let i = 0; i < dataArea.length; i++) {
+    if (!isMember(token, i, route)) {
+      continue;
+    }
+    const area = dataArea[i];
+    for (const message of area.messages) {
+      if (doesMessageContain(message.message, queryString)) {
+        const messageObject = {
+          messageId: message.messageId,
+          uId: message.uId,
+          message: message.message,
+          timeSent: message.timeSent
+        };
+
+        messages.push(messageObject);
+      }
+    }
+  }
+
+  return messages;
+}
+
+function isMember(token: string, id: number, route: string) {
+  if (route === 'channel') {
+    return isChannelMember(token, id);
+  } else {
+    return isDmMember(token, id);
+  }
+}
+
+/**
+ * isChannelMember
+ *
+ * Given an token and channelId, checks if a user
+ * with the token is a part of the channel
+ *
+ * @param { string } token
+ * @param { number } channelId
+ * @return { boolean }
+ */
+function isChannelMember(token: string, channelId: number): boolean {
+  const members = getData().channels[channelId].allMembers;
+  const uId = getIdFromToken(token);
+
+  for (const member of members) {
+    if (member.uId === uId) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * isDmMember
+ *
+ * Given an token and channelId, checks if a user
+ * with the token is a part of the channel
+ *
+ * @param { string } token
+ * @param { number } DmId
+ * @return { boolean }
+ */
+function isDmMember(token: string, dmId: number): boolean {
+  const members = getData().dms[dmId].members;
+  const uId = getIdFromToken(token);
+
+  for (const member of members) {
+    if (member === uId) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function doesMessageContain(message: string, queryString: string): boolean {
+  if (message.toLowerCase().includes(queryString.toLowerCase())) {
+    return true;
+  }
+  return false;
 }
