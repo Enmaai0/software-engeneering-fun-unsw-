@@ -1,7 +1,8 @@
 /**
  * dm.test.ts
- * Contains the jest testing designed for dm.ts that utilises
- * the HTTP routes created to test funcionality
+ *
+ * File contains all of the jest testing for the HTTP layer for
+ * all /dm/* routes.
  */
 
 import {
@@ -26,6 +27,11 @@ interface DmId {
   dmId: number;
 }
 
+/**
+ * Clears the dataStore before each test is ran. Ensures that
+ * tests do not rely on the results of others to ensure full
+ * functionality and correct implementation.
+*/
 beforeEach(() => {
   testClear();
 });
@@ -536,9 +542,9 @@ describe('/dm/messages: Return Testing', () => {
     const testMessage3 = testMessageSendDm(testUser1.token, testDm.dmId, 'Third Message');
     expect(testDmMessages(testUser1.token, testDm.dmId, 0)).toStrictEqual({
       messages: [{
-        messageId: testMessage1.messageId,
+        messageId: testMessage3.messageId,
         uId: testUser1.authUserId,
-        message: 'First Message',
+        message: 'Third Message',
         timeSent: expect.any(Number)
       }, {
         messageId: testMessage2.messageId,
@@ -546,9 +552,9 @@ describe('/dm/messages: Return Testing', () => {
         message: 'Second Message',
         timeSent: expect.any(Number)
       }, {
-        messageId: testMessage3.messageId,
+        messageId: testMessage1.messageId,
         uId: testUser1.authUserId,
-        message: 'Third Message',
+        message: 'First Message',
         timeSent: expect.any(Number)
       }],
       start: 0,
@@ -556,8 +562,17 @@ describe('/dm/messages: Return Testing', () => {
     });
   });
 
-  test('Dm (75 Messages) Start = 0', () => {
-    for (let i = 0; i < 75; i++) {
+  test('Dm Messages with Start = -60', () => {
+    testMessageSendDm(testUser1.token, testDm.dmId, 'First Message');
+    expect(testDmMessages(testUser1.token, testDm.dmId, -60)).toStrictEqual({
+      messages: [],
+      start: -60,
+      end: -10
+    });
+  });
+
+  test('Dm (50 Messages) Start = 0', () => {
+    for (let i = 0; i < 50; i++) {
       testMessageSendDm(testUser1.token, testDm.dmId, String(i));
     }
 
@@ -566,61 +581,38 @@ describe('/dm/messages: Return Testing', () => {
     expect(testMessages.end).toStrictEqual(50);
     expect(testMessages.messages.length).toStrictEqual(50);
     expect(testMessages.messages[49]).toStrictEqual({
-      messageId: 49,
-      uId: testUser1.authUserId,
-      message: '49',
-      timeSent: expect.any(Number)
-    });
-    expect(testMessages.messages[0]).toStrictEqual({
       messageId: 0,
       uId: testUser1.authUserId,
       message: '0',
       timeSent: expect.any(Number)
     });
+    expect(testMessages.messages[0]).toStrictEqual({
+      messageId: 49,
+      uId: testUser1.authUserId,
+      message: '49',
+      timeSent: expect.any(Number)
+    });
   });
 
-  test('Dm (75 Messages) Start = 25', () => {
-    for (let i = 0; i < 75; i++) {
+  test('Dm (50 Messages) Start = 25', () => {
+    for (let i = 0; i < 50; i++) {
       testMessageSendDm(testUser1.token, testDm.dmId, String(i));
     }
 
     const testMessages = testDmMessages(testUser1.token, testDm.dmId, 25);
     expect(testMessages.start).toStrictEqual(25);
-    expect(testMessages.end).toStrictEqual(75);
-    expect(testMessages.messages.length).toStrictEqual(50);
-    expect(testMessages.messages[49]).toStrictEqual({
-      messageId: 74,
-      uId: testUser1.authUserId,
-      message: '74',
-      timeSent: expect.any(Number)
-    });
-    expect(testMessages.messages[0]).toStrictEqual({
-      messageId: 25,
-      uId: testUser1.authUserId,
-      message: '25',
-      timeSent: expect.any(Number)
-    });
-  });
-
-  test('Dm (75 Messages) Start = 50', () => {
-    for (let i = 0; i < 75; i++) {
-      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
-    }
-
-    const testMessages = testDmMessages(testUser1.token, testDm.dmId, 50);
-    expect(testMessages.start).toStrictEqual(50);
     expect(testMessages.end).toStrictEqual(-1);
     expect(testMessages.messages.length).toStrictEqual(25);
     expect(testMessages.messages[24]).toStrictEqual({
-      messageId: 74,
+      messageId: 0,
       uId: testUser1.authUserId,
-      message: '74',
+      message: '0',
       timeSent: expect.any(Number)
     });
     expect(testMessages.messages[0]).toStrictEqual({
-      messageId: 50,
+      messageId: 24,
       uId: testUser1.authUserId,
-      message: '50',
+      message: '24',
       timeSent: expect.any(Number)
     });
   });
@@ -635,38 +627,15 @@ describe('/dm/messages: Return Testing', () => {
     expect(testMessages.end).toStrictEqual(10);
     expect(testMessages.messages.length).toStrictEqual(10);
     expect(testMessages.messages[9]).toStrictEqual({
-      messageId: 9,
+      messageId: 10,
       uId: testUser1.authUserId,
-      message: '9',
+      message: '10',
       timeSent: expect.any(Number)
     });
     expect(testMessages.messages[0]).toStrictEqual({
-      messageId: 0,
-      uId: testUser1.authUserId,
-      message: '0',
-      timeSent: expect.any(Number)
-    });
-  });
-
-  test('Dm (20 Messages) Start = -20', () => {
-    for (let i = 0; i < 20; i++) {
-      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
-    }
-
-    const testMessages = testDmMessages(testUser1.token, testDm.dmId, -20);
-    expect(testMessages.start).toStrictEqual(-20);
-    expect(testMessages.end).toStrictEqual(-1);
-    expect(testMessages.messages.length).toStrictEqual(20);
-    expect(testMessages.messages[19]).toStrictEqual({
       messageId: 19,
       uId: testUser1.authUserId,
       message: '19',
-      timeSent: expect.any(Number)
-    });
-    expect(testMessages.messages[0]).toStrictEqual({
-      messageId: 0,
-      uId: testUser1.authUserId,
-      message: '0',
       timeSent: expect.any(Number)
     });
   });

@@ -21,6 +21,12 @@ interface Message {
   message: string;
   timeSent: number;
 }
+
+interface Notification {
+  channelId: number,
+  dmId: number,
+  notificationMessage: string
+}
 interface User {
   uId: number,
   email: string,
@@ -30,6 +36,8 @@ interface User {
   userHandle: string,
   permissionId: number,
   tokens: string[],
+  notifications: Notification[]
+  resetCodes: string[]
 }
 
 interface Channel {
@@ -52,7 +60,8 @@ interface Dm {
 interface Data {
   users: User[],
   channels: Channel[],
-  dms: Dm[]
+  dms: Dm[],
+  globalMessageCounter: number
 }
 
 const FILE = 'src/persistenceDataStore.json';
@@ -62,7 +71,8 @@ import fs from 'fs';
 let data: Data = {
   users: [],
   channels: [],
-  dms: []
+  dms: [],
+  globalMessageCounter: 0
 };
 
 /**
@@ -108,9 +118,6 @@ function grabData() {
 function readData(): Data {
   const jsonData = fs.readFileSync(FILE, { flag: 'r' });
   const persData = JSON.parse(String(jsonData));
-  if (persData.length === 0) {
-    return data;
-  }
   return persData;
 }
 

@@ -4,8 +4,8 @@
  * Contains the functions of all auth* functions.
  */
 
-import { getData, setData } from './dataStore';
 import validator from 'validator';
+import { getData, setData } from './dataStore';
 
 interface Error {
   error: string;
@@ -14,6 +14,25 @@ interface Error {
 interface AuthReturn {
   token: string;
   authUserId: number;
+}
+
+interface Notification {
+  channelId: number,
+  dmId: number,
+  notificationMessage: string
+}
+
+interface User {
+  uId: number,
+  email: string,
+  password: string,
+  nameFirst: string,
+  nameLast: string,
+  userHandle: string,
+  permissionId: number,
+  tokens: string[],
+  notifications: Notification[]
+  resetCodes: string[],
 }
 
 const MAXTOKEN = 10000000;
@@ -33,8 +52,8 @@ const GLOBALMEMBER = 2;
  * Errors return { error: "error" } on incorrect or
  * invalid input.
  *
- * @param {string} email
- * @param {string} password
+ * @param { string } email
+ * @param { string } password
  * @return {{ authUserId: number }}
  */
 function authLoginV1(email: string, password: string): Error | AuthReturn {
@@ -54,6 +73,8 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
     };
   }
 
+  setData(data);
+
   return { error: 'Incorrect Password' };
 }
 
@@ -63,8 +84,8 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
  * Given an active token, invalidates the token to log
  * the user out.
  *
- * @param {string} token
- * @returns {}
+ * @param { string } token
+ * @returns {{ }}
  */
 function authLogoutV1(token: string): Record<string, never> | Error {
   const data = getData();
@@ -89,27 +110,6 @@ function authLogoutV1(token: string): Record<string, never> | Error {
 }
 
 /**
- * isValidToken
- *
- * Given a token returns whether the token exists
- * within the dataStore or not.
- *
- * @param {string} token
- * @returns {boolean}
- */
-function isValidToken(token: string): boolean {
-  const data = getData();
-
-  for (const user of data.users) {
-    const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
  * authRegisterV1
  *
  * Takes in an email, password, first-name and last-name
@@ -121,10 +121,10 @@ function isValidToken(token: string): boolean {
  * Errors return { error: "error" } on incorrect or
  * invalid input.
  *
- * @param {string} email
- * @param {string} password
- * @param {string} nameFirst
- * @param {string} nameLast
+ * @param { string } email
+ * @param { string } password
+ * @param { string } nameFirst
+ * @param { string } nameLast
  * @return {{ authUserId: number }}
  */
 function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): Error | AuthReturn {
@@ -160,7 +160,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   }
 
   const newUserIndex = data.users.length;
-  const userObject = {
+  const userObject: User = {
     uId: newUserIndex,
     email: email,
     password: password,
@@ -169,15 +169,110 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     userHandle: generateUserHandle(nameFirst, nameLast),
     permissionId: permissionId,
     tokens: [generateToken()],
+    notifications: [],
+    resetCodes: []
   };
 
   data.users.push(userObject);
+
   setData(data);
 
   return {
     token: userObject.tokens[0],
-    authUserId: newUserIndex
+    authUserId: userObject.uId
   };
+}
+
+/**
+ * authPasswordResetRequest
+ *
+ * Given an email sends an email to that person containing a
+ * unique code that can be used to reset their passwords utelising
+ * the /auth/passwordreset/reset server call.
+ *
+ * @param { string } email
+ * @returns { }
+ */
+function authPasswordResetRequest(email: string): Record<never, never> {
+  const resetCode = generateResetCode();
+  const data = getData();
+
+  for (const user of data.users) {
+    if (email === user.email) {
+      user.resetCodes.push(resetCode);
+      user.tokens = [];
+      break;
+    }
+  }
+
+  setData(data);
+
+  return {};
+}
+
+/**
+ * authPasswordResetReset
+ *
+ * Given a valid reset code and new password, updates the
+ * password for the user that received the reset code.
+ *
+ * @param { string } resetCode
+ * @param { string } newPassword
+ * @returns { }
+ */
+function authPasswordResetReset(resetCode: string, newPassword: string): Record<never, never> {
+  const data = getData();
+
+  if (newPassword.length < 6) {
+    return { error: 'Invalid Password (Must be 6 Characters Long' };
+  }
+
+  let uId = -1;
+  let resetCodeIndex;
+
+  for (const user of data.users) {
+    if (user.resetCodes.includes(resetCode)) {
+      uId = user.uId;
+      resetCodeIndex = user.resetCodes.indexOf(resetCode);
+      break;
+    }
+  }
+
+  if (resetCodeIndex === -1 || uId === -1) {
+    return { error: 'Invalid Reset Code' };
+  }
+
+  data.users[uId].password = newPassword;
+  data.users[uId].resetCodes.splice(resetCodeIndex, 1);
+
+  setData(data);
+
+  return {};
+}
+
+export { authLoginV1, authRegisterV1, authLogoutV1, authPasswordResetRequest, authPasswordResetReset };
+
+/** Helper Functions **/
+
+/**
+ * isValidToken
+ *
+ * Given a token returns whether the token exists
+ * within the dataStore or not.
+ *
+ * @param { string } token
+ * @returns { boolean }
+ */
+function isValidToken(token: string): boolean {
+  const data = getData();
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -189,7 +284,7 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
  * Returns 0 on email not being in dataStore
  * (Should not occur due to error check).
  *
- * @param {string} email
+ * @param { string } email
  * @return { number }
  */
 function emailToUserIndex(email: string): number {
@@ -200,7 +295,6 @@ function emailToUserIndex(email: string): number {
       return user.uId;
     }
   }
-  return 0;
 }
 
 /**
@@ -210,7 +304,7 @@ function emailToUserIndex(email: string): number {
  * depending on whether the email is already
  * contained within dataStore under a user.
  *
- * @param {string} email
+ * @param { string } email
  * @return { boolean }
  */
 function isRegisteredEmail(email: string): boolean {
@@ -231,8 +325,8 @@ function isRegisteredEmail(email: string): boolean {
  * and creates the unique userHandle as
  * described in the project spec.
  *
- * @param {string} nameFirst
- * @param {string} nameLast
+ * @param { string } nameFirst
+ * @param { string } nameLast
  * @return { string }
  */
 function generateUserHandle(nameFirst: string, nameLast: string): string {
@@ -265,7 +359,7 @@ function generateUserHandle(nameFirst: string, nameLast: string): string {
  * through the entire data base of users to
  * find if the userHandle already exists.
  *
- * @param {string} userHandle
+ * @param { string } userHandle
  * @return { boolean }
  */
 function isUserHandleTaken(userHandle: string): boolean {
@@ -285,7 +379,7 @@ function isUserHandleTaken(userHandle: string): boolean {
  * Generates a random number (between 0 - 9999999) converted
  * into a string to be used as the users current token.
  *
- * @param {} N.A
+ * @param { } N.A
  * @returns { string }
  */
 function generateToken(): string {
@@ -294,4 +388,21 @@ function generateToken(): string {
   return strToken;
 }
 
-export { authLoginV1, authRegisterV1, authLogoutV1 };
+/**
+ * generateResetCode
+ *
+ * When called returns a 20 character long string
+ * containing [a-zA-Z0-9] characters.
+ *
+ * @returns { string }
+ */
+function generateResetCode(): string {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  while (result.length < 20) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+}

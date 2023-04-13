@@ -18,6 +18,42 @@ import config from './config.json';
 const port = config.port;
 const url = config.url;
 
+/** /admin/* Test Functions **/
+
+export function testAdminUserRemove(token: string, uId: number) {
+  const res = request(
+    'DELETE',
+    `${url}:${port}/admin/user/remove/v1`,
+    {
+      headers: {
+        token: token,
+      },
+      qs: {
+        uId,
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testAdminUserPermissionChange(token: string, uId: number, permissionId: number) {
+  const res = request(
+    'POST',
+    `${url}:${port}/admin/userpermission/change/v1`,
+    {
+      headers: {
+        token: token,
+      },
+      json: {
+        token,
+        uId,
+        permissionId,
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 /** /auth/* Test Functions **/
 
 export function testAuthLogin(email: string, password: string) {
@@ -63,9 +99,36 @@ export function testAuthRegister(email: string, password: string, nameFirst: str
   return JSON.parse(res.getBody() as string);
 }
 
+export function testAuthPasswordResetRequest(email: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/passwordreset/request/v1`,
+    {
+      json: {
+        email
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testAuthPasswordResetReset(resetCode: string, newPassword: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/auth/passwordreset/reset/v1`,
+    {
+      json: {
+        resetCode,
+        newPassword
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
 /** /channel/* Test Functions **/
 
-export function testChannelInvite(token: string, channelId: number, uid: number) {
+export function testChannelInvite(token: string, channelId: number, uId: number) {
   const res = request(
     'POST',
     `${url}:${port}/channel/invite/v2`,
@@ -73,7 +136,7 @@ export function testChannelInvite(token: string, channelId: number, uid: number)
       json: {
         token,
         channelId,
-        uid
+        uId
       }
     }
   );
@@ -140,25 +203,27 @@ export function testChannelLeave(token: string, channelId: number) {
 export function testChannelAddOwner(token: string, channelId: number, uId: number) {
   const res = request(
     'POST',
-    `${url}:${port}/channel/leave/v1`,
+    `${url}:${port}/channel/addowner/v1`,
     {
       json: {
         token,
-        channelId
+        channelId,
+        uId
       }
     }
   );
   return JSON.parse(res.getBody() as string);
 }
 
-export function testRemoveOwner(token: string, channelId: number, uId: number) {
+export function testChannelRemoveOwner(token: string, channelId: number, uId: number) {
   const res = request(
     'POST',
-    `${url}:${port}/channel/leave/v1`,
+    `${url}:${port}/channel/removeowner/v1`,
     {
       json: {
         token,
-        channelId
+        channelId,
+        uId
       }
     }
   );
@@ -166,6 +231,47 @@ export function testRemoveOwner(token: string, channelId: number, uId: number) {
 }
 
 /** /channels/* Test Functions **/
+
+export function testChannelsCreate(token: string, name: string, isPublic: boolean) {
+  const res = request(
+    'POST',
+    `${url}:${port}/channels/create/v2`,
+    {
+      json: {
+        token,
+        name,
+        isPublic
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testChannelsList(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/channels/list/v2`,
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testChannelsListAll(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/channels/listall/v2`,
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
 
 /** /dm/* Test Functions **/
 
@@ -253,13 +359,63 @@ export function testDmMessages(token: string, dmId: number, start: number) {
   return JSON.parse(res.getBody() as string);
 }
 
-/** /other/* Test Functions **/
+/** /message/* Test Functions */
 
-export function testClear() {
+export function testMessageSend(token: string, channelId: number, message: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/message/send/v1`,
+    {
+      json: {
+        token: token,
+        channelId: channelId,
+        message: message
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testMessageEdit(token: string, messageId: number, message: string) {
+  const res = request(
+    'PUT',
+    `${url}:${port}/message/edit/v1`,
+    {
+      json: {
+        token: token,
+        messageId: messageId,
+        message: message
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testMessageRemove(token: string, messageId: number) {
   const res = request(
     'DELETE',
-    `${url}:${port}/clear/v1`,
-    { qs: {} }
+    `${url}:${port}/message/remove/v1`,
+    {
+      qs: {
+        token: token,
+        messageId: messageId,
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testMessageSendDm(token: string, dmId: number, message: string) {
+  const res = request(
+    'POST',
+    `${url}:${port}/message/senddm/v1`,
+    {
+      json: {
+        token: token,
+        dmId: dmId,
+        message: message,
+      }
+    }
   );
   return JSON.parse(res.getBody() as string);
 }
@@ -330,6 +486,30 @@ export function testSetHandle(token: string, handleStr: string) {
       json: {
         token,
         handleStr
+      }
+    }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+/** /other/* Test Functions **/
+
+export function testClear() {
+  const res = request(
+    'DELETE',
+    `${url}:${port}/clear/v1`,
+    { qs: {} }
+  );
+  return JSON.parse(res.getBody() as string);
+}
+
+export function testNotificationsGet(token: string) {
+  const res = request(
+    'GET',
+    `${url}:${port}/notifications/get/v1`,
+    {
+      qs: {
+        token
       }
     }
   );

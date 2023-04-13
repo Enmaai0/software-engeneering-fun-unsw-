@@ -1,15 +1,21 @@
 /**
  * auth.test.ts
- * Contains the jest testing designed for auth.ts that utelises
- * the HTTP routes created to test functionality
+ *
+ * File contains all of the jest testing for the HTTP layer for
+ * all /auth/* routes.
  */
 
 import {
   testAuthLogin,
   testAuthLogout,
+  testAuthPasswordResetRequest,
+  testAuthPasswordResetReset,
   testAuthRegister,
+  testChannelDetails,
+  testChannelsCreate,
   testClear,
-  testDmCreate
+  testDmCreate,
+  testUsersAll
 } from './testFunctions';
 
 const ERROR = { error: expect.any(String) };
@@ -19,6 +25,11 @@ interface AuthReturn {
   authUserId: number;
 }
 
+/**
+ * Clears the dataStore before each test is ran. Ensures that
+ * tests do not rely on the results of others to ensure full
+ * functionality and correct implementation.
+*/
 beforeEach(() => {
   testClear();
 });
@@ -160,7 +171,142 @@ describe('/auth/register: Return Testing', () => {
     });
 
     test('Correct Return: Check Unique authUserId', () => {
-      expect(user1).not.toMatchObject(user2);
+      expect(user1.authUserId).not.toEqual(user2.authUserId);
+      expect(user1.token).not.toEqual(user2.token);
     });
   });
+
+  describe('Testing with /users/all', () => {
+    let user1: AuthReturn;
+    beforeEach(() => {
+      user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    });
+
+    test('One Users List All ((FirstName + LastName).length > 20)', () => {
+      const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Thisdudehas', 'aSuperLongNameLikeSheeeeesh');
+      expect(testUsersAll(user2.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }, {
+          uId: user2.authUserId,
+          email: 'email2@gmail.com',
+          nameFirst: 'Thisdudehas',
+          nameLast: 'aSuperLongNameLikeSheeeeesh',
+          handleStr: 'thisdudehasasuperlon'
+        }]
+      });
+    });
+
+    test('One Users List All', () => {
+      expect(testUsersAll(user1.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }]
+      });
+    });
+
+    test('Two Users List All', () => {
+      const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+      expect(testUsersAll(user1.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }, {
+          uId: user2.authUserId,
+          email: 'email2@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot II',
+          handleStr: 'testbotii'
+        }]
+      });
+    });
+  });
+});
+
+/** /auth/passwordreset/request/v1 Testing **/
+
+describe('/auth/passwordreset/request: Error Testing', () => {
+  test('Email: Invalid Email (Return Empty Object)', () => {
+    testAuthRegister('validEmail@gmail.com', 'password1234', 'Jerry', 'Yang');
+    expect(testAuthPasswordResetRequest('randomEmail@gmail.com')).toStrictEqual({});
+  });
+});
+
+describe('/auth/passwordreset/request: General Testing', () => {
+  test('User is logged out of all sessions (1 Session)', () => {
+    const user = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    const channel = testChannelsCreate(user.token, 'Channel', true);
+    expect(testChannelDetails(user.token, channel.channelId)).not.toStrictEqual(ERROR);
+    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testChannelDetails(user.token, channel.channelId)).toStrictEqual(ERROR);
+  });
+
+  test('User is logged out of all sessions (2 Sessions)', () => {
+    const userS1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    const userS2 = testAuthLogin('email1@gmail.com', 'pass1234');
+    const channel = testChannelsCreate(userS1.token, 'Channel', true);
+    expect(testChannelDetails(userS1.token, channel.channelId)).not.toStrictEqual(ERROR);
+    expect(testChannelDetails(userS2.token, channel.channelId)).not.toStrictEqual(ERROR);
+    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testChannelDetails(userS1.token, channel.channelId)).toStrictEqual(ERROR);
+    expect(testChannelDetails(userS2.token, channel.channelId)).toStrictEqual(ERROR);
+  });
+});
+
+/** /auth/passwordreset/reset/v1 Testing **/
+
+describe('/auth/passwordreset/reset: Error Testing', () => {
+  test('newPassword: Invalid Password (<6 Characters)', () => {
+    expect(testAuthPasswordResetReset('RESETCODE', '1234')).toStrictEqual(ERROR);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Mixed))', () => {
+    expect(testAuthPasswordResetReset('Die38UKaiD', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Numbers))', () => {
+    expect(testAuthPasswordResetReset('1247896918', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Symbols))', () => {
+    expect(testAuthPasswordResetReset('(!*$^*!@$%', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+});
+
+describe('/auth/passwordreset/reset: Return Testing', () => {
+  test('Tested Manually: Forced resetCode to be one specific value', () => {
+    expect('Manually Tested').toStrictEqual('Manually Tested');
+  });
+
+  /*
+  Manually tested via forcing resetCode to be 'ThisIsTheResetCode'
+  NOTE: Cannot create tests to ensure this is covered
+
+  test('Valid resetCode: Password is updated using newPassword', () => {
+    testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    expect(testAuthLogin('email1@gmail.com', 'pass1234')).toStrictEqual({
+      token: expect.any(String),
+      authUserId: expect.any(Number)
+    });;
+    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testAuthPasswordResetReset('ThisIsTheResetCode', 'validPassword1234')).toStrictEqual({});
+    expect(testAuthLogin('email1@gmail.com', 'pass1234')).toStrictEqual(ERROR);
+    expect(testAuthLogin('email1@gmail.com', 'validPassword1234')).toStrictEqual({
+      token: expect.any(String),
+      authUserId: expect.any(Number)
+    });
+    expect(testAuthPasswordResetReset('ThisIsTheResetCode', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+  */
 });

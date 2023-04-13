@@ -6,9 +6,6 @@
 
 import { getData, setData } from './dataStore';
 
-const NO_MORE_MESSAGES = -1;
-const FIFTY_MESSAGES = 50;
-
 interface Error {
   error: string
 }
@@ -41,13 +38,9 @@ interface DetailReturn {
   allMembers: Member[];
 }
 
-interface Users {
-  uId: number,
-  email: string,
-  nameFirst: string,
-  nameLast: string,
-  handleStr: string,
-}
+const NO_MORE_MESSAGES = -1;
+const FIFTY_MESSAGES = 50;
+const GLOBALMEMBER = 2;
 
 /**
  * channelDetailsV1
@@ -65,11 +58,11 @@ function channelDetailsV1(token: string, channelId: number): Error | DetailRetur
   }
 
   if (!isValidToken(token)) {
-    return { error: 'Invalid token(No user with that token)' };
+    return { error: 'Invalid token (No user with that token)' };
   }
 
   if (!isMember(token, channelId)) {
-    return { error: 'Error: User is not a member' };
+    return { error: 'User is not a member' };
   }
 
   const channel = getData().channels[channelId];
@@ -90,7 +83,7 @@ function channelDetailsV1(token: string, channelId: number): Error | DetailRetur
  *
  * @param { number } authUserId
  * @param { number } channelId
- * @return {  }
+ * @return {{ }}
  */
 function channelJoinV1(token: string, channelId: number) : Error | Record<string, never> {
   if (!isValidToken(token)) {
@@ -107,25 +100,26 @@ function channelJoinV1(token: string, channelId: number) : Error | Record<string
 
   const data = getData();
   const channel = data.channels[channelId];
-  const authUserId = findUId(token);
+  const authUserId = getIdFromToken(token);
   const user = data.users[authUserId];
 
-  if (channel.isPublic === true || user.permissionId === 1) {
-    const userObject = {
-      uId: user.uId,
-      email: user.email,
-      nameFirst: user.nameFirst,
-      nameLast: user.nameLast,
-      handleStr: user.userHandle
-    };
-
-    channel.allMembers.push(userObject);
-    setData(data);
-
-    return {};
+  if (channel.isPublic === false && user.permissionId === GLOBALMEMBER) {
+    return { error: 'Error: No permission to join the channel' };
   }
 
-  return { error: 'Error: No permission to join the channel' };
+  const userObject = {
+    uId: user.uId,
+    email: user.email,
+    nameFirst: user.nameFirst,
+    nameLast: user.nameLast,
+    handleStr: user.userHandle
+  };
+
+  channel.allMembers.push(userObject);
+
+  setData(data);
+
+  return {};
 }
 
 /**
@@ -137,7 +131,7 @@ function channelJoinV1(token: string, channelId: number) : Error | Record<string
  * @param { number } authUserId
  * @param { number } channelId
  * @param { number } uId
- * @return {  }
+ * @return {{ }}
  */
 function channelInviteV1(token: string, channelId: number, uId: number) : Error | Record<string, never> {
   if (!isValidToken(token)) {
@@ -160,10 +154,49 @@ function channelInviteV1(token: string, channelId: number, uId: number) : Error 
     return { error: 'Invalid User (User already in channel)' };
   }
 
-  const uToken = findToken(uId);
-  channelJoinV1(uToken[0], channelId);
+  const data = getData();
+  const user = data.users[uId];
+  const channel = data.channels[channelId];
+
+  const userObject = {
+    uId: user.uId,
+    email: user.email,
+    nameFirst: user.nameFirst,
+    nameLast: user.nameLast,
+    handleStr: user.userHandle
+  };
+
+  channel.allMembers.push(userObject);
+
+  // Creates a notification for the channel invite
+  channelInviteNotif(token, channelId, uId);
+
+  setData(data);
 
   return {};
+}
+
+/**
+ * channelInviteNotif
+ *
+ * Given a token, channelId, and uId, generates and pushes a
+ * notification to the person being added to the channel.
+ *
+ * @param { string } token
+ * @param { number } channelId
+ * @param { number } uId
+ */
+function channelInviteNotif(token: string, channelId: number, uId: number) {
+  const data = getData();
+  const addingId = getIdFromToken(token);
+
+  const notification = {
+    channelId: channelId,
+    dmId: -1,
+    notificationMessage: `@${data.users[addingId].userHandle} added you to ${data.channels[channelId].name}`
+  };
+
+  data.users[uId].notifications.push(notification);
 }
 
 /**
@@ -192,31 +225,48 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   }
 
   const data = getData();
-  const messageArray = data.channels[channelId].messages;
+  const channel = data.channels[channelId];
 
-  if (start > messageArray.length) {
+  if (start > channel.messages.length) {
     return { error: 'Invalid Start (Start is greater than total messages)' };
   }
 
-  const returnMessages = [] as Message[];
-  let end;
+  // If the messages array is empty, simply return empty messages
+  if (channel.messages.length === 0) {
+    return {
+      messages: [],
+      start: start,
+      end: -1,
+    };
+  }
 
-  if (start + FIFTY_MESSAGES > messageArray.length) {
-    end = NO_MORE_MESSAGES;
-    for (let i = start; i < messageArray.length; i++) {
-      returnMessages.push(messageArray[i]);
-    }
-  } else {
-    end = start + FIFTY_MESSAGES;
-    for (let i = start; i < start + FIFTY_MESSAGES; i++) {
-      returnMessages.push(messageArray[i]);
-    }
+  const returnMessages: Message[] = [];
+  const returnEnd = (start + FIFTY_MESSAGES > channel.messages.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
+
+  let realStart: number, realEnd: number;
+  realEnd = (channel.messages.length - start - 50 < 0) ? 0 : channel.messages.length - start - 50;
+  realStart = (start < 0) ? realEnd + start + 50 : channel.messages.length - start - 1;
+  realStart = (realStart >= channel.messages.length) ? channel.messages.length - 1 : realStart;
+
+  if (start <= -50) {
+    realStart = -1;
+    realEnd = 0;
+  }
+
+  for (let i = realStart; i >= realEnd; i--) {
+    const message = {
+      messageId: channel.messages[i].messageId,
+      uId: channel.messages[i].uId,
+      message: channel.messages[i].message,
+      timeSent: Number(channel.messages[i].timeSent)
+    };
+    returnMessages.push(message);
   }
 
   return {
     messages: returnMessages,
     start: start,
-    end: end,
+    end: returnEnd,
   };
 }
 
@@ -226,9 +276,9 @@ function channelMessagesV1(token: string, channelId: number, start: number) : Er
   * Takes a token and channelId, find the user via the token
   * and delete the user in this channel.
   *
-  * @param token
-  * @param channelId
-  * @returns {{}}
+  * @param { string } token
+  * @param { number } channelId
+  * @returns {{ }}
   */
 function channelLeaveV1(token: string, channelId: number): Error | Record<string, never> {
   if (!isChannelId(channelId)) {
@@ -243,31 +293,42 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
     return { error: 'Invalid authUserId (User does not have permission)' };
   }
 
-  const channel = getData().channels[channelId];
-  const id = findUId(token);
-  let index;
-  for (index = 0; index < channel.allMembers.length; index++) {
-    if (channel.allMembers[index].uId === id) {
-      break;
+  const data = getData();
+  const channel = data.channels[channelId];
+  const id = getIdFromToken(token);
+
+  // Removes member from the owner array if they are an owner
+  for (const owner of channel.owners) {
+    if (owner.uId === id) {
+      const idIndex = channel.owners.indexOf(owner);
+      channel.owners.splice(idIndex, 1);
     }
   }
-  channel.allMembers.splice(index, 1);
 
-  return { };
+  // Removes the member from the member array
+  for (const member of channel.allMembers) {
+    if (member.uId === id) {
+      const idIndex = channel.allMembers.indexOf(member);
+      channel.allMembers.splice(idIndex, 1);
+    }
+  }
+
+  setData(data);
+
+  return {};
 }
 
 /**
  * Takes a token, a channelId and a uId, add the user
  * to owner member if permitted.
  *
- * @param token
- * @param channelId
- * @param uId
- * @returns { }
+ * @param { string } token
+ * @param { number } channelId
+ * @param { number } uId
+ * @returns {{ }}
  */
 function channelAddOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
   const data = getData();
-  let ispermitted = false;
 
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
@@ -281,51 +342,48 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number): Error
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
-  if (!isMember(token, channelId)) {
-    return { error: 'Invalid authUserId (User does not have permission)' };
+  const adderId = getIdFromToken(token);
+  const owners = data.channels[channelId].owners;
+  const members = data.channels[channelId].allMembers;
+
+  if (owners.some(owner => owner.uId === uId)) {
+    return { error: 'User is already an owner in the channel' };
   }
 
-  const ownerUId = findUId(token);
-
-  for (const owner of data.channels[channelId].owners) {
-    if (owner.uId === uId) {
-      return { error: 'user is already an owner in the channel' };
-    }
-    if (owner.uId === ownerUId) {
-      ispermitted = true;
-    }
+  if (!members.some(member => member.uId === uId)) {
+    return { error: 'User is not a member of the channel' };
   }
-  if (!ispermitted) {
-    return { error: 'do not have owner permission' };
+
+  if (!owners.some(owner => owner.uId === adderId) && data.users[adderId].permissionId === GLOBALMEMBER) {
+    return { error: 'User does not have owner permissions' };
   }
 
   const user = data.users[uId];
-  const userObject: Users = {
-    uId: user.uId,
+  const userObject: Member = {
+    uId: uId,
     email: user.email,
     nameFirst: user.nameFirst,
     nameLast: user.nameLast,
     handleStr: user.userHandle
   };
 
-  data.channels[channelId].owners.push(userObject);
-  return { };
+  owners.push(userObject);
+
+  setData(data);
+
+  return {};
 }
 
 /**
  * Takes a token, a channelId and a uId, to remove a
  * specific owner member
  *
- * @param token
- * @param channelId
- * @param uId
- * @returns
+ * @param { string } token
+ * @param { number } channelId
+ * @param { number } uId
+ * @returns {{ }}
  */
 function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Error | Record<string, never> {
-  const data = getData();
-  let isowner = false;
-  let ispermitted = false;
-
   if (!isChannelId(channelId)) {
     return { error: 'Invalid channelId (No channel with that id)' };
   }
@@ -338,43 +396,32 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Er
     return { error: 'Invalid authUserId (No user with that id)' };
   }
 
-  if (!isMember(token, channelId)) {
-    return { error: 'Invalid authUserId (User does not have permission)' };
+  const removerId = getIdFromToken(token);
+  const data = getData();
+  const owners = data.channels[channelId].owners;
+
+  if (!owners.some(owner => owner.uId === removerId) && data.users[removerId].permissionId === GLOBALMEMBER) {
+    return { error: 'User does not have owner permissions' };
   }
 
-  const ownerUId = findUId(token);
-
-  for (const owner of data.channels[channelId].owners) {
-    if (owner.uId === ownerUId) {
-      ispermitted = true;
-    }
-
-    if (owner.uId === uId) {
-      isowner = true;
-    }
-  }
-
-  if (!ispermitted) {
-    return { error: 'do not have owner permission' };
-  }
-
-  if (!isowner) {
-    return { error: 'The user is not an owner' };
+  if (!owners.some(owner => owner.uId === uId)) {
+    return { error: 'User being removed is not an owner' };
   }
 
   if (data.channels[channelId].owners.length === 1) {
     return { error: 'The user is currently the only owner' };
   }
 
-  const owners = data.channels[channelId].owners;
-  let index;
-  for (index = 0; index < data.channels[channelId].owners.length; index++) {
-    if (owners[index].uId === uId) {
-      break;
+  for (const owner of owners) {
+    if (owner.uId === uId) {
+      const idIndex = owners.indexOf(owner);
+      owners.splice(idIndex, 1);
     }
   }
-  owners.splice(index, 1);
-  return { };
+
+  setData(data);
+
+  return {};
 }
 
 /**
@@ -383,16 +430,15 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number): Er
  * Given a authUserId, checks if the authUserId
  * is valid (exists in the dataStore)
  *
- * @param { number } authUserId
+ * @param { number } uId
  * @return { boolean }
  */
-function isUserId(authUserId: number): boolean {
+function isUserId(uId: number): boolean {
   const data = getData();
+  const users = data.users;
 
-  for (const user of data.users) {
-    if (user.uId === authUserId) {
-      return true;
-    }
+  if (users.some(user => user.uId === uId)) {
+    return true;
   }
 
   return false;
@@ -431,7 +477,7 @@ function isChannelId(channelId: number): boolean {
  */
 function isMember(token: string, channelId: number): boolean {
   const members = getData().channels[channelId].allMembers;
-  const id = findUId(token);
+  const id = getIdFromToken(token);
 
   for (const member of members) {
     if (member.uId === id) {
@@ -443,11 +489,13 @@ function isMember(token: string, channelId: number): boolean {
 }
 
 /**
+ * isValidToken
+ *
  * Given a token and to check if it is
  * a valid token owned by any user
  *
- * @param token
- * @returns {boolean}
+ * @param { string } token
+ * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
   const users = getData().users;
@@ -462,23 +510,24 @@ function isValidToken(token: string): boolean {
 }
 
 /**
- * Given a token, find the corresponding uId
+ * getIdFromToken
  *
- * @param token
- * @returns {number} uId
+ * Given a token extracts the uId of the person
+ * associated with that token.
+ * Errors should not occur due to previous error test
+ *
+ * @param { string } token
+ * @returns { number }
  */
-function findUId(token: string): number {
-  const users = getData().users;
-  let id;
+function getIdFromToken(token: string): number {
+  const data = getData();
 
-  for (const user of users) {
-    for (const theToken of user.tokens) {
-      if (theToken === token) {
-        id = user.uId;
-      }
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(token)) {
+      return user.uId;
     }
   }
-  return id;
 }
 
 /**
@@ -501,25 +550,6 @@ function isUIdMember(uId: number, channelId: number): boolean {
   }
 
   return false;
-}
-
-/**
- * Given an Id, find the corresponding tokens.
- *
- * This function should be call after check Id is valid.
- *
- * @param Id
- * @returns {string} token
- */
-function findToken(Id: number): string | string[] {
-  const users = getData().users;
-  let userToken;
-  for (const user of users) {
-    if (user.uId === Id) {
-      userToken = user.tokens;
-    }
-  }
-  return userToken;
 }
 
 export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };
