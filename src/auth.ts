@@ -200,6 +200,21 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
  * unique code that can be used to reset their passwords utelising
  * the /auth/passwordreset/reset server call.
  *
+ * <<<<<<<
+ * FOR TUTOR OR MARKER
+ *
+ * For the sending of emails it is done through Ethereal Mail, a fake STMP service
+ * that NodeMailer (the module used to send emails) uses to allow people to test
+ * the sending of emails to addresses. All emails are not actually sent, however
+ * the ethereal.mail will 'fake send' all the emails and hold them on their server.
+ *
+ * You can see these 'fake' emails by going to ethereal.email and logging in using:
+ * user: estel.hoeger@ethereal.email
+ * pass: 95KuTtSnCNVErXZ4cD
+ * Then going to the messages tab where you are able to view all messages that have
+ * been sent and received from this address.
+ * <<<<<<<
+ *
  * @param { string } email
  * @returns { }
  */

@@ -18,6 +18,13 @@ interface Notifications {
   notifications: Notification[]
 }
 
+interface Message {
+  messageId: number;
+  uId: number;
+  message: string;
+  timeSent: number;
+}
+
 /**
  * clearV1
  *
@@ -79,7 +86,21 @@ function notificationsGet(token: string): Notifications | { error: string } {
   return { notifications: returnNotifications };
 }
 
-export { clearV1, notificationsGet };
+/**
+ * search
+ *
+ * Given a queryString, returns a list of all messages that contain
+ * that string in both channels and Dms that that user is a member of.
+ *
+ * @param { string } token
+ * @param { string } queryString
+ * @returns {{ messages: Message[] }}
+ */
+function search(token: string, queryString: string): Message[] {
+  return [];
+}
+
+export { clearV1, notificationsGet, search };
 
 /** Helper Functions **/
 
