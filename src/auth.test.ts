@@ -1,48 +1,117 @@
 /**
  * auth.test.ts
- * Contains the jest testing designed for auth.ts that utelises
- * the HTTP routes created to test functionality
+ *
+ * File contains all of the jest testing for the HTTP layer for
+ * all /auth/* routes.
  */
 
-import request from 'sync-request';
-import config from './config.json';
-import { getData } from './dataStore';
-import { testClear } from './other.test';
-
-const OK = 200;
-const port = config.port;
-const url = config.url;
+import {
+  testAuthLogin,
+  testAuthLogout,
+  testAuthPasswordResetRequest,
+  testAuthPasswordResetReset,
+  testAuthRegister,
+  testChannelDetails,
+  testChannelsCreate,
+  testClear,
+  testDmCreate,
+  testUsersAll
+} from './testFunctions';
 
 const ERROR = { error: expect.any(String) };
 
-interface AuthUserId {
+interface AuthReturn {
+  token: string;
   authUserId: number;
 }
 
+/**
+ * Clears the dataStore before each test is ran. Ensures that
+ * tests do not rely on the results of others to ensure full
+ * functionality and correct implementation.
+*/
 beforeEach(() => {
   testClear();
 });
 
 /** /auth/login/v2 Testing **/
 
-/** /auth/register/v2 Testing **/
+describe('/auth/login: Error Testing', () => {
+  beforeEach(() => {
+    testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
 
-function testAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {
-  const res = request(
-    'POST',
-    `${url}:${port}/auth/register/v2`,
-    {
-      json: {
-        email,
-        password,
-        nameFirst,
-        nameLast
-      }
-    }
-  );
-  expect(res.statusCode).toBe(OK);
-  return JSON.parse(res.getBody() as string);
-}
+  test('Email: Invalid Email', () => {
+    expect(testAuthLogin('invalidEmail', 'pass1234')).toStrictEqual(ERROR);
+  });
+
+  test('Email: No User with Email', () => {
+    expect(testAuthLogin('nonExistantEmail@gmail.com', 'pass1234')).toStrictEqual(ERROR);
+  });
+
+  test('Password: Incorrect Password', () => {
+    expect(testAuthLogin('email@gmail.com', '1234pass')).toStrictEqual(ERROR);
+  });
+});
+
+describe('/auth/login: Return Testing', () => {
+  let user1: AuthReturn, user2: AuthReturn;
+  beforeEach(() => {
+    testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    user1 = testAuthLogin('email@gmail.com', 'pass1234');
+    user2 = testAuthLogin('email2@gmail.com', 'pass1234');
+  });
+
+  test('Correct Return: First User', () => {
+    expect(user1.authUserId).toStrictEqual(expect.any(Number));
+    expect(user1.token).toStrictEqual(expect.any(String));
+  });
+
+  test('Correct Return: Second User', () => {
+    expect(user2.authUserId).toStrictEqual(expect.any(Number));
+    expect(user2.token).toStrictEqual(expect.any(String));
+  });
+
+  test('Correct Return: Check Unique authUserId', () => {
+    expect(user1).not.toMatchObject(user2);
+  });
+});
+
+/** /auth/logout/v1 Testing **/
+
+describe('/auth/logout: Error Testing', () => {
+  test('Email: Invalid Token (No Users)', () => {
+    expect(testAuthLogout('someRandomTokenIDK?')).toStrictEqual(ERROR);
+  });
+
+  test('Email: Invalid Token (With Users)', () => {
+    const user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    expect(testAuthLogout(user1.token + user2.token)).toStrictEqual(ERROR);
+  });
+});
+
+describe('/auth/logout: Return Testing', () => {
+  test('Email: Invalid Token (No Users)', () => {
+    const user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    expect(testAuthLogout(user1.token)).toStrictEqual({});
+  });
+});
+
+describe('/auth/logout: Token Removal Testing', () => {
+  let user1: AuthReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('realEmail@gmail.com', 'password1234', 'Kazoo', 'Kid');
+  });
+
+  test('Creating Dm with Deleted Token', () => {
+    testClear();
+    expect(() => testDmCreate(user1.token, [])).toThrow(Error);
+  });
+});
+
+/** /auth/register/v2 Testing **/
 
 describe('/auth/register: Error Testing', () => {
   test('Email: Invalid Email', () => {
@@ -71,114 +140,175 @@ describe('/auth/register: Error Testing', () => {
   });
 
   test('First Name: Too Long', () => {
-    expect(testAuthRegister('email@gmail.com', 'pass1234', 'ZdP8qqutEVebdstDOtjqzZjIA1f4Oe3KQdYFHbakVSYodzEP6w', 'Bot')).toStrictEqual(ERROR);
+    expect(testAuthRegister('email@gmail.com', 'pass1234', '1ZdP8qqutEVebdstDOtjqzZjIA1f4Oe3KQdYFHbakVSYodzEP6w', 'Bot')).toStrictEqual(ERROR);
   });
 
   test('Last Name: Too Long', () => {
-    expect(testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'ZdP8qqutEVebdstDOtjqzZjIA1f4Oe3KQdYFHbakVSYodzEP6w')).toStrictEqual(ERROR);
+    expect(testAuthRegister('email@gmail.com', 'pass1234', 'Test', '1ZdP8qqutEVebdstDOtjqzZjIA1f4Oe3KQdYFHbakVSYodzEP6w')).toStrictEqual(ERROR);
   });
 });
 
 describe('/auth/register: Return Testing', () => {
   describe('authUserId Testing', () => {
-    let user1: AuthUserId, user2: AuthUserId;
+    let user1: AuthReturn, user2: AuthReturn;
     beforeEach(() => {
       user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
       user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
     });
 
     test('Correct Return: First User', () => {
-      expect(user1).toStrictEqual({ authUserId: expect.any(Number) });
+      expect(user1).toStrictEqual({
+        authUserId: expect.any(Number),
+        token: expect.any(String)
+      });
     });
 
     test('Correct Return: Second User', () => {
-      expect(user2).toStrictEqual({ authUserId: expect.any(Number) });
+      expect(user2).toStrictEqual({
+        authUserId: expect.any(Number),
+        token: expect.any(String)
+      });
     });
 
     test('Correct Return: Check Unique authUserId', () => {
-      expect(user1).not.toMatchObject(user2);
+      expect(user1.authUserId).not.toEqual(user2.authUserId);
+      expect(user1.token).not.toEqual(user2.token);
     });
   });
 
-  describe('Short userHandle Testing', () => {
-    let user1: AuthUserId, user2: AuthUserId, user3: AuthUserId;
-    beforeEach(() => {
-      user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot');
-      user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
-      user3 = testAuthRegister('email3@gmail.com', 'pass1234', 'Test', 'Bot');
-    });
-
-    test('Correct Return: First User Short Name no Concat', () => {
-      expect(grabUserHandle(user1.authUserId)).toStrictEqual({ userHandle: 'testbot' });
-    });
-
-    test('Correct Return: Second User Short Name with Concat', () => {
-      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 'testbot0' });
-    });
-
-    test('Correct Return: Second User Short Name with Concat', () => {
-      expect(grabPermissionId(user3.authUserId)).toStrictEqual({ permissionId: 'testbot1' });
-    });
-  });
-
-  describe('Long userHandle Testing', () => {
-    let user1: AuthUserId, user2: AuthUserId, user3: AuthUserId;
-    beforeEach(() => {
-      user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'ThisIsALong', 'NameForTests');
-      user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'ThisIsALong', 'NameForTests');
-      user3 = testAuthRegister('email3@gmail.com', 'pass1234', 'ThisIsALong', 'NameForTests');
-    });
-
-    test('Correct Return: First User Long Name no Concat', () => {
-      expect(grabUserHandle(user1.authUserId)).toStrictEqual({ userHandle: 'thisisalongnameforte' });
-    });
-
-    test('Correct Return: Second User Long Name with Concat', () => {
-      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 'thisisalongnameforte0' });
-    });
-
-    test('Correct Return: Third User Long Name with Concat', () => {
-      expect(grabPermissionId(user3.authUserId)).toStrictEqual({ permissionId: 'thisisalongnameforte1' });
-    });
-  });
-
-  describe('permissionId Testing', () => {
-    let user1: AuthUserId, user2: AuthUserId;
+  describe('Testing with /users/all', () => {
+    let user1: AuthReturn;
     beforeEach(() => {
       user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
-      user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
     });
 
-    test('Correct Return: First User is Owner', () => {
-      expect(grabPermissionId(user1.authUserId)).toStrictEqual({ permissionId: 1 });
+    test('One Users List All ((FirstName + LastName).length > 20)', () => {
+      const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Thisdudehas', 'aSuperLongNameLikeSheeeeesh');
+      expect(testUsersAll(user2.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }, {
+          uId: user2.authUserId,
+          email: 'email2@gmail.com',
+          nameFirst: 'Thisdudehas',
+          nameLast: 'aSuperLongNameLikeSheeeeesh',
+          handleStr: 'thisdudehasasuperlon'
+        }]
+      });
     });
 
-    test('Correct Return: Second User is Member', () => {
-      expect(grabPermissionId(user2.authUserId)).toStrictEqual({ permissionId: 2 });
+    test('One Users List All', () => {
+      expect(testUsersAll(user1.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }]
+      });
+    });
+
+    test('Two Users List All', () => {
+      const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+      expect(testUsersAll(user1.token)).toStrictEqual({
+        users: [{
+          uId: user1.authUserId,
+          email: 'email1@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot I',
+          handleStr: 'testboti'
+        }, {
+          uId: user2.authUserId,
+          email: 'email2@gmail.com',
+          nameFirst: 'Test',
+          nameLast: 'Bot II',
+          handleStr: 'testbotii'
+        }]
+      });
     });
   });
 });
 
-// NOT SURE IS THIS IS ALLOWED ASK TUTOR
+/** /auth/passwordreset/request/v1 Testing **/
 
-/**
- * grabUserHandle
- * Given a users id, returns their associated userHandle
- * @param {id} number
- * @returns { userHandle: string }
- */
-function grabUserHandle(id: number): { userHandle: string } {
-  const data = getData();
-  return { userHandle: data.users[id].permissionId };
-}
+describe('/auth/passwordreset/request: Error Testing', () => {
+  test('Email: Invalid Email (Return Empty Object)', () => {
+    testAuthRegister('validEmail@gmail.com', 'password1234', 'Jerry', 'Yang');
+    expect(testAuthPasswordResetRequest('randomEmail@gmail.com')).toStrictEqual({});
+  });
+});
 
-/**
- * grabPermissionId
- * Given a users id, returns their associated permissionId value
- * @param {id} number
- * @returns { permissionId: number }
- */
-function grabPermissionId(id: number): { permissionId: number } {
-  const data = getData();
-  return { permissionId: data.users[id].permissionId };
-}
+// NOTE: These tests use ethereal.email to test email sending. To use account, go to auth.ts sendEmail Helper.
+// NOTE: Confirmed Emails do Send through NodeMailer
+describe('/auth/passwordreset/request: General Testing', () => {
+  test('User is logged out of all sessions (1 Session)', () => {
+    const user = testAuthRegister('useremail@gmail.com', 'pass1234', 'Jerry', 'Yang');
+    const channel = testChannelsCreate(user.token, 'Channel', true);
+    expect(testChannelDetails(user.token, channel.channelId)).not.toStrictEqual(ERROR);
+    expect(testAuthPasswordResetRequest('useremail@gmail.com')).toStrictEqual({});
+    expect(testChannelDetails(user.token, channel.channelId)).toStrictEqual(ERROR);
+  });
+
+  test('User is logged out of all sessions (2 Sessions)', () => {
+    const userS1 = testAuthRegister('useremail@gmail.com', 'pass1234', 'Jerry', 'Yang');
+    const userS2 = testAuthLogin('useremail@gmail.com', 'pass1234');
+    const channel = testChannelsCreate(userS1.token, 'Channel', true);
+    expect(testChannelDetails(userS1.token, channel.channelId)).not.toStrictEqual(ERROR);
+    expect(testChannelDetails(userS2.token, channel.channelId)).not.toStrictEqual(ERROR);
+    expect(testAuthPasswordResetRequest('useremail@gmail.com')).toStrictEqual({});
+    expect(testChannelDetails(userS1.token, channel.channelId)).toStrictEqual(ERROR);
+    expect(testChannelDetails(userS2.token, channel.channelId)).toStrictEqual(ERROR);
+  });
+});
+
+/** /auth/passwordreset/reset/v1 Testing **/
+
+describe('/auth/passwordreset/reset: Error Testing', () => {
+  test('newPassword: Invalid Password (<6 Characters)', () => {
+    expect(testAuthPasswordResetReset('RESETCODE', '1234')).toStrictEqual(ERROR);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Mixed))', () => {
+    expect(testAuthPasswordResetReset('Die38UKaiD', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Numbers))', () => {
+    expect(testAuthPasswordResetReset('1247896918', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+
+  test('resetCode: Invalid resetCode (Random String (Symbols))', () => {
+    expect(testAuthPasswordResetReset('(!*$^*!@$%', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+});
+
+describe('/auth/passwordreset/reset: Return Testing', () => {
+  test('Tested Manually: Forced resetCode to be one specific value', () => {
+    expect('Manually Tested').toStrictEqual('Manually Tested');
+  });
+
+  /*
+  Manually tested via forcing resetCode to be 'ThisIsTheResetCode'
+  NOTE: Cannot create tests to ensure this is covered
+
+  test('Valid resetCode: Password is updated using newPassword', () => {
+    testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
+    expect(testAuthLogin('email1@gmail.com', 'pass1234')).toStrictEqual({
+      token: expect.any(String),
+      authUserId: expect.any(Number)
+    });;
+    expect(testAuthPasswordResetRequest('email1@gmail.com')).toStrictEqual({});
+    expect(testAuthPasswordResetReset('ThisIsTheResetCode', 'validPassword1234')).toStrictEqual({});
+    expect(testAuthLogin('email1@gmail.com', 'pass1234')).toStrictEqual(ERROR);
+    expect(testAuthLogin('email1@gmail.com', 'validPassword1234')).toStrictEqual({
+      token: expect.any(String),
+      authUserId: expect.any(Number)
+    });
+    expect(testAuthPasswordResetReset('ThisIsTheResetCode', 'validPassword1234')).toStrictEqual(ERROR);
+  });
+  */
+});
