@@ -21,6 +21,7 @@ import {
 const delay = require('delay');
 const ONE_THOUSAND_CHARS = 'a'.repeat(1001);
 
+const SERVER_URL = `${url}:${port}`;
 const OK = 200;
 
 afterEach(() => {
@@ -30,6 +31,7 @@ afterEach(() => {
 beforeEach(() => {
   testClear();
 });
+
 
 describe('tests for message/send/v1', () => {
   test('success', () => {
@@ -235,6 +237,7 @@ describe('tests for message/senddm/v1', () => {
     expect(result.ret).toStrictEqual({ messageId: expect.any(Number) });
   });
 
+<<<<<<< HEAD
   test('invalid dmId', () => {
     const newId = testAuthRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
     const member = testAuthRegister('he11o@gmail.com', 'thisisapassword', 'james', 'does');
@@ -473,6 +476,52 @@ describe('tests for message/react/v1', () => {
     expect(reactedMessage.status).toBe(400);
   });
 });
+=======
+  test('invalid channelId', () => {
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId + 1, 'This message is valid');
+    expect(result.status).toBe(OK);
+    expect(result.ret).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('invalid length of message (under 1 character)', () => {
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId, '');
+    expect(result.status).toBe(OK);
+    expect(result.ret).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('invalid length of message (over 1000 characters)', () => {
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId, ONE_THOUSAND_CHARS);
+    expect(result.status).toBe(OK);
+    expect(result.ret).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('authUser not a member of the channel', () => {
+    const owner = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(owner.ret.token, 'New Channel', true);
+    const newId = requestRegister('validemail11@gmail.com', 'pass1234', 'jornet', 'Renzella');
+    const result = callMessageSend(newId.ret.token, channel.ret.channelId, 'This message is valid');
+    expect(result.status).toBe(OK);
+    expect(result.ret).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('token is invalid', () => {
+    const newId = requestRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
+    const channel = requestChannelsCreate(newId.ret.token, 'New Channel', true);
+    const result = callMessageSend(newId.ret.token + 'invalid', channel.ret.channelId, 'This message is valid');
+    expect(result.status).toBe(OK);
+    expect(result.ret).toStrictEqual({ error: expect.any(String) });
+  });
+});
+
+
+/// ////////////////////////////////////////////////////////////////////////
+>>>>>>> ff47b7b9c67f0ef509d712733d83d46bb15f4f2e
 
 describe('tests for message/unreact/v1', () => {
   let mainUser;
