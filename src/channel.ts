@@ -347,10 +347,6 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number): Error
     throw HTTPError(400, 'Invalid userId (No user with that id)');
   }
 
-  if (!isUIdMember(uId, channelId)) {
-    throw HTTPError(400, 'Invalid User (User already in channel)');
-  }
-
   const adderId = getIdFromToken(token) as number;
   const owners = data.channels[channelId].owners;
   const members = data.channels[channelId].allMembers;

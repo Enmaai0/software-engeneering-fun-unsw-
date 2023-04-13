@@ -66,7 +66,8 @@ describe('/channel/invite: Error Testing', () => {
 
   test('Invalid Invite: Member Not in Channel', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    expect(() => testChannelInvite(user2.token, channel1.channelId, user1.authUserId)).toThrow(Error);
+    const user3 = testAuthRegister('email3@gmail.com', 'pass1234', 'Test', 'Bot III');
+    expect(() => testChannelInvite(user3.token, channel1.channelId, user2.authUserId)).toThrow(Error);
   });
 
   test('Invalid Invite: User Already in Channel', () => {
@@ -445,6 +446,13 @@ describe('/channel/leave: Return Testing', () => {
     expect(testChannelLeave(user2.token, channel.channelId)).toStrictEqual({});
   });
 
+  test('Correct Return: Other Owner Leaves', () => {
+    const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
+    expect(testChannelInvite(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
+    expect(testChannelAddOwner(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
+    expect(testChannelLeave(user2.token, channel.channelId)).toStrictEqual({});
+  });
+
   test('Correct Return: Test with testChannelDetails', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     expect(testChannelInvite(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
@@ -648,12 +656,13 @@ describe('/channel/removeowner: Error Testing', () => {
     expect(() => testChannelRemoveOwner(user1.token, channel.channelId, user1.authUserId)).toThrow(Error);
   });
 
-  test('UserId: Invalid Token: (Not permitted)', () => {
+  test('UserId: Invalid Token: Remove Another User (Not permitted)', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     const user3 = testAuthRegister('user3Email@gmail.com', 'password3', 'First3', 'Last3');
     testChannelJoin(user2.token, channel.channelId);
+    testChannelAddOwner(user1.token, channel.channelId, user2.authUserId);
     testChannelJoin(user3.token, channel.channelId);
-    expect(() => testChannelRemoveOwner(user3.token, channel.channelId, user1.authUserId)).toThrow(Error);
+    expect(() => testChannelRemoveOwner(user3.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid Token: (Not an owner)', () => {
