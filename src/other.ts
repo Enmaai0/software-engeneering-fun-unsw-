@@ -166,6 +166,18 @@ function getIdFromToken(token: string): number {
   }
 }
 
+/**
+ * getSearchMessages
+ *
+ * Returns all messages that the user is a part of that contains
+ * the queryString (non-case sensitive) from either all channels
+ * or dms depending on the route entered.
+ *
+ * @param { string } token
+ * @param { string } queryString
+ * @param { string } route
+ * @returns { Message[] }
+ */
 function getSearchMessages(token: string, queryString: string, route: string): Message[] {
   let dataArea;
 
@@ -200,6 +212,17 @@ function getSearchMessages(token: string, queryString: string, route: string): M
   return messages;
 }
 
+/**
+ * isMember
+ *
+ * Given a token and a channel/dm id returns whether the user
+ * is a member of the channel/dm depending on the route entered.
+ *
+ * @param { string } token
+ * @param { string } id
+ * @param { string } route
+ * @returns { boolean }
+ */
 function isMember(token: string, id: number, route: string) {
   if (route === 'channel') {
     return isChannelMember(token, id);
