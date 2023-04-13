@@ -1,7 +1,6 @@
 import { getData, setData } from './dataStore';
 import HTTPError from 'http-errors';
 
-
 /**
  * Sends a given message to a given channel
  *
@@ -244,7 +243,7 @@ export function messageEditV2(token: string, messageId: number, message: string)
  * @returns {{}}
  * @returns {{error: string}} - any invalid input
  */
-export function messageRemoveV2(token: string, messageId: any) {
+export function messageRemoveV1(token: string, messageId: any) {
   const data = getData();
   messageId = parseInt(messageId);
 
@@ -405,9 +404,8 @@ export function messageReactV1(token : string, messageId : any, reactId : any) {
   return {};
 }
 
-
-/////////////////////////////////// HELPER FUNCTIONS /////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////
+/// //////////////////////////////// HELPER FUNCTIONS /////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////////////////
 
 /**
   * Checks whether the channelId exists and is valid
