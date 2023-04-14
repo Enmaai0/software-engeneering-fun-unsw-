@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
 import errorHandler from 'middleware-http-errors';
-import { clearV1, notificationsGet } from './other';
+import { clearV1, notificationsGet, search } from './other';
 import { saveData, grabData } from './dataStore';
 import { authLoginV1, authLogoutV1, authRegisterV1, authPasswordResetRequest, authPasswordResetReset } from './auth';
 import { adminUserRemove, adminUserPermissionChange } from './admin';
@@ -319,6 +319,14 @@ app.delete('/clear/v1', (req: Request, res: Response) => {
 app.get('/notifications/get/v1', (req: Request, res: Response) => {
   const token = req.header('token');
   const returnMessage = notificationsGet(token);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.get('/search/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const queryString = req.query.queryString as string;
+  const returnMessage = search(token, queryString);
   saveData();
   res.json(returnMessage);
 });
