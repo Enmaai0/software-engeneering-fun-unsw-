@@ -19,8 +19,6 @@ import {
   testMessageSend
 } from './testFunctions';
 
-const ERROR = { error: expect.any(String) };
-
 interface AuthReturn {
   token: string;
   authUserId: number;
@@ -50,31 +48,32 @@ describe('/channel/invite: Error Testing', () => {
   });
 
   test('AuthUserId: Invalid Token', () => {
-    expect(testChannelInvite(user1.token + 1, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelInvite(user1.token + 1, channel1.channelId, user1.authUserId)).toThrow(Error);
   });
 
   test('UId: Invalid uId', () => {
-    expect(testChannelInvite(user1.token, channel1.channelId, user1.authUserId + 1)).toStrictEqual(ERROR);
+    expect(() => testChannelInvite(user1.token, channel1.channelId, user1.authUserId + 1)).toThrow(Error);
   });
 
   test('Invalid Self Invite: User In Channel', () => {
-    expect(testChannelInvite(user1.token, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelInvite(user1.token, channel1.channelId, user1.authUserId)).toThrow(Error);
   });
 
   test('channelId: Invalid ChannelId', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    expect(testChannelInvite(user1.token, channel1.channelId + 1, user2.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelInvite(user1.token, channel1.channelId + 1, user2.authUserId)).toThrow(Error);
   });
 
   test('Invalid Invite: Member Not in Channel', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    expect(testChannelInvite(user2.token, channel1.channelId, user1.authUserId)).toStrictEqual(ERROR);
+    const user3 = testAuthRegister('email3@gmail.com', 'pass1234', 'Test', 'Bot III');
+    expect(() => testChannelInvite(user3.token, channel1.channelId, user2.authUserId)).toThrow(Error);
   });
 
   test('Invalid Invite: User Already in Channel', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
     testChannelJoin(user2.token, channel1.channelId);
-    expect(testChannelInvite(user1.token, channel1.channelId, user2.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelInvite(user1.token, channel1.channelId, user2.authUserId)).toThrow(Error);
   });
 });
 
@@ -133,20 +132,20 @@ describe('/channel/messages: Error Testing', () => {
   });
 
   test('Token: Invalid Token', () => {
-    expect(testChannelMessages(user1.token + '1', channel1.channelId, start)).toStrictEqual(ERROR);
+    expect(() => testChannelMessages(user1.token + '1', channel1.channelId, start)).toThrow(Error);
   });
 
   test('ChannelId: Invalid ChannelId', () => {
-    expect(testChannelMessages(user1.token, channel1.channelId + 1, start)).toStrictEqual(ERROR);
+    expect(() => testChannelMessages(user1.token, channel1.channelId + 1, start)).toThrow(Error);
   });
 
   test('Start: Invalid Start Index', () => {
-    expect(testChannelMessages(user1.token, channel1.channelId, start + 1)).toStrictEqual(ERROR);
+    expect(() => testChannelMessages(user1.token, channel1.channelId, start + 1)).toThrow(Error);
   });
 
   test('UId: Not A Member', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    expect(testChannelMessages(user2.token, channel1.channelId, start)).toStrictEqual(ERROR);
+    expect(() => testChannelMessages(user2.token, channel1.channelId, start)).toThrow(Error);
   });
 });
 
@@ -227,16 +226,16 @@ describe('/channel/details: Error Testing', () => {
   });
 
   test('UserId: Invalid Token (Not a valid token)', () => {
-    expect(testChannelDetails(user1.token + 1, channel.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelDetails(user1.token + 1, channel.channelId)).toThrow(Error);
   });
 
   test('UserId: Invalid UserId (Not a member)', () => {
     user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
-    expect(testChannelDetails(user2.token, channel.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelDetails(user2.token, channel.channelId)).toThrow(Error);
   });
 
   test('ChannelId: Invalid channelId', () => {
-    expect(testChannelDetails(user1.token, channel.channelId + 1)).toStrictEqual(ERROR);
+    expect(() => testChannelDetails(user1.token, channel.channelId + 1)).toThrow(Error);
   });
 });
 
@@ -311,22 +310,22 @@ describe('/channel/join: Error Testing', () => {
   });
 
   test('Token: Invalid Token (Token does not exist)', () => {
-    expect(testChannelJoin(user1.token + 1, channel.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelJoin(user1.token + 1, channel.channelId)).toThrow(Error);
   });
 
   test('UserId: Invalid UserId (Already a member)', () => {
-    expect(testChannelJoin(user1.token, channel.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelJoin(user1.token, channel.channelId)).toThrow(Error);
   });
 
   test('ChannelId: Invalid ChannelId', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
-    expect(testChannelJoin(user2.token, channel.channelId + 1)).toStrictEqual(ERROR);
+    expect(() => testChannelJoin(user2.token, channel.channelId + 1)).toThrow(Error);
   });
 
   test('UserId: Channel is Private & User is Global Member', () => {
     const channel2 = testChannelsCreate(user1.token, 'firstChannel', false);
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
-    expect(testChannelJoin(user2.token, channel2.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelJoin(user2.token, channel2.channelId)).toThrow(Error);
   });
 });
 
@@ -416,16 +415,20 @@ describe('/channel/leave: Error Testing', () => {
   });
 
   test('Token: Invalid Token (Token does not exist)', () => {
-    expect(testChannelLeave(user1.token + 1, channel.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelLeave(user1.token + 1, channel.channelId)).toThrow(Error);
   });
 
   test('ChannelId: Invalid ChannelId', () => {
-    expect(testChannelLeave(user1.token, channel.channelId + 1)).toStrictEqual(ERROR);
+    expect(() => testChannelLeave(user1.token, channel.channelId + 1)).toThrow(Error);
   });
 
   test('UserId: Invalid UserId (Not a member)', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
-    expect(testChannelLeave(user2.token, channel.channelId)).toStrictEqual(ERROR);
+    expect(() => testChannelLeave(user2.token, channel.channelId)).toThrow(Error);
+  });
+
+  test('Invalid user: (User is the starter of this channel)', () => {
+    expect(() => testChannelLeave(user1.token, channel.channelId)).toThrow(Error);
   });
 });
 
@@ -437,26 +440,40 @@ describe('/channel/leave: Return Testing', () => {
     channel = testChannelsCreate(user1.token, 'firstChannel', true);
   });
 
-  test('Correct Return: Only User Leaves', () => {
-    expect(testChannelLeave(user1.token, channel.channelId)).toStrictEqual({});
-    expect(testChannelDetails(user1.token, channel.channelId)).toStrictEqual(ERROR);
-  });
-
   test('Correct Return: Other User Leaves', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     expect(testChannelInvite(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
     expect(testChannelLeave(user2.token, channel.channelId)).toStrictEqual({});
   });
 
+  test('Correct Return: Other Owner Leaves', () => {
+    const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
+    expect(testChannelInvite(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
+    expect(testChannelAddOwner(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
+    expect(testChannelLeave(user2.token, channel.channelId)).toStrictEqual({});
+  });
+
   test('Correct Return: Test with testChannelDetails', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     expect(testChannelInvite(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
-    expect(testChannelLeave(user1.token, channel.channelId)).toStrictEqual({});
     expect(testChannelDetails(user2.token, channel.channelId)).toStrictEqual({
       name: expect.any(String),
       isPublic: true,
-      ownerMembers: [],
+      ownerMembers: [{
+        uId: user1.authUserId,
+        email: 'user1Email@gmail.com',
+        nameFirst: 'First1',
+        nameLast: 'Last1',
+        handleStr: 'first1last1',
+      }],
       allMembers: [{
+        uId: user1.authUserId,
+        email: 'user1Email@gmail.com',
+        nameFirst: 'First1',
+        nameLast: 'Last1',
+        handleStr: 'first1last1',
+      },
+      {
         uId: user2.authUserId,
         email: 'user2Email@gmail.com',
         nameFirst: 'First2',
@@ -478,29 +495,29 @@ describe('/channel/addowner: Error Testing', () => {
   });
 
   test('Token: Invalid Token (Token does not exist)', () => {
-    expect(testChannelAddOwner(user1.token + 1, channel.channelId, user1.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelAddOwner(user1.token + 1, channel.channelId, user1.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid UserId (not a valid user)', () => {
-    expect(testChannelAddOwner(user1.token, channel.channelId, user1.authUserId + 1)).toStrictEqual(ERROR);
+    expect(() => testChannelAddOwner(user1.token, channel.channelId, user1.authUserId + 1)).toThrow(Error);
   });
 
   test('ChannelId: Invalid ChannelId', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     testChannelJoin(user2.token, channel.channelId);
-    expect(testChannelAddOwner(user1.token, channel.channelId + 1, user2.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelAddOwner(user1.token, channel.channelId + 1, user2.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid UserId (not a member)', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
-    expect(testChannelAddOwner(user1.token, channel.channelId, user2.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelAddOwner(user1.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid UserId (already an owner)', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     testChannelJoin(user2.token, channel.channelId);
     expect(testChannelAddOwner(user1.token, channel.channelId, user2.authUserId)).toStrictEqual({});
-    expect(testChannelAddOwner(user1.token, channel.channelId, user2.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelAddOwner(user1.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid Token: (not permitted)', () => {
@@ -508,7 +525,7 @@ describe('/channel/addowner: Error Testing', () => {
     const user3 = testAuthRegister('user3Email@gmail.com', 'password3', 'First3', 'Last3');
     testChannelJoin(user2.token, channel.channelId);
     testChannelJoin(user3.token, channel.channelId);
-    expect(testChannelAddOwner(user3.token, channel.channelId, user2.authUserId));
+    expect(() => testChannelAddOwner(user3.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 });
 
@@ -619,38 +636,39 @@ describe('/channel/removeowner: Error Testing', () => {
   });
 
   test('Token: Invalid Token (Token does not exist)', () => {
-    expect(testChannelRemoveOwner(user1.token + 1, channel.channelId, user1.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelRemoveOwner(user1.token + 1, channel.channelId, user1.authUserId)).toThrow(Error);
   });
 
   test('ChannelId: Invalid ChannelId', () => {
-    expect(testChannelRemoveOwner(user1.token, channel.channelId + 1, user1.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelRemoveOwner(user1.token, channel.channelId + 1, user1.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid UserId (Not a member)', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
-    expect(testChannelRemoveOwner(user1.token, channel.channelId, user2.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelRemoveOwner(user1.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid UserId (Not a valid user)', () => {
-    expect(testChannelRemoveOwner(user1.token, channel.channelId, user1.authUserId + 1)).toStrictEqual(ERROR);
+    expect(() => testChannelRemoveOwner(user1.token, channel.channelId, user1.authUserId + 1)).toThrow(Error);
   });
 
   test('UserId: Invalid userId (User is the only owner)', () => {
-    expect(testChannelRemoveOwner(user1.token, channel.channelId, user1.authUserId)).toStrictEqual(ERROR);
+    expect(() => testChannelRemoveOwner(user1.token, channel.channelId, user1.authUserId)).toThrow(Error);
   });
 
-  test('UserId: Invalid Token: (Not permitted)', () => {
+  test('UserId: Invalid Token: Remove Another User (Not permitted)', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     const user3 = testAuthRegister('user3Email@gmail.com', 'password3', 'First3', 'Last3');
     testChannelJoin(user2.token, channel.channelId);
+    testChannelAddOwner(user1.token, channel.channelId, user2.authUserId);
     testChannelJoin(user3.token, channel.channelId);
-    expect(testChannelRemoveOwner(user3.token, channel.channelId, user1.authUserId));
+    expect(() => testChannelRemoveOwner(user3.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 
   test('UserId: Invalid Token: (Not an owner)', () => {
     const user2 = testAuthRegister('user2Email@gmail.com', 'password2', 'First2', 'Last2');
     testChannelJoin(user2.token, channel.channelId);
-    expect(testChannelRemoveOwner(user1.token, channel.channelId, user2.authUserId));
+    expect(() => testChannelRemoveOwner(user1.token, channel.channelId, user2.authUserId)).toThrow(Error);
   });
 });
 

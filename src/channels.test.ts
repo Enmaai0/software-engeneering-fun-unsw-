@@ -13,8 +13,6 @@ import {
   testAuthRegister,
 } from './testFunctions';
 
-const ERROR = { error: expect.any(String) };
-
 interface AuthReturn {
   token: string;
   authUserId: number;
@@ -42,15 +40,15 @@ describe('/channels/create: Error Testing', () => {
   });
 
   test('Token: Invalid Token', () => {
-    expect(testChannelsCreate(user1.token + '1', 'Channel', true)).toStrictEqual(ERROR);
+    expect(() => testChannelsCreate(user1.token + '1', 'Channel', true)).toThrow(Error);
   });
 
   test('Name: Too Short', () => {
-    expect(testChannelsCreate(user1.token, '', true)).toStrictEqual(ERROR);
+    expect(() => testChannelsCreate(user1.token, '', true)).toThrow(Error);
   });
 
   test('Name: Too Long', () => {
-    expect(testChannelsCreate(user1.token, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', true)).toStrictEqual(ERROR);
+    expect(() => testChannelsCreate(user1.token, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', true)).toThrow(Error);
   });
 });
 
@@ -82,7 +80,7 @@ describe('/channels/list: Error Testing', () => {
   test('authUserId is invalid', () => {
     const user1 = testAuthRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     testChannelsCreate(user1.token, 'Channel1', true);
-    expect(testChannelsListAll(user1.token + '1')).toStrictEqual(ERROR);
+    expect(() => testChannelsListAll(user1.token + '1')).toThrow(Error);
   });
 });
 
@@ -136,7 +134,7 @@ describe('/channels/listall: Error Testing', () => {
   test('authUserId: Invalid authUserId', () => {
     const user1 = testAuthRegister('validemail@gmail.com', 'pass1234', 'Jake', 'Renzella');
     testChannelsCreate(user1.token, 'Channel1', true);
-    expect(testChannelsList(user1.token + '1')).toStrictEqual(ERROR);
+    expect(() => testChannelsList(user1.token + '1')).toThrow(Error);
   });
 });
 

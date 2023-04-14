@@ -4,7 +4,8 @@
  * Contains the function implementations of all channels* functions.
  */
 
-import { getData, getHashOf, setData } from './dataStore';
+import { getHashOf, getData, setData } from './dataStore';
+import HTTPError from 'http-errors';
 
 interface Error {
   error: string
@@ -58,11 +59,11 @@ interface ChannelId {
  */
 function channelsCreateV1(token: string, name: string, isPublic: boolean): ChannelId | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (name.length < 1 || name.length > 20) {
-    return { error: 'Invalid Name (Name must be 1 - 20 characters long)' };
+    throw HTTPError(400, 'Invalid Name (Name must be 1 - 20 characters long)');
   }
 
   const data = getData();
@@ -98,7 +99,7 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): Chann
  */
 function channelsListAllV1(token: string): ChannelsList | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+    throw HTTPError(403, 'Invalid User (User does not exist)');
   }
 
   const data = getData();
@@ -126,11 +127,11 @@ function channelsListAllV1(token: string): ChannelsList | Error {
  */
 function channelsListV1 (token: string) {
   if (!isValidToken(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+    throw HTTPError(403, 'Invalid User (User does not exist)');
   }
 
   const data = getData();
-  const channelArray = [];
+  const channelArray: Channels[] = [];
   const userId = getIdFromToken(token);
 
   for (const channel of data.channels) {
