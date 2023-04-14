@@ -194,3 +194,7 @@ export function testClear() {
 export function testNotificationsGet(token: string) {
   return requestHelper('GET', '/notifications/get/v1', token, {});
 }
+
+export function testSearch(token: string, queryString: string) {
+  return requestHelper('GET', '/search/v1', token, { queryString });
+}
