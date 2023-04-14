@@ -117,8 +117,14 @@ function channelMessageNotif(uId: number, channelId: number, message: string) {
     taggedIds.push(handleId);
   }
 
-  for (const id of taggedIds) {
-    data.users[id].notifications.push(notification);
+  const filteredTaggedIds = taggedIds.filter((element, index) => {
+    return taggedIds.indexOf(element) === index;
+  });
+
+  for (const id of filteredTaggedIds) {
+    if (isMemberChannel(id, channelId)) {
+      data.users[id].notifications.push(notification);
+    }
   }
 }
 
@@ -253,8 +259,14 @@ function dmMessageNotif(uId: number, dmId: number, message: string) {
     taggedIds.push(handleId);
   }
 
-  for (const id of taggedIds) {
-    data.users[id].notifications.push(notification);
+  const filteredTaggedIds = taggedIds.filter((element, index) => {
+    return taggedIds.indexOf(element) === index;
+  });
+
+  for (const id of filteredTaggedIds) {
+    if (isMemberDm(id, dmId)) {
+      data.users[id].notifications.push(notification);
+    }
   }
 }
 
