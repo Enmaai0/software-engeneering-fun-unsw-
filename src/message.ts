@@ -448,12 +448,12 @@ function messagePinV1(token: string, messageId: number): Record<string, never> |
     messageIndex = getMessageIndex(messageId, channelId, 'channel');
     messageObj = data.channels[channelId].messages[messageIndex];
 
-    if (data.channels[channelId].messages[messageIndex].isPinned) {
-      throw HTTPError(400, 'The message is already pinned');
-    }
-
     if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
       throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    }
+
+    if (data.channels[channelId].messages[messageIndex].isPinned) {
+      throw HTTPError(400, 'The message is already pinned');
     }
 
     data.channels[channelId].messages[messageIndex].isPinned = true;
@@ -465,12 +465,12 @@ function messagePinV1(token: string, messageId: number): Record<string, never> |
     messageIndex = getMessageIndex(messageId, dmId, 'dm');
     messageObj = data.dms[dmId].messages[messageIndex];
 
-    if (data.dms[dmId].messages[messageIndex].isPinned) {
-      throw HTTPError(400, 'The message is already pinned');
+    if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
+      throw HTTPError(403, 'User does not have Permission to Edit this Message');
     }
 
-    if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
-      throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    if (data.dms[dmId].messages[messageIndex].isPinned) {
+      throw HTTPError(400, 'The message is already pinned');
     }
 
     data.dms[dmId].messages[messageIndex].isPinned = true;
@@ -500,12 +500,12 @@ function messageUnPinV1(token: string, messageId: number): Record<string, never>
     messageIndex = getMessageIndex(messageId, channelId, 'channel');
     messageObj = data.channels[channelId].messages[messageIndex];
 
-    if (!data.channels[channelId].messages[messageIndex].isPinned) {
-      throw HTTPError(400, 'The message is not already pinned');
+    if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
+      throw HTTPError(403, 'User does not have Permission to Edit this Message');
     }
 
-    if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
-      throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    if (!data.channels[channelId].messages[messageIndex].isPinned) {
+      throw HTTPError(400, 'The message is not already pinned');
     }
 
     data.channels[channelId].messages[messageIndex].isPinned = false;
@@ -517,12 +517,12 @@ function messageUnPinV1(token: string, messageId: number): Record<string, never>
     messageIndex = getMessageIndex(messageId, dmId, 'dm');
     messageObj = data.dms[dmId].messages[messageIndex];
 
-    if (!data.dms[dmId].messages[messageIndex].isPinned) {
-      throw HTTPError(400, 'The message is not already pinned');
-    }
-
     if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
       throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    }
+
+    if (!data.dms[dmId].messages[messageIndex].isPinned) {
+      throw HTTPError(400, 'The message is not already pinned');
     }
 
     data.dms[dmId].messages[messageIndex].isPinned = false;
