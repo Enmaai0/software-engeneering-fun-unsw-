@@ -84,7 +84,7 @@ function standupStart(token: string, channelId: number, length: number) : TimeFi
 function standupActive(token: string, channelId: number) : StandUpActive {
   const data = getData();
 
-  if (isValidToken(token)) {
+  if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid token (No user with that token)');
   }
 
@@ -123,7 +123,7 @@ function standupActive(token: string, channelId: number) : StandUpActive {
  * @return {{ }}
  */
 function standupSend(token: string, channelId: number, message: string) : Record<string, never> {
-  if (isValidToken(token)) {
+  if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid token (No user with that token)');
   }
 

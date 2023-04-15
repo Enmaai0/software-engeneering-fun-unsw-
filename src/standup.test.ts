@@ -80,7 +80,7 @@ describe('/standup/start: Success Testing', () => {
   });
 
   test('Success return', () => {
-    expect(() => testStandupStart(user1.token, channel1.channelId, length)).toStrictEqual({ timeFinished: expect.any(Number) });
+    expect(testStandupStart(user1.token, channel1.channelId, length)).toStrictEqual({ timeFinished: expect.any(Number) });
   });
   // More implements
 });
@@ -112,9 +112,17 @@ describe('/standup/active: Success Testing', () => {
     channel1 = testChannelsCreate(user1.token, 'channel1', true);
   });
 
-  test('Success: Success Return', () => {
-    expect(() => testStandupActive(user1.token, channel1.channelId)).toStrictEqual({
-      isActive: expect.any(Boolean),
+  test('Success: Success Return Not Active', () => {
+    expect(testStandupActive(user1.token, channel1.channelId)).toStrictEqual({
+      isActive: false,
+      timeFinished: null,
+    });
+  });
+
+  test('Success: Success Return Active', () => {
+    testStandupStart(user1.token, channel1.channelId, 5);
+    expect(testStandupActive(user1.token, channel1.channelId)).toStrictEqual({
+      isActive: true,
       timeFinished: expect.any(Number),
     });
   });
@@ -168,7 +176,7 @@ describe('/standup/send: Success Testing', () => {
 
   test('AuthUserId: Invalid Token', () => {
     testStandupStart(user1.token, channel1.channelId, 10);
-    expect(() => testStandupSend(user1.token, channel1.channelId, message)).toStrictEqual({});
+    expect(testStandupSend(user1.token, channel1.channelId, message)).toStrictEqual({});
   });
   // More..
 });
