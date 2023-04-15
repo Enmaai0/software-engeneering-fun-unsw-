@@ -716,6 +716,7 @@ describe('message/unpin/v1: Error Testing', () => {
     user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
     channel = testChannelsCreate(user1.token, 'New Channel', true);
     message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
+    testMessagePin(user1.token, message.messageId);
   });
 
   test('Token: Invalid Token', () => {
@@ -740,6 +741,7 @@ describe('message/unpin/v1: Error Testing', () => {
   });
 
   test('MessageId: Not already pinned (Channel)', () => {
+    testMessageUnPin(user1.token, message.messageId);
     expect(() => testMessageUnPin(user1.token, message.messageId)).toThrow(Error);
   });
 
