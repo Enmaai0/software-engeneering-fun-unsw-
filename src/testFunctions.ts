@@ -163,6 +163,14 @@ export function testMessageSendDm(token: string, dmId: number, message: string) 
   return requestHelper('POST', '/message/senddm/v2', token, { dmId, message });
 }
 
+export function testMessagePin(token: string, messageId: number) {
+  return requestHelper('POST', '/message/pin/v1', token, { messageId });
+}
+
+export function testMessageUnPin(token: string, messageId: number) {
+  return requestHelper('POST', '/message/unpin/v1', token, { messageId });
+}
+
 /** /users/* Test Functions **/
 
 export function testUserProfile(token: string, uId: number) {
