@@ -4,7 +4,7 @@
  * Contains the functions of all standup* functions.
  */
 
-import { getHashOf, getData, setData, saveData } from './dataStore';
+import { getHashOf, getData, setData } from './dataStore';
 import HTTPError from 'http-errors';
 
 interface TimeFinish {
@@ -131,7 +131,7 @@ function standupSend(token: string, channelId: number, message: string) : Record
     throw HTTPError(400, 'Invalid channelId (No channel with that id)');
   }
 
-  if (message.length > MAXMESSAGELENGTH) {
+  if (message.length > MAXMESSAGELENGTH || message.length < MINMESSAGELENGTH) {
     throw HTTPError(400, 'Invalid token (No user with that token)');
   }
 
