@@ -673,9 +673,17 @@ describe('message/pin/v1: Error Testing', () => {
     expect(() => testMessagePin(user2.token, message2.messageId)).toThrow(Error);
   });
 
-  test('MessageId: Already pinned', () => {
+  test('MessageId: Already pinned (Channel)', () => {
     testMessagePin(user1.token, message.messageId);
     expect(() => testMessagePin(user1.token, message.messageId)).toThrow(Error);
+  });
+
+  test('MessageId: Already pinned (Dm)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
+    testMessagePin(user1.token, message2.messageId);
+    expect(() => testMessagePin(user1.token, message2.messageId)).toThrow(Error);
   });
 });
 
@@ -731,7 +739,14 @@ describe('message/unpin/v1: Error Testing', () => {
     expect(() => testMessageUnPin(user2.token, message2.messageId)).toThrow(Error);
   });
 
-  test('MessageId: Not already pinned', () => {
+  test('MessageId: Not already pinned (Channel)', () => {
+    expect(() => testMessageUnPin(user1.token, message.messageId)).toThrow(Error);
+  });
+
+  test('MessageId: Not already pinned (Dm)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
     expect(() => testMessageUnPin(user1.token, message.messageId)).toThrow(Error);
   });
 });

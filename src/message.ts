@@ -477,7 +477,6 @@ function messagePinV1(token: string, messageId: number): Record<string, never> |
     setData(data);
     return {};
   }
-  return {};
 }
 
 function messageUnPinV1(token: string, messageId: number): Record<string, never> | Error {
@@ -530,7 +529,6 @@ function messageUnPinV1(token: string, messageId: number): Record<string, never>
     setData(data);
     return {};
   }
-  return {};
 }
 
 export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1 };
