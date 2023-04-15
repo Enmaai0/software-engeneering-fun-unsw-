@@ -19,11 +19,10 @@ interface StandUpActive {
 const MAXMESSAGELENGTH = 1000;
 const MINMESSAGELENGTH = 1;
 
-
 /**
  * standupStart
  *
- * Given a token, channelId and length, 
+ * Given a token, channelId and length,
  * starts a standup and return the time finished
  *
  * @param { string } token
@@ -37,7 +36,7 @@ function standupStart(token: string, channelId: number, length: number) : TimeFi
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid token (No user with that token)');
   }
-  
+
   if (!isChannelId(channelId)) {
     throw HTTPError(400, 'Invalid channelId (No channel with that id)');
   }
@@ -74,7 +73,7 @@ function standupStart(token: string, channelId: number, length: number) : TimeFi
 /**
  * standupActive
  *
- * Given a token, channelId, 
+ * Given a token, channelId,
  * return the status of standup.
  *
  * @param { string } token
@@ -115,7 +114,7 @@ function standupActive(token: string, channelId: number) : StandUpActive {
  * standupSend
  *
  * Given a token, channelId, message,
- * send message 
+ * send message
  * return empty object.
  *
  * @param { string } token
@@ -132,10 +131,10 @@ function standupSend(token: string, channelId: number, message: string) : Record
     throw HTTPError(400, 'Invalid channelId (No channel with that id)');
   }
 
-  if (message.length > 1000) {
+  if (message.length > MAXMESSAGELENGTH) {
     throw HTTPError(400, 'Invalid token (No user with that token)');
   }
-  
+
   const data = getData();
   const channel = data.channels[channelId];
 
@@ -247,6 +246,12 @@ interface MessageSendReturn {
   messageId: number
 }
 
+interface React {
+  reactId: number;
+  uIds: number[];
+  isThisUserReacted: boolean;
+}
+
 /**
  * messageSend
  *
@@ -258,7 +263,6 @@ interface MessageSendReturn {
  * @returns {{ messageId: number }}
  */
 function messageSend(token: string, channelId: number, message: string): MessageSendReturn | Error {
-
   const userId = getIdFromToken(token);
 
   const data = getData();
@@ -266,12 +270,14 @@ function messageSend(token: string, channelId: number, message: string): Message
   // Message Id's start at 0
   const messageId = data.globalMessageCounter;
   data.globalMessageCounter++;
-
+  const reacts: React[] = [];
   const messageObj = {
     message: message,
     uId: userId,
     messageId: messageId,
     timeSent: Math.floor(Date.now() / 1000),
+    reacts: reacts,
+    isPinned: false,
   };
 
   data.channels[channelId].messages.push(messageObj);

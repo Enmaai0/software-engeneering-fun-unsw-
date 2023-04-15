@@ -5,7 +5,6 @@
  * all /standup/* routes.
  */
 
-import { standupStart } from './standup';
 import {
   testStandupStart,
   testStandupActive,
@@ -42,7 +41,7 @@ beforeEach(() => {
 describe('/standup/start: Error Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn;
-  let length = 5;
+  const length = 5;
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
     channel1 = testChannelsCreate(user1.token, 'channel1', true);
@@ -74,14 +73,14 @@ describe('/standup/start: Error Testing', () => {
 describe('/standup/start: Success Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn;
-  let length = 5;
+  const length = 5;
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
     channel1 = testChannelsCreate(user1.token, 'channel1', true);
   });
 
   test('Success return', () => {
-    expect(() => testStandupStart(user1.token, channel1.channelId, length)).toStrictEqual({ timeFinished: expect.any(Number)});
+    expect(() => testStandupStart(user1.token, channel1.channelId, length)).toStrictEqual({ timeFinished: expect.any(Number) });
   });
   // More implements
 });
@@ -99,7 +98,7 @@ describe('/standup/active: Error Testing', () => {
   test('AuthUserId: Invalid Token', () => {
     expect(() => testStandupActive(user1.token + 1, channel1.channelId)).toThrow(Error);
   });
-  
+
   test('ChannelId: Invalid ChannelId', () => {
     expect(() => testStandupActive(user1.token, channel1.channelId + 1)).toThrow(Error);
   });
@@ -127,7 +126,7 @@ describe('/standup/active: Success Testing', () => {
 describe('/standup/send: Error Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn;
-  let message = 'Hello';
+  const message = 'Hello';
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
     channel1 = testChannelsCreate(user1.token, 'channel1', true);
@@ -137,7 +136,7 @@ describe('/standup/send: Error Testing', () => {
     testStandupStart(user1.token, channel1.channelId, 10);
     expect(() => testStandupSend(user1.token + 1, channel1.channelId, message)).toThrow(Error);
   });
-  
+
   test('ChannelId: Invalid ChannelId', () => {
     testStandupStart(user1.token, channel1.channelId, 10);
     expect(() => testStandupSend(user1.token, channel1.channelId + 1, message)).toThrow(Error);
@@ -161,7 +160,7 @@ describe('/standup/send: Error Testing', () => {
 describe('/standup/send: Success Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn;
-  let message = 'Hello';
+  const message = 'Hello';
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
     channel1 = testChannelsCreate(user1.token, 'channel1', true);
