@@ -16,11 +16,19 @@ interface MessageSendReturn {
   messageId: number
 }
 
+interface React {
+  reactId: number;
+  uIds: number[];
+  isThisUserReacted: boolean;
+}
+
 interface Message {
   messageId: number;
   uId: number;
   message: string;
   timeSent: number;
+  reacts: React[];
+  isPinned: boolean;
 }
 
 const MAXMESSAGELENGTH = 1000;
@@ -61,11 +69,14 @@ function messageSendV1(token: string, channelId: number, message: string): Messa
   const messageId = data.globalMessageCounter;
   data.globalMessageCounter++;
 
-  const messageObj = {
+  const reacts: React[] = [];
+  const messageObj: Message = {
     message: message,
     uId: userId,
     messageId: messageId,
     timeSent: Math.floor(Date.now() / 1000),
+    reacts: reacts,
+    isPinned: false
   };
 
   data.channels[channelId].messages.push(messageObj);
@@ -201,11 +212,14 @@ function messageSendDmV1(token: string, dmId: number, message: string): MessageS
   const messageId = data.globalMessageCounter;
   data.globalMessageCounter++;
 
-  const messageObj = {
+  const reacts: React[] = [];
+  const messageObj: Message = {
     message: message,
     uId: userId,
     messageId: messageId,
     timeSent: Math.floor(Date.now() / 1000),
+    reacts: reacts,
+    isPinned: false
   };
 
   data.dms[dmId].messages.push(messageObj);
@@ -413,7 +427,113 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
   return {};
 }
 
-export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1 };
+function messagePinV1(token: string, messageId: number): Record<string, never> | Error {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  const channelId = checkMessageInChannels(messageId);
+  const dmId = checkMessageInDms(messageId);
+
+  if (channelId === -1 && dmId === -1) {
+    throw HTTPError(400, 'Invalid Message Id');
+  }
+
+  const userId = getIdFromToken(token);
+
+  const data = getData();
+  let messageObj: Message, messageIndex;
+
+  if (channelId > -1 && dmId === -1) {
+    messageIndex = getMessageIndex(messageId, channelId, 'channel');
+    messageObj = data.channels[channelId].messages[messageIndex];
+
+    if (data.channels[channelId].messages[messageIndex].isPinned) {
+      throw HTTPError(400, 'The message is already pinned');
+    }
+
+    if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
+      throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    }
+
+    data.channels[channelId].messages[messageIndex].isPinned = true;
+    setData(data);
+    return {};
+  }
+
+  if (dmId > -1 && channelId === -1) {
+    messageIndex = getMessageIndex(messageId, dmId, 'dm');
+    messageObj = data.dms[dmId].messages[messageIndex];
+
+    if (data.dms[dmId].messages[messageIndex].isPinned) {
+      throw HTTPError(400, 'The message is already pinned');
+    }
+
+    if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
+      throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    }
+
+    data.dms[dmId].messages[messageIndex].isPinned = true;
+    setData(data);
+    return {};
+  }
+  return {};
+}
+
+function messageUnPinV1(token: string, messageId: number): Record<string, never> | Error {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  const channelId = checkMessageInChannels(messageId);
+  const dmId = checkMessageInDms(messageId);
+
+  if (channelId === -1 && dmId === -1) {
+    throw HTTPError(400, 'Invalid Message Id');
+  }
+
+  const userId = getIdFromToken(token);
+
+  const data = getData();
+  let messageObj: Message, messageIndex;
+
+  if (channelId > -1 && dmId === -1) {
+    messageIndex = getMessageIndex(messageId, channelId, 'channel');
+    messageObj = data.channels[channelId].messages[messageIndex];
+
+    if (!data.channels[channelId].messages[messageIndex].isPinned) {
+      throw HTTPError(400, 'The message is not already pinned');
+    }
+
+    if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
+      throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    }
+
+    data.channels[channelId].messages[messageIndex].isPinned = false;
+    setData(data);
+    return {};
+  }
+
+  if (dmId > -1 && channelId === -1) {
+    messageIndex = getMessageIndex(messageId, dmId, 'dm');
+    messageObj = data.dms[dmId].messages[messageIndex];
+
+    if (!data.dms[dmId].messages[messageIndex].isPinned) {
+      throw HTTPError(400, 'The message is not already pinned');
+    }
+
+    if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
+      throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    }
+
+    data.dms[dmId].messages[messageIndex].isPinned = false;
+    setData(data);
+    return {};
+  }
+  return {};
+}
+
+export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1 };
 
 /** Helper Functions **/
 
@@ -637,7 +757,7 @@ function isChannelOwner(uId: number, channelId: number): boolean {
  * @param { string } identifier
  * @returns { number }
  */
-function getMessageIndex(messageId: number, routeId: number, identifier: string): number {
+export function getMessageIndex(messageId: number, routeId: number, identifier: string): number {
   const data = getData();
 
   if (identifier === 'channel') {

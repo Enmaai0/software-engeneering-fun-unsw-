@@ -17,11 +17,19 @@ interface Users {
   handleStr: string,
 }
 
+interface React {
+  reactId: number;
+  uIds: number[];
+  isThisUserReacted: boolean;
+}
+
 interface Message {
   messageId: number;
   uId: number;
   message: string;
   timeSent: number;
+  reacts: React[];
+  isPinned: boolean;
 }
 
 interface Notification {
