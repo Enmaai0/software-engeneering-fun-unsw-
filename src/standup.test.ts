@@ -57,8 +57,7 @@ describe('/standup/start: Error Testing', () => {
   });
 
   test('Length: Invalid Length', () => {
-    length = -1;
-    expect(() => testStandupStart(user1.token, channel1.channelId, length)).toThrow(Error);
+    expect(() => testStandupStart(user1.token, channel1.channelId, -1)).toThrow(Error);
   });
 
   test('Standup: Standup is running', () => {
