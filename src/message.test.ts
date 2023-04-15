@@ -747,7 +747,7 @@ describe('message/unpin/v1: Error Testing', () => {
     const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
     const dm = testDmCreate(user1.token, [user2.authUserId]);
     const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
-    expect(() => testMessageUnPin(user1.token, message.messageId)).toThrow(Error);
+    expect(() => testMessageUnPin(user1.token, message2.messageId)).toThrow(Error);
   });
 });
 
