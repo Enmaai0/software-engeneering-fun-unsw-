@@ -6,6 +6,7 @@
  */
 
 import { getData, getHashOf, setData } from './dataStore';
+import HTTPError from 'http-errors';
 
 interface Error {
   error: string
@@ -37,21 +38,21 @@ const MINMESSAGELENGTH = 1;
  */
 function messageSendV1(token: string, channelId: number, message: string): MessageSendReturn | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (!checkChannelId(channelId)) {
-    return { error: 'Invalid ChannelId' };
+    throw HTTPError(400, 'Invalid ChannelId');
   }
 
   if (message.length < MINMESSAGELENGTH || message.length > MAXMESSAGELENGTH) {
-    return { error: 'Invalid Message Length' };
+    throw HTTPError(400, 'Invalid Message Length');
   }
 
   const userId = getIdFromToken(token);
 
   if (!isMemberChannel(userId, channelId)) {
-    return { error: 'User is Not a Member of the Channel' };
+    throw HTTPError(403, 'User is Not a Member of the Channel');
   }
 
   const data = getData();
@@ -116,8 +117,14 @@ function channelMessageNotif(uId: number, channelId: number, message: string) {
     taggedIds.push(handleId);
   }
 
-  for (const id of taggedIds) {
-    data.users[id].notifications.push(notification);
+  const filteredTaggedIds = taggedIds.filter((element, index) => {
+    return taggedIds.indexOf(element) === index;
+  });
+
+  for (const id of filteredTaggedIds) {
+    if (isMemberChannel(id, channelId)) {
+      data.users[id].notifications.push(notification);
+    }
   }
 }
 
@@ -171,21 +178,21 @@ function getIdfromHandle(handle: string): number {
  */
 function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (!isValidDmId(dmId)) {
-    return { error: 'Invalid DmId' };
+    throw HTTPError(400, 'Invalid DmId');
   }
 
   if (message.length < MINMESSAGELENGTH || message.length > MAXMESSAGELENGTH) {
-    return { error: 'Invalid Message Length' };
+    throw HTTPError(400, 'Invalid Message Length');
   }
 
   const userId = getIdFromToken(token);
 
   if (!isMemberDm(userId, dmId)) {
-    return { error: 'User is Not a Member of the Dm' };
+    throw HTTPError(403, 'User is Not a Member of the Dm');
   }
 
   const data = getData();
@@ -252,8 +259,14 @@ function dmMessageNotif(uId: number, dmId: number, message: string) {
     taggedIds.push(handleId);
   }
 
-  for (const id of taggedIds) {
-    data.users[id].notifications.push(notification);
+  const filteredTaggedIds = taggedIds.filter((element, index) => {
+    return taggedIds.indexOf(element) === index;
+  });
+
+  for (const id of filteredTaggedIds) {
+    if (isMemberDm(id, dmId)) {
+      data.users[id].notifications.push(notification);
+    }
   }
 }
 
@@ -269,18 +282,18 @@ function dmMessageNotif(uId: number, dmId: number, message: string) {
  */
 function messageEditV1(token: string, messageId: number, message: string): Record<string, never> | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   const channelId = checkMessageInChannels(messageId);
   const dmId = checkMessageInDms(messageId);
 
   if (channelId === -1 && dmId === -1) {
-    return { error: 'Invalid Message Id' };
+    throw HTTPError(400, 'Invalid Message Id');
   }
 
   if (message.length > MAXMESSAGELENGTH) {
-    return { error: 'Invalid Message Length' };
+    throw HTTPError(400, 'Invalid Message Length');
   }
 
   const userId = getIdFromToken(token);
@@ -290,7 +303,7 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
 
   if (channelId > -1) {
     if (!isMemberChannel(userId, channelId)) {
-      return { error: 'User is not a Member of the Channel' };
+      throw HTTPError(400, 'User is not a Member of the Channel');
     }
 
     if (isChannelOwner(userId, channelId)) {
@@ -303,7 +316,7 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
 
   if (dmId > -1) {
     if (!isMemberDm(userId, dmId)) {
-      return { error: 'User is not a Member of the Dm' };
+      throw HTTPError(400, 'User is not a Member of the Dm');
     }
 
     if (isDmOwner(userId, dmId)) {
@@ -321,7 +334,7 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
   }
 
   if (!userAllowed) {
-    return { error: 'User does not have Permission to Edit this Message' };
+    throw HTTPError(400, 'User does not have Permission to Edit this Message');
   }
 
   // If the message is empty it simply calls message remove
@@ -349,14 +362,14 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
  */
 function messageRemoveV1(token: string, messageId: number): Record<string, never> | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(400, 'Invalid Token');
   }
 
   const channelId = checkMessageInChannels(messageId);
   const dmId = checkMessageInDms(messageId);
 
   if (channelId === -1 && dmId === -1) {
-    return { error: 'Invalid Message Id' };
+    throw HTTPError(400, 'Invalid Message Id');
   }
 
   const userId = getIdFromToken(token);
@@ -366,14 +379,14 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
 
   if (channelId > -1 && dmId === -1) {
     if (!isMemberChannel(userId, channelId)) {
-      return { error: 'User is not a Member of the Channel' };
+      throw HTTPError(400, 'User is not a Member of the Channel');
     }
 
     messageIndex = getMessageIndex(messageId, channelId, 'channel');
     messageObj = data.channels[channelId].messages[messageIndex];
 
     if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
-      return { error: 'User does not have Permission to Edit this Message' };
+      throw HTTPError(400, 'User does not have Permission to Edit this Message');
     }
 
     data.channels[channelId].messages.splice(messageIndex, 1);
@@ -381,14 +394,14 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
 
   if (dmId > -1 && channelId === -1) {
     if (!isMemberDm(userId, dmId)) {
-      return { error: 'User is not a Member of the Dm' };
+      throw HTTPError(400, 'User is not a Member of the Dm');
     }
 
     messageIndex = getMessageIndex(messageId, dmId, 'dm');
     messageObj = data.dms[dmId].messages[messageIndex];
 
     if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
-      return { error: 'User does not have Permission to Edit this Message' };
+      throw HTTPError(400, 'User does not have Permission to Edit this Message');
     }
 
     data.dms[dmId].messages.splice(messageIndex, 1);

@@ -6,6 +6,7 @@
 
 import { getData, getHashOf, setData } from './dataStore';
 import validator from 'validator';
+import HTTPError from 'http-errors';
 
 interface Error {
   error: string
@@ -45,11 +46,11 @@ function userProfileV1(token: string, uId: number) : Error | User {
   const data = getData();
 
   if (!isValidToken(token)) {
-    return { error: 'Invalid token (token not exist)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
-  if (uId >= data.users.length || uId < 0) {
-    return { error: 'Invalid user (uId not exist)' };
+  if (!isUserId(uId)) {
+    throw HTTPError(400, 'Invalid user (uId not exist)');
   }
 
   const user = data.users[uId];
@@ -75,7 +76,7 @@ function userProfileV1(token: string, uId: number) : Error | User {
  */
 function usersAllV1(token: string) : Error | UserArray {
   if (!isValidToken(token)) {
-    return { error: 'Invalid token (token not exist)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
   const data = getData();
@@ -102,15 +103,15 @@ function usersAllV1(token: string) : Error | UserArray {
 
 function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token (Enter a Valid Token)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
   if (nameFirst.length < MINNAMELENGTH || nameLast.length < MINNAMELENGTH) {
-    return { error: 'Invalid Name (Name Cannot be Empty)' };
+    throw HTTPError(400, 'Invalid Name (Name Cannot be Empty)');
   }
 
   if (nameFirst.length > MAXNAMELENGTH || nameLast.length > MAXNAMELENGTH) {
-    return { error: 'Invalid Name (Maximum 50 Characters)' };
+    throw HTTPError(400, 'Invalid Name (Maximum 50 Characters)');
   }
 
   const data = getData();
@@ -124,15 +125,15 @@ function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Err
 
 function userSetEmailV1(token: string, email: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token (Enter a Valid Token)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
   if (!validator.isEmail(email)) {
-    return { error: 'Invalid Email (Enter a Valid Email)' };
+    throw HTTPError(400, 'Invalid Email (Enter a Valid Email)');
   }
 
   if (isRegisteredEmail(email)) {
-    return { error: 'Invalid Email (Email Already in Use)' };
+    throw HTTPError(400, 'Invalid Email (Email Already in Use)');
   }
 
   const uId = getIdFromToken(token);
@@ -145,24 +146,24 @@ function userSetEmailV1(token: string, email: string) : Error | Record<string, n
 
 function userSetHandleV1(token: string, handle: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token (Enter a Valid Token)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
   if (isUserHandleTaken(handle)) {
-    return { error: 'Invalid Handle (Handle Already Taken)' };
+    throw HTTPError(400, 'Invalid Handle (Handle Already Taken)');
   }
 
   if (handle.length < MINHANDLELENGTH) {
-    return { error: 'Invalid Handle (Minimum 3 Characters)' };
+    throw HTTPError(400, 'Invalid Handle (Minimum 3 Characters)');
   }
 
   if (handle.length > MAXHANDLELENGTH) {
-    return { error: 'Invalid Handle (Maximum 20 Characters)' };
+    throw HTTPError(400, 'Invalid Handle (Maximum 20 Characters)');
   }
 
   // Checks if the string has non-alphanumeric characters
   if (!/^[0-9a-z]+$/.test(handle)) {
-    return { error: 'Invalid Handle (Must Contain Only Alphanumeric Characters' };
+    throw HTTPError(400, 'Invalid Handle (Must Contain Only Alphanumeric Characters');
   }
 
   const uId = getIdFromToken(token);
@@ -262,4 +263,24 @@ function getIdFromToken(token: string): number {
       return user.uId;
     }
   }
+}
+
+/**
+ * isUserId
+ *
+ * Given a authUserId, checks if the authUserId
+ * is valid (exists in the dataStore)
+ *
+ * @param { number } uId
+ * @return { boolean }
+ */
+function isUserId(uId: number): boolean {
+  const data = getData();
+  const users = data.users;
+
+  if (users.some(user => user.uId === uId)) {
+    return true;
+  }
+
+  return false;
 }
