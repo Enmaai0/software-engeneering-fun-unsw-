@@ -67,7 +67,6 @@ function standupStart(token: string, channelId: number, length: number) : TimeFi
     }
     channel.buffer = '';
     setData(data);
-
   }, length * 1000);
 
   return {
