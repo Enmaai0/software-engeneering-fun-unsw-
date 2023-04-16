@@ -4,7 +4,6 @@ import {
   testMessageEdit,
   testMessageRemove,
   testAuthRegister,
-  testAuthLogout,
   testChannelsCreate,
   testMessageSendDm,
   testChannelJoin,
@@ -775,268 +774,159 @@ describe('/message/unpin/v1: Return Testing', () => {
 
 /** /message/react Testing **/
 
-describe('testing message/react', () => {
+describe('message/react Error Testing', () => {
+  let user: AuthReturn;
+  let channel: ChannelsCreateReturn;
+  let message: MessageSendReturn;
   beforeEach(() => {
-    testClear();
+    user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    channel = testChannelsCreate(user.token, 'test', true);
+    message = testMessageSend(user.token, channel.channelId, 'Hi');
   });
 
-  test('invalid token', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testAuthLogout(token);
-    expect(() => testMessageReact(token, message.messageId, 1)).toThrow(Error);
+  test('Token: Invalid Token', () => {
+    expect(() => testMessageReact(user.token + '1', message.messageId, 1)).toThrow(Error);
   });
 
-  test('invalid messageId', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    expect(() => testMessageReact(token, message.messageId + 10, 1)).toThrow(Error);
+  test('MessageId: Invalid MessageId', () => {
+    expect(() => testMessageReact(user.token, message.messageId + 1, 1)).toThrow(Error);
   });
 
-  test('invalid reactId', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    const token1 = user.token;
-    const dm = testDmCreate(token1, [user2.authUserId]);
-    const message = testMessageSendDm(token1, dm.dmId, 'Hi');
-    testMessageSendDm(token1, dm.dmId, 'Hi');
-    expect(() => testMessageReact(token1, message.messageId, 5)).toThrow(Error);
+  test('ReactId: Invalid ReactId', () => {
+    expect(() => testMessageReact(user.token, message.messageId, 5)).toThrow(Error);
   });
 
-  test('Testing invalid reactId- channel (not 1)', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
-    expect(() => testMessageReact(token, message.messageId, 10)).toThrow(Error);
+  test('Invalid React: Already Reacted to Message (Channel)', () => {
+    testMessageReact(user.token, message.messageId, 1);
+    expect(() => testMessageReact(user.token, message.messageId, 1)).toThrow(Error);
   });
 
-  test('Testing invalid reactId- dm (not 1)', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    const token = user.token;
-    const dm = testDmCreate(token, [user2.authUserId]);
-    const message = testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageSendDm(token, dm.dmId, 'Hi');
-    expect(() => testMessageReact(token, message.messageId, 10)).toThrow(Error);
+  test('Invalid React: Already Reacted to Message (DM)', () => {
+    const dm = testDmCreate(user.token, []);
+    testMessageSendDm(user.token, dm.dmId, 'Hi');
+    testMessageReact(user.token, message.messageId, 1);
+    expect(() => testMessageReact(user.token, message.messageId, 1)).toThrow(Error);
   });
 
-  test('Testing invalid reactId- repeat in channel', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    expect(() => testMessageReact(token, message.messageId, 1)).toThrow(Error);
-  });
-
-  test('Testing invalid reactId- repeat in dm', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    const token = user.token;
-    const dm = testDmCreate(token, [user2.authUserId]);
-    const message = testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    expect(() => testMessageReact(token, message.messageId, 1)).toThrow(Error);
-  });
-
-  test('user not in dm', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    const user3 = testAuthRegister('cool3@gmail.com', 'password', 'Joe3', 'Bloggs3');
-    const token = user.token;
-    const dm = testDmCreate(token, [user2.authUserId]);
-    const message = testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageSendDm(token, dm.dmId, 'Hi');
-    expect(() => testMessageReact(user3.token, message.messageId, 1)).toThrow(Error);
-  });
-
-  test('user not in channel', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
+  test('User not in Channel', () => {
+    const user2 = testAuthRegister('hello2@gmail.com', 'thisisapassword', 'John2', 'Doe2');
     expect(() => testMessageReact(user2.token, message.messageId, 1)).toThrow(Error);
   });
 
+  test('User not in Dm', () => {
+    const dm = testDmCreate(user.token, []);
+    const user2 = testAuthRegister('hello2@gmail.com', 'thisisapassword', 'John2', 'Doe2');
+    testMessageSendDm(user.token, dm.dmId, 'Hi');
+    expect(() => testMessageReact(user2.token, message.messageId, 1)).toThrow(Error);
+  });
+});
+
+describe('/message/react Return Testing', () => {
+  let user: AuthReturn, user2: AuthReturn;
+  beforeEach(() => {
+    user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+  });
+
   test('Testing success reactId in channel', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    testChannelJoin(user2.token, channelId);
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(user2.token, channelId, 'Hi');
-    expect(testMessageReact(user2.token, message.messageId, 1)).toStrictEqual({ });
+    const channel = testChannelsCreate(user.token, 'Channel', true);
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testChannelJoin(user2.token, channel.channelId);
+    expect(testMessageReact(user.token, message.messageId, 1)).toStrictEqual({});
+    expect(testMessageReact(user2.token, message.messageId, 1)).toStrictEqual({});
   });
 
   test('Testing success reactId in dm', () => {
-    const user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
-    const token = user.token;
-    const token2 = user2.token;
-    const dm = testDmCreate(token, [user2.authUserId]);
-    const message = testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    expect(testMessageReact(token2, message.messageId, 1)).toStrictEqual({ });
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    expect(testMessageReact(user.token, message.messageId, 1)).toStrictEqual({});
+    expect(testMessageReact(user2.token, message.messageId, 1)).toStrictEqual({});
   });
 });
 
 /** /message/unreact Testing **/
 
 describe('testing message/unreact', () => {
+  let user: AuthReturn;
+  let channel: ChannelsCreateReturn;
   beforeEach(() => {
-    testClear();
+    user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
+    channel = testChannelsCreate(user.token, 'Channel', true);
   });
 
-  test('invalid token', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    testAuthLogout(token);
-    expect(() => testMessageUnreact(token, message.messageId, 1)).toThrow(Error);
+  test('Token: Invalid Token', () => {
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testMessageReact(user.token, message.messageId, 1);
+    expect(() => testMessageUnreact(user.token + '1', message.messageId, 1)).toThrow(Error);
   });
 
-  test('invalid messageId', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, message.messageId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    expect(() => testMessageUnreact(token, message.messageId + 10, 1)).toThrow(Error);
+  test('MessageId: Invalid MessageId', () => {
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testMessageReact(user.token, message.messageId, 1);
+    expect(() => testMessageUnreact(user.token, message.messageId + 1, 1)).toThrow(Error);
   });
 
-  test('invalid reactId in dm', () => {
-    const user = testAuthRegister('cool@gmail.com', 'password', 'Joe', 'Bloggs');
-    const user2 = testAuthRegister('cool2@gmail.com', 'password', 'Joe1', 'Bloggs1');
-    const token1 = user.token;
-    const dm = testDmCreate(token1, [user2.authUserId]);
-    const message = testMessageSendDm(token1, dm.dmId, 'Hi');
-    testMessageSendDm(token1, dm.dmId, 'Hi');
-    testMessageReact(token1, message.messageId, 1);
-    expect(() => testMessageUnreact(token1, message.messageId, 5)).toThrow(Error);
+  test('ReactId: Invalid ReactId (Dm)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    testMessageReact(user2.token, message.messageId, 1);
+    expect(() => testMessageUnreact(user2.token, message.messageId, 5)).toThrow(Error);
   });
 
-  test('invalid reactId- channel (not 1)', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    expect(() => testMessageUnreact(token, message.messageId, 5)).toThrow(Error);
+  test('ReactId: Invalid ReactId (Channel)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    testChannelJoin(user2.token, channel.channelId);
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testMessageReact(user2.token, message.messageId, 1);
+    expect(() => testMessageUnreact(user2.token, message.messageId, 5)).toThrow(Error);
   });
 
-  test('not reacted to unreact in dms', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const user2 = testAuthRegister('cool2@gmail.com', 'password', 'Joe1', 'Bloggs1');
-    const token = user.token;
-    const dm = testDmCreate(token, [user2.authUserId]);
-    const message = testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageSendDm(token, dm.dmId, 'Hi');
-    expect(() => testMessageUnreact(token, message.messageId, 1)).toThrow(Error);
-  });
-
-  test('not reacted to unreact in channel', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
+  test('Unreact: Message has not been Reacted to (Channel)', () => {
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
     expect(() => testMessageUnreact(user.token, message.messageId, 1)).toThrow(Error);
   });
 
-  test('Testing invalid reactId- repeat in channel', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    testMessageUnreact(token, message.messageId, 1);
-    expect(() => testMessageUnreact(token, message.messageId, 1)).toThrow(Error);
+  test('Unreact: Message has not been Reacted to (Dm)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    expect(() => testMessageUnreact(user.token, message.messageId, 1)).toThrow(Error);
   });
 
-  test('Testing invalid reactId- repeat in dm', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const user2 = testAuthRegister('cool2@gmail.com', 'password', 'Joe1', 'Bloggs1');
-    const token = user.token;
-    const dm = testDmCreate(token, [user2.authUserId]);
-    const message = testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    testMessageUnreact(token, message.messageId, 1);
-    expect(() => testMessageUnreact(token, message.messageId, 1)).toThrow(Error);
-  });
-
-  test('user not in dm', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const user2 = testAuthRegister('cool2@gmail.com', 'password', 'Joe1', 'Bloggs1');
-    const user3 = testAuthRegister('cool3@gmail.com', 'password', 'Joe3', 'Bloggs3');
-    const token = user.token;
-    const dm = testDmCreate(token, [user2.authUserId]);
-    const message = testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    expect(() => testMessageUnreact(user3.token, message.messageId, 1)).toThrow(Error);
-  });
-
-  test('user not in channel', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const user2 = testAuthRegister('cool2@gmail.com', 'password', 'Joe1', 'Bloggs1');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
-    testMessageReact(user.token, message.messageId, 1);
+  test('User not in Dm', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
     expect(() => testMessageUnreact(user2.token, message.messageId, 1)).toThrow(Error);
   });
 
+  test('User not in Channel', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const message = testMessageSendDm(user.token, channel.channelId, 'Hi');
+    expect(() => testMessageUnreact(user2.token, message.messageId, 1)).toThrow(Error);
+  });
+});
+
+describe('/message/unreact: Return Testing', () => {
+  let user: AuthReturn, user2: AuthReturn;
+  beforeEach(() => {
+    user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
+    user2 = testAuthRegister('cool2@gmail.com', 'password', 'Joe1', 'Bloggs1');
+  });
+
   test('Testing success reactId in channel', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const token = user.token;
-    const channel = testChannelsCreate(token, 'test', true);
-    const channelId = channel.channelId;
-    const message = testMessageSend(token, channelId, 'Hi');
-    testMessageSend(token, channelId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    expect(testMessageUnreact(token, message.messageId, 1)).toStrictEqual({ });
+    const channel = testChannelsCreate(user.token, 'test', true);
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testChannelJoin(user2.token, channel.channelId);
+    testMessageReact(user2.token, message.messageId, 1);
+    expect(testMessageUnreact(user2.token, message.messageId, 1)).toStrictEqual({});
   });
 
   test('Testing success reactId in dm', () => {
-    const user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
-    const user2 = testAuthRegister('cool2@gmail.com', 'password', 'Joe1', 'Bloggs1');
-    const token = user.token;
-    const dm = testDmCreate(token, [user2.authUserId]);
-    const message = testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageSendDm(token, dm.dmId, 'Hi');
-    testMessageReact(token, message.messageId, 1);
-    expect(testMessageUnreact(token, message.messageId, 1)).toStrictEqual({ });
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    testMessageReact(user2.token, message.messageId, 1);
+    expect(testMessageUnreact(user2.token, message.messageId, 1)).toStrictEqual({});
   });
 });
