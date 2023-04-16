@@ -32,6 +32,10 @@ beforeEach(() => {
   testClear();
 });
 
+afterAll(() => {
+  testClear();
+});
+
 /** /auth/login/v2 Testing **/
 
 describe('/auth/login: Error Testing', () => {

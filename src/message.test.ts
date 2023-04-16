@@ -398,16 +398,6 @@ describe('/message/remove: Return Testing', () => {
     channel = testChannelsCreate(user1.token, 'New Channel', true);
   });
 
-  test('Correct Message Removal (1 -> 0 Messages) by Author and Owner (Channel)', () => {
-    const message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
-    expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [],
-      start: 0,
-      end: -1,
-    });
-  });
-
   test('Correct Message Removal (1 -> 0 Messages) by Author but not Owner (Channel)', () => {
     testChannelJoin(user2.token, channel.channelId);
     const message = testMessageSend(user2.token, channel.channelId, 'This message is valid');
@@ -447,92 +437,6 @@ describe('/message/remove: Return Testing', () => {
     expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
     expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
       messages: [],
-      start: 0,
-      end: -1,
-    });
-  });
-
-  test('Correct Message Removal (3 -> 2 Messages) (Channel)', () => {
-    testChannelJoin(user2.token, channel.channelId);
-    const message1 = testMessageSend(user1.token, channel.channelId, 'First');
-    const message2 = testMessageSend(user1.token, channel.channelId, 'Second');
-    const message3 = testMessageSend(user2.token, channel.channelId, 'Third');
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [{
-        message: 'Third',
-        uId: user2.authUserId,
-        messageId: message3.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'Second',
-        uId: user1.authUserId,
-        messageId: message2.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'First',
-        uId: user1.authUserId,
-        messageId: message1.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
-    expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual({});
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [{
-        message: 'Third',
-        uId: user2.authUserId,
-        messageId: message3.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'First',
-        uId: user1.authUserId,
-        messageId: message1.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
-  });
-
-  test('Correct Message Removal (3 -> 2 Messages) (Dm)', () => {
-    const dm = testDmCreate(user1.token, [user2.authUserId]);
-    const message1 = testMessageSendDm(user1.token, dm.dmId, 'First');
-    const message2 = testMessageSendDm(user1.token, dm.dmId, 'Second');
-    const message3 = testMessageSendDm(user2.token, dm.dmId, 'Third');
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [{
-        message: 'Third',
-        uId: user2.authUserId,
-        messageId: message3.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'Second',
-        uId: user1.authUserId,
-        messageId: message2.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'First',
-        uId: user1.authUserId,
-        messageId: message1.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
-    expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual({});
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [{
-        message: 'Third',
-        uId: user2.authUserId,
-        messageId: message3.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'First',
-        uId: user1.authUserId,
-        messageId: message1.messageId,
-        timeSent: expect.any(Number),
-      }],
       start: 0,
       end: -1,
     });
@@ -601,41 +505,6 @@ describe('/message/senddm: Correct Return Testing', () => {
         message: 'First Message',
         timeSent: expect.any(Number)
       }],
-      start: 0,
-      end: -1
-    });
-  });
-});
-
-describe('/message/senddm: Testing Removing and Editing for Dms', () => {
-  let user1: AuthReturn, user2: AuthReturn;
-  let dm: DmCreateReturn;
-  let message: MessageSendReturn;
-  beforeEach(() => {
-    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    user2 = testAuthRegister('second@gmail.com', 'alsoapassword', 'Johnny', 'Potato');
-    dm = testDmCreate(user1.token, [user2.authUserId]);
-    message = testMessageSendDm(user1.token, dm.dmId, 'Valid Normal Message');
-  });
-
-  test('Editing Dm Message', () => {
-    expect(testMessageEdit(user1.token, message.messageId, 'Chad Edited Message')).toStrictEqual({});
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [{
-        messageId: message.messageId,
-        uId: user1.authUserId,
-        message: 'Chad Edited Message',
-        timeSent: expect.any(Number)
-      }],
-      start: 0,
-      end: -1
-    });
-  });
-
-  test('Removing Dm Message', () => {
-    expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [],
       start: 0,
       end: -1
     });

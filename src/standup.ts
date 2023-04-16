@@ -6,6 +6,7 @@
 
 import { getHashOf, getData, setData } from './dataStore';
 import HTTPError from 'http-errors';
+import { messageSendV1 } from './message';
 
 interface TimeFinish {
   timeFinished: number
@@ -62,7 +63,9 @@ function standupStart(token: string, channelId: number, length: number) : TimeFi
   setTimeout(() => {
     channel.isActive = false;
     setData(data);
-    messageSend(token, channelId, channel.buffer);
+    if (channel.buffer.length > 0) {
+      messageSendV1(token, channelId, channel.buffer, true);
+    }
   }, length * 1000);
 
   return {
@@ -146,7 +149,9 @@ function standupSend(token: string, channelId: number, message: string) : Record
     throw HTTPError(403, 'User is not a member (User is not a member of current channel)');
   }
 
-  channel.buffer = channel.buffer + `${getIdFromToken(token)}: ${message}\n`;
+  const uId = getIdFromToken(token);
+
+  channel.buffer = channel.buffer + `${data.users[uId].userHandle}: ${message}\n`;
   setData(data);
 
   return {};
@@ -240,49 +245,4 @@ function isMember(token: string, channelId: number): boolean {
   }
 
   return false;
-}
-
-interface MessageSendReturn {
-  messageId: number
-}
-
-interface React {
-  reactId: number;
-  uIds: number[];
-  isThisUserReacted: boolean;
-}
-
-/**
- * messageSend
- *
- * Sends a given message to a given channel
- *
- * @param { string } token
- * @param { number } channelId
- * @param { string } message
- * @returns {{ messageId: number }}
- */
-function messageSend(token: string, channelId: number, message: string): MessageSendReturn | Error {
-  const userId = getIdFromToken(token);
-
-  const data = getData();
-
-  // Message Id's start at 0
-  const messageId = data.globalMessageCounter;
-  data.globalMessageCounter++;
-  const reacts: React[] = [];
-  const messageObj = {
-    message: message,
-    uId: userId,
-    messageId: messageId,
-    timeSent: Math.floor(Date.now() / 1000),
-    reacts: reacts,
-    isPinned: false,
-  };
-
-  data.channels[channelId].messages.push(messageObj);
-
-  setData(data);
-
-  return { messageId: messageId };
 }

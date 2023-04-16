@@ -44,7 +44,7 @@ const MINMESSAGELENGTH = 1;
  * @param { string } message
  * @returns {{ messageId: number }}
  */
-function messageSendV1(token: string, channelId: number, message: string): MessageSendReturn | Error {
+function messageSendV1(token: string, channelId: number, message: string, standup?: boolean): MessageSendReturn | Error {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -81,7 +81,9 @@ function messageSendV1(token: string, channelId: number, message: string): Messa
 
   data.channels[channelId].messages.push(messageObj);
 
-  channelMessageNotif(userId, channelId, message);
+  if (typeof standup === 'undefined') {
+    channelMessageNotif(userId, channelId, message);
+  }
 
   setData(data);
 
