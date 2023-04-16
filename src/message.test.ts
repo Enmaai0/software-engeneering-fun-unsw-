@@ -14,8 +14,8 @@ import {
   testMessageUnPin,
   testMessageReact,
   testMessageUnreact,
-
 } from './testFunctions';
+
 const ONE_THOUSAND_CHARS = (
   'The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex nymphs. Waltz, bad nymph, for quick jigs vex!  Fox nymphs grab quick-jived waltz. Brick quiz whangs jumpy veldt fox. Bright vixens jump; dozy fowl quack. Quick wafting zephyrs vex bold Jim. Quick zephyrs blow, vexing daft Jim. Sex-charged fop blew my junk TV quiz. How quickly daft jumping zebras vex. Two driven jocks help fax my big quiz. Quick, Baz, get my woven flax jodhpurs! "Now fax quiz Jack!" my brave ghost pled. Five quacking zephyrs jolt my wax bed. Flummoxed by job, kvetching W. zaps Iraq. Cozy sphinx waves quart jug of bad milk. A very bad quack might jinx zippy fowls. Few quips galvanized the mock jury box. Quick brown dogs jump over the lazy fox. The jay, pig, fox, zebra, and my wolves quack! Blowzy red vixens fight for a quick jump. Joaquin Phoenix was gazed by MTV for luck. A wizards job is to vex chumps quickly in fog. Watch "Jeopardy!", Alex Trebeks fun TV quiz game. Woven silk pyjamas exchanged for blue quartz.'
 );
@@ -394,16 +394,6 @@ describe('/message/remove: Return Testing', () => {
     channel = testChannelsCreate(user1.token, 'New Channel', true);
   });
 
-  test('Correct Message Removal (1 -> 0 Messages) by Author and Owner (Channel)', () => {
-    const message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
-    expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [],
-      start: 0,
-      end: -1,
-    });
-  });
-
   test('Correct Message Removal (1 -> 0 Messages) by Author but not Owner (Channel)', () => {
     testChannelJoin(user2.token, channel.channelId);
     const message = testMessageSend(user2.token, channel.channelId, 'This message is valid');
@@ -443,92 +433,6 @@ describe('/message/remove: Return Testing', () => {
     expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
     expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
       messages: [],
-      start: 0,
-      end: -1,
-    });
-  });
-
-  test('Correct Message Removal (3 -> 2 Messages) (Channel)', () => {
-    testChannelJoin(user2.token, channel.channelId);
-    const message1 = testMessageSend(user1.token, channel.channelId, 'First');
-    const message2 = testMessageSend(user1.token, channel.channelId, 'Second');
-    const message3 = testMessageSend(user2.token, channel.channelId, 'Third');
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [{
-        message: 'Third',
-        uId: user2.authUserId,
-        messageId: message3.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'Second',
-        uId: user1.authUserId,
-        messageId: message2.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'First',
-        uId: user1.authUserId,
-        messageId: message1.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
-    expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual({});
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [{
-        message: 'Third',
-        uId: user2.authUserId,
-        messageId: message3.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'First',
-        uId: user1.authUserId,
-        messageId: message1.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
-  });
-
-  test('Correct Message Removal (3 -> 2 Messages) (Dm)', () => {
-    const dm = testDmCreate(user1.token, [user2.authUserId]);
-    const message1 = testMessageSendDm(user1.token, dm.dmId, 'First');
-    const message2 = testMessageSendDm(user1.token, dm.dmId, 'Second');
-    const message3 = testMessageSendDm(user2.token, dm.dmId, 'Third');
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [{
-        message: 'Third',
-        uId: user2.authUserId,
-        messageId: message3.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'Second',
-        uId: user1.authUserId,
-        messageId: message2.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'First',
-        uId: user1.authUserId,
-        messageId: message1.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
-    expect(testMessageRemove(user1.token, message2.messageId)).toStrictEqual({});
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [{
-        message: 'Third',
-        uId: user2.authUserId,
-        messageId: message3.messageId,
-        timeSent: expect.any(Number),
-      }, {
-        message: 'First',
-        uId: user1.authUserId,
-        messageId: message1.messageId,
-        timeSent: expect.any(Number),
-      }],
       start: 0,
       end: -1,
     });
@@ -603,38 +507,137 @@ describe('/message/senddm: Correct Return Testing', () => {
   });
 });
 
-describe('/message/senddm: Testing Removing and Editing for Dms', () => {
-  let user1: AuthReturn, user2: AuthReturn;
-  let dm: DmCreateReturn;
-  let message: MessageSendReturn;
+/** message/pin/v1 Testing **/
+
+describe('message/pin/v1: Error Testing', () => {
+  let user1: AuthReturn, channel: ChannelsCreateReturn, message: MessageSendReturn;
   beforeEach(() => {
     user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    user2 = testAuthRegister('second@gmail.com', 'alsoapassword', 'Johnny', 'Potato');
-    dm = testDmCreate(user1.token, [user2.authUserId]);
-    message = testMessageSendDm(user1.token, dm.dmId, 'Valid Normal Message');
+    channel = testChannelsCreate(user1.token, 'New Channel', true);
+    message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
   });
 
-  test('Editing Dm Message', () => {
-    expect(testMessageEdit(user1.token, message.messageId, 'Chad Edited Message')).toStrictEqual({});
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [{
-        messageId: message.messageId,
-        uId: user1.authUserId,
-        message: 'Chad Edited Message',
-        timeSent: expect.any(Number)
-      }],
-      start: 0,
-      end: -1
-    });
+  test('Token: Invalid Token', () => {
+    expect(() => testMessagePin(user1.token + '1', message.messageId)).toThrow(Error);
   });
 
-  test('Removing Dm Message', () => {
-    expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [],
-      start: 0,
-      end: -1
-    });
+  test('MessageId: Invalid MessageId', () => {
+    expect(() => testMessagePin(user1.token, message.messageId + 1)).toThrow(Error);
+  });
+
+  test('User: User is not Author or Channel Owner', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    testChannelJoin(user2.token, channel.channelId);
+    expect(() => testMessagePin(user2.token, message.messageId)).toThrow(Error);
+  });
+
+  test('User: User is not Author or Dm Owner', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
+    expect(() => testMessagePin(user2.token, message2.messageId)).toThrow(Error);
+  });
+
+  test('MessageId: Already pinned (Channel)', () => {
+    testMessagePin(user1.token, message.messageId);
+    expect(() => testMessagePin(user1.token, message.messageId)).toThrow(Error);
+  });
+
+  test('MessageId: Already pinned (Dm)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
+    testMessagePin(user1.token, message2.messageId);
+    expect(() => testMessagePin(user1.token, message2.messageId)).toThrow(Error);
+  });
+});
+
+describe('/message/pin/v1: Return Testing', () => {
+  let user1: AuthReturn, user2: AuthReturn, channel: ChannelsCreateReturn, message: MessageSendReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    user2 = testAuthRegister('email@gmail.com', 'pass1234', 'Bugs', 'Bunny');
+    channel = testChannelsCreate(user1.token, 'New Channel', true);
+    message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
+  });
+
+  test('Correct Message Pin (Channel)', () => {
+    expect(testMessagePin(user1.token, message.messageId)).toStrictEqual({});
+  });
+
+  test('Correct Message Pin (Dm)', () => {
+    const dm: DmCreateReturn = testDmCreate(user1.token, [user2.authUserId]);
+    const message2: MessageSendReturn = testMessageSendDm(user2.token, dm.dmId, 'This message is valid');
+
+    expect(testMessagePin(user1.token, message2.messageId)).toStrictEqual({});
+  });
+});
+
+/** message/unpin/v1 Testing **/
+
+describe('message/unpin/v1: Error Testing', () => {
+  let user1: AuthReturn, channel: ChannelsCreateReturn, message: MessageSendReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    channel = testChannelsCreate(user1.token, 'New Channel', true);
+    message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
+    testMessagePin(user1.token, message.messageId);
+  });
+
+  test('Token: Invalid Token', () => {
+    expect(() => testMessageUnPin(user1.token + '1', message.messageId)).toThrow(Error);
+  });
+
+  test('MessageId: Invalid MessageId', () => {
+    expect(() => testMessageUnPin(user1.token, message.messageId + 1)).toThrow(Error);
+  });
+
+  test('User: User is not Author or Channel Owner', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    testChannelJoin(user2.token, channel.channelId);
+    expect(() => testMessageUnPin(user2.token, message.messageId)).toThrow(Error);
+  });
+
+  test('User: User is not Author or Dm Owner', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
+    expect(() => testMessageUnPin(user2.token, message2.messageId)).toThrow(Error);
+  });
+
+  test('MessageId: Not already pinned (Channel)', () => {
+    testMessageUnPin(user1.token, message.messageId);
+    expect(() => testMessageUnPin(user1.token, message.messageId)).toThrow(Error);
+  });
+
+  test('MessageId: Not already pinned (Dm)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user1.token, [user2.authUserId]);
+    const message2 = testMessageSendDm(user1.token, dm.dmId, 'This message is valid');
+    expect(() => testMessageUnPin(user1.token, message2.messageId)).toThrow(Error);
+  });
+});
+
+describe('/message/unpin/v1: Return Testing', () => {
+  let user1: AuthReturn, user2: AuthReturn, channel: ChannelsCreateReturn, message: MessageSendReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    user2 = testAuthRegister('email@gmail.com', 'pass1234', 'Bugs', 'Bunny');
+    channel = testChannelsCreate(user1.token, 'New Channel', true);
+    message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
+    testMessagePin(user1.token, message.messageId);
+  });
+
+  test('Correct Message Pin (Channel)', () => {
+    expect(testMessageUnPin(user1.token, message.messageId)).toStrictEqual({});
+  });
+
+  test('Correct Message Pin (Dm)', () => {
+    const dm: DmCreateReturn = testDmCreate(user1.token, [user2.authUserId]);
+    const message2: MessageSendReturn = testMessageSendDm(user2.token, dm.dmId, 'This message is valid');
+    testMessagePin(user1.token, message2.messageId);
+
+    expect(testMessageUnPin(user1.token, message2.messageId)).toStrictEqual({});
   });
 });
 

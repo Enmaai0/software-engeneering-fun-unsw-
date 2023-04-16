@@ -4,7 +4,8 @@
  * Contains the function implementations of all channels* functions.
  */
 
-import { getData, setData } from './dataStore';
+import { getHashOf, getData, setData } from './dataStore';
+import HTTPError from 'http-errors';
 
 interface Error {
   error: string
@@ -30,6 +31,9 @@ interface Channel {
   owners: UserObject[];
   allMembers: UserObject[];
   messages: Message[];
+  isActive: boolean;
+  timeFinish: number;
+  buffer: string;
 }
 
 interface Channels {
@@ -58,11 +62,11 @@ interface ChannelId {
  */
 function channelsCreateV1(token: string, name: string, isPublic: boolean): ChannelId | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (name.length < 1 || name.length > 20) {
-    return { error: 'Invalid Name (Name must be 1 - 20 characters long)' };
+    throw HTTPError(400, 'Invalid Name (Name must be 1 - 20 characters long)');
   }
 
   const data = getData();
@@ -79,6 +83,9 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): Chann
     owners: [userObject],
     allMembers: [userObject],
     messages: messageArray,
+    isActive: false,
+    timeFinish: 0,
+    buffer: '',
   };
 
   data.channels.push(channel);
@@ -98,7 +105,7 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): Chann
  */
 function channelsListAllV1(token: string): ChannelsList | Error {
   if (!isValidToken(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+    throw HTTPError(403, 'Invalid User (User does not exist)');
   }
 
   const data = getData();
@@ -126,11 +133,11 @@ function channelsListAllV1(token: string): ChannelsList | Error {
  */
 function channelsListV1 (token: string) {
   if (!isValidToken(token)) {
-    return { error: 'Invalid User (User does not exist)' };
+    throw HTTPError(403, 'Invalid User (User does not exist)');
   }
 
   const data = getData();
-  const channelArray = [];
+  const channelArray: Channels[] = [];
   const userId = getIdFromToken(token);
 
   for (const channel of data.channels) {
@@ -148,6 +155,10 @@ function channelsListV1 (token: string) {
   return { channels: channelArray };
 }
 
+export { channelsCreateV1, channelsListAllV1, channelsListV1 };
+
+/** Helper Functions **/
+
 /**
  * isValidToken
  *
@@ -159,10 +170,11 @@ function channelsListV1 (token: string) {
  */
 function isValidToken(token: string): boolean {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return true;
     }
   }
@@ -181,10 +193,11 @@ function isValidToken(token: string): boolean {
  */
 function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
@@ -214,5 +227,3 @@ function createUserObject(uId: number): UserObject {
 
   return userObject;
 }
-
-export { channelsCreateV1, channelsListAllV1, channelsListV1 };

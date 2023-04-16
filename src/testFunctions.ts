@@ -163,6 +163,14 @@ export function testMessageSendDm(token: string, dmId: number, message: string) 
   return requestHelper('POST', '/message/senddm/v2', token, { dmId, message });
 }
 
+export function testMessagePin(token: string, messageId: number) {
+  return requestHelper('POST', '/message/pin/v1', token, { messageId });
+}
+
+export function testMessageUnPin(token: string, messageId: number) {
+  return requestHelper('POST', '/message/unpin/v1', token, { messageId });
+}
+
 export const testMessageReact = (token: string, messageId: number, reactId: number) => {
   return requestHelper('POST', '/message/react/v1', token, { messageId, reactId });
 };
@@ -221,4 +229,22 @@ export function testClear() {
 
 export function testNotificationsGet(token: string) {
   return requestHelper('GET', '/notifications/get/v1', token, {});
+}
+
+export function testSearch(token: string, queryString: string) {
+  return requestHelper('GET', '/search/v1', token, { queryString });
+}
+
+/** /standup/* Test Functions **/
+
+export function testStandupStart(token: string, channelId: number, length: number) {
+  return requestHelper('POST', '/standup/start/v1', token, { channelId, length });
+}
+
+export function testStandupActive(token: string, channelId: number) {
+  return requestHelper('GET', '/standup/active/v1', token, { channelId });
+}
+
+export function testStandupSend(token: string, channelId: number, message: string) {
+  return requestHelper('POST', '/standup/send/v1', token, { channelId, message });
 }

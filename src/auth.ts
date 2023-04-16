@@ -1,15 +1,14 @@
 /**
- * auth.js
+ * auth.ts
  *
  * Contains the functions of all auth* functions.
  */
 
 import validator from 'validator';
-import { getData, setData } from './dataStore';
+import HTTPError from 'http-errors';
+import { getData, setData, getHashOf } from './dataStore';
 
-interface Error {
-  error: string;
-}
+const nodemailer = require('nodemailer');
 
 interface AuthReturn {
   token: string;
@@ -49,24 +48,25 @@ const GLOBALMEMBER = 2;
  * both match the same user, the user 'logs in' and the
  * function returns the authUserId of the associated user.
  *
- * Errors return { error: "error" } on incorrect or
- * invalid input.
+ * A hashed token is stored in the dataStore with the original
+ * token being returned to the user.
  *
  * @param { string } email
  * @param { string } password
  * @return {{ authUserId: number }}
  */
-function authLoginV1(email: string, password: string): Error | AuthReturn {
+function authLoginV1(email: string, password: string): AuthReturn {
   if (!isRegisteredEmail(email)) {
-    return { error: 'Invalid Email (No existing user with that email)' };
+    throw HTTPError(400, 'Invalid Email (No existing user with that email)');
   }
 
   const data = getData();
   const userIndex = emailToUserIndex(email);
+  password = getHashOf(password);
 
   if (data.users[userIndex].password === password) {
     const newToken = generateToken();
-    data.users[userIndex].tokens.push(newToken);
+    data.users[userIndex].tokens.push(getHashOf(newToken));
     return {
       token: newToken,
       authUserId: userIndex
@@ -75,7 +75,7 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
 
   setData(data);
 
-  return { error: 'Incorrect Password' };
+  throw HTTPError(400, 'Incorrect Password');
 }
 
 /**
@@ -87,17 +87,19 @@ function authLoginV1(email: string, password: string): Error | AuthReturn {
  * @param { string } token
  * @returns {{ }}
  */
-function authLogoutV1(token: string): Record<string, never> | Error {
+function authLogoutV1(token: string): Record<string, never> {
   const data = getData();
 
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token' };
+    throw HTTPError(403, 'Invalid Token');
   }
+
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     for (const userToken of user.tokens) {
-      if (userToken === token) {
-        const index = user.tokens.indexOf(token);
+      if (userToken === hashedToken) {
+        const index = user.tokens.indexOf(hashedToken);
         user.tokens.splice(index, 1);
         break;
       }
@@ -127,25 +129,25 @@ function authLogoutV1(token: string): Record<string, never> | Error {
  * @param { string } nameLast
  * @return {{ authUserId: number }}
  */
-function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): Error | AuthReturn {
+function authRegisterV1(email: string, password: string, nameFirst: string, nameLast: string): AuthReturn {
   if (!validator.isEmail(email)) {
-    return { error: 'Invalid Email (Enter a Valid Email)' };
+    throw HTTPError(400, 'Invalid Email (Enter a Valid Email)');
   }
 
   if (isRegisteredEmail(email)) {
-    return { error: 'Invalid Email (Email Already in Use)' };
+    throw HTTPError(400, 'Invalid Email (Email Already in Use)');
   }
 
   if (password.length < MINPASSLENGTh) {
-    return { error: 'Invalid Password (Minimum 6 Characters)' };
+    throw HTTPError(400, 'Invalid Password (Minimum 6 Characters)');
   }
 
   if (nameFirst.length < MINNAMELENGTH || nameLast.length < MINNAMELENGTH) {
-    return { error: 'Invalid Name (Name Cannot be Empty)' };
+    throw HTTPError(400, 'Invalid Name (Name Cannot be Empty)');
   }
 
   if (nameFirst.length > MAXNAMELENGTH || nameLast.length > MAXNAMELENGTH) {
-    return { error: 'Invalid Name (Maximum 50 Characters)' };
+    throw HTTPError(400, 'Invalid Name (Maximum 50 Characters)');
   }
 
   const data = getData();
@@ -160,15 +162,17 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   }
 
   const newUserIndex = data.users.length;
+  const newToken = generateToken();
+
   const userObject: User = {
     uId: newUserIndex,
     email: email,
-    password: password,
+    password: getHashOf(password),
     nameFirst: nameFirst,
     nameLast: nameLast,
     userHandle: generateUserHandle(nameFirst, nameLast),
     permissionId: permissionId,
-    tokens: [generateToken()],
+    tokens: [getHashOf(newToken)],
     notifications: [],
     resetCodes: []
   };
@@ -178,8 +182,8 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
   setData(data);
 
   return {
-    token: userObject.tokens[0],
-    authUserId: userObject.uId
+    token: newToken,
+    authUserId: newUserIndex
   };
 }
 
@@ -190,6 +194,21 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
  * unique code that can be used to reset their passwords utelising
  * the /auth/passwordreset/reset server call.
  *
+ * <<<<<<<
+ * FOR TUTOR OR MARKER
+ *
+ * For the sending of emails it is done through Ethereal Mail, a fake STMP service
+ * that NodeMailer (the module used to send emails) uses to allow people to test
+ * the sending of emails to addresses. All emails are not actually sent, however
+ * the ethereal.mail will 'fake send' all the emails and hold them on their server.
+ *
+ * You can see these 'fake' emails by going to ethereal.email and logging in using:
+ * user: estel.hoeger@ethereal.email
+ * pass: 95KuTtSnCNVErXZ4cD
+ * Then going to the messages tab where you are able to view all messages that have
+ * been sent and received from this address.
+ * <<<<<<<
+ *
  * @param { string } email
  * @returns { }
  */
@@ -199,7 +218,8 @@ function authPasswordResetRequest(email: string): Record<never, never> {
 
   for (const user of data.users) {
     if (email === user.email) {
-      user.resetCodes.push(resetCode);
+      user.resetCodes.push(getHashOf(resetCode));
+      sendEmail(email, resetCode);
       user.tokens = [];
       break;
     }
@@ -224,22 +244,23 @@ function authPasswordResetReset(resetCode: string, newPassword: string): Record<
   const data = getData();
 
   if (newPassword.length < 6) {
-    return { error: 'Invalid Password (Must be 6 Characters Long' };
+    throw HTTPError(400, 'Invalid Password (Must be 6 Characters Long');
   }
 
   let uId = -1;
   let resetCodeIndex;
+  const hashedResetCode = getHashOf(resetCode);
 
   for (const user of data.users) {
-    if (user.resetCodes.includes(resetCode)) {
+    if (user.resetCodes.includes(hashedResetCode)) {
       uId = user.uId;
-      resetCodeIndex = user.resetCodes.indexOf(resetCode);
+      resetCodeIndex = user.resetCodes.indexOf(hashedResetCode);
       break;
     }
   }
 
   if (resetCodeIndex === -1 || uId === -1) {
-    return { error: 'Invalid Reset Code' };
+    throw HTTPError(400, 'Invalid Reset Code');
   }
 
   data.users[uId].password = newPassword;
@@ -265,10 +286,11 @@ export { authLoginV1, authRegisterV1, authLogoutV1, authPasswordResetRequest, au
  */
 function isValidToken(token: string): boolean {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return true;
     }
   }
@@ -405,4 +427,36 @@ function generateResetCode(): string {
   }
 
   return result;
+}
+
+/**
+ * sendEmail
+ *
+ * Given an email address and a resetCode, sends an email to that email address
+ * with the message stated below. Giving them the resetCode to reset their password.
+ *
+ * @param { string } email
+ * @param { string } resetCode
+ */
+async function sendEmail(email: string, resetCode: string) {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: 'estel.hoeger@ethereal.email', // generated ethereal user
+      pass: '95KuTtSnCNVErXZ4cD', // generated ethereal password
+    },
+  });
+
+  // send mail with defined transport object
+  await transporter.sendMail({
+    from: '"HO9A_DREAM" <estel.hoeger@ethereal.email>', // sender address
+    to: `${email}`, // list of receivers
+    subject: 'Password Reset Code', // Subject line
+    text: `Hello ${email}, someone (hopefuly you) has requested a password reset on your UNSW Memes account. Please go to this link:
+      'I dont know the link LMAO', and enter the code below to reset your password. If this wasnt you then you can safely ignore this email.
+      
+      Reset Code: ${resetCode}`,
+  });
 }

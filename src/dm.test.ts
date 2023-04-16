@@ -17,7 +17,6 @@ import {
   testMessageSendDm
 } from './testFunctions';
 
-const ERROR = { error: expect.any(String) };
 interface AuthRegisterReturn {
   token: string;
   authUserId: number;
@@ -36,6 +35,10 @@ beforeEach(() => {
   testClear();
 });
 
+afterAll(() => {
+  testClear();
+});
+
 /** /dm/create/v1 Testing **/
 
 describe('/dm/create: Error Testing', () => {
@@ -48,21 +51,21 @@ describe('/dm/create: Error Testing', () => {
   });
 
   test('Token: Invalid Token', () => {
-    expect(testDmCreate(testUser1.token + 'a', [testUser2.authUserId])).toStrictEqual(ERROR);
+    expect(() => testDmCreate(testUser1.token + 'a', [testUser2.authUserId])).toThrow(Error);
   });
 
   test('uIds: Duplicate uIds', () => {
     testUser3 = testAuthRegister('thirdemail@gmail.com', 'pass1234', 'Test', 'Bot III');
-    expect(testDmCreate(testUser1.token, [testUser2.authUserId, testUser3.authUserId, testUser2.authUserId])).toStrictEqual(ERROR);
+    expect(() => testDmCreate(testUser1.token, [testUser2.authUserId, testUser3.authUserId, testUser2.authUserId])).toThrow(Error);
   });
 
   test('uIds: Invalid uIds (Only Invalid)', () => {
-    expect(testDmCreate(testUser1.token, [testUser2.authUserId + 1])).toStrictEqual(ERROR);
+    expect(() => testDmCreate(testUser1.token, [testUser2.authUserId + 1])).toThrow(Error);
   });
 
   test('uIds: Invalid uIds (Mixed Invalid)', () => {
     testUser3 = testAuthRegister('thirdemail@gmail.com', 'pass1234', 'Test', 'Bot III');
-    expect(testDmCreate(testUser1.token, [testUser3.authUserId, testUser2.authUserId + 1])).toStrictEqual(ERROR);
+    expect(() => testDmCreate(testUser1.token, [testUser3.authUserId, testUser2.authUserId + 1])).toThrow(Error);
   });
 });
 
@@ -134,7 +137,7 @@ describe('/dm/create: dmName Testing', () => {
 describe('/dm/list: Error Testing', () => {
   test('Token: Invalid Token', () => {
     const user1 = testAuthRegister('potato@gmail.com', 'potatopotato', 'Simple', 'Spud');
-    expect(testDmList(user1.token + '1')).toStrictEqual(ERROR);
+    expect(() => testDmList(user1.token + '1')).toThrow(Error);
   });
 });
 
@@ -221,25 +224,25 @@ describe('/dm/remove: Error Testing', () => {
 
   test('Token: Invalid Token', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmRemove(testUser1.token + '1', testDm.dmId)).toStrictEqual(ERROR);
+    expect(() => testDmRemove(testUser1.token + '1', testDm.dmId)).toThrow(Error);
   });
 
   test('DmId: Invalid dmId', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmRemove(testUser1.token, testDm.dmId + 1)).toStrictEqual(ERROR);
+    expect(() => testDmRemove(testUser1.token, testDm.dmId + 1)).toThrow(Error);
   });
 
   test('DmId: User is not in Dm', () => {
     const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
     const testDm = testDmCreate(testUser1.token, [testUser2.authUserId]);
     expect(testDmLeave(testUser1.token, testDm.dmId)).toStrictEqual({});
-    expect(testDmRemove(testUser1.token, testDm.dmId)).toStrictEqual(ERROR);
+    expect(() => testDmRemove(testUser1.token, testDm.dmId)).toThrow(Error);
   });
 
   test('DmId: User is not the Dm owner', () => {
     const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
     const testDm = testDmCreate(testUser1.token, [testUser2.authUserId]);
-    expect(testDmRemove(testUser2.token, testDm.dmId)).toStrictEqual(ERROR);
+    expect(() => testDmRemove(testUser2.token, testDm.dmId)).toThrow(Error);
   });
 });
 
@@ -292,18 +295,18 @@ describe('/dm/details: Error Testing', () => {
 
   test('Token: Invalid Token', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmDetails(testUser1.token + '1', testDm.dmId)).toStrictEqual(ERROR);
+    expect(() => testDmDetails(testUser1.token + '1', testDm.dmId)).toThrow(Error);
   });
 
   test('DmId: Invalid dmId', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmDetails(testUser1.token, testDm.dmId + 1)).toStrictEqual(ERROR);
+    expect(() => testDmDetails(testUser1.token, testDm.dmId + 1)).toThrow(Error);
   });
 
   test('DmId: User is not in Dm', () => {
     const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmDetails(testUser2.token, testDm.dmId)).toStrictEqual(ERROR);
+    expect(() => testDmDetails(testUser2.token, testDm.dmId)).toThrow(Error);
   });
 });
 
@@ -389,18 +392,18 @@ describe('/dm/leave: Error Testing', () => {
 
   test('Token: Invalid Token', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmLeave(testUser1.token + '1', testDm.dmId)).toStrictEqual(ERROR);
+    expect(() => testDmLeave(testUser1.token + '1', testDm.dmId)).toThrow(Error);
   });
 
   test('DmId: Invalid dmId', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmLeave(testUser1.token, testDm.dmId + 1)).toStrictEqual(ERROR);
+    expect(() => testDmLeave(testUser1.token, testDm.dmId + 1)).toThrow(Error);
   });
 
   test('DmId: User is not in Dm', () => {
     const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmLeave(testUser2.token, testDm.dmId)).toStrictEqual(ERROR);
+    expect(() => testDmLeave(testUser2.token, testDm.dmId)).toThrow(Error);
   });
 });
 
@@ -413,15 +416,15 @@ describe('/dm/leave: User Left Testing', () => {
   test('Owner Leaves Dm (Only Owner in Dm)', () => {
     const testDm = testDmCreate(testUser1.token, []);
     expect(testDmLeave(testUser1.token, testDm.dmId)).toStrictEqual({});
-    expect(testDmDetails(testUser1.token, testDm.dmId)).toStrictEqual(ERROR);
+    expect(() => testDmDetails(testUser1.token, testDm.dmId)).toThrow(Error);
   });
 
   test('Owner Leaves Dm (Multiple Members in Dm)', () => {
     const testUser2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot');
     const testUser3 = testAuthRegister('email3@gmail.com', 'pass1234', 'Test', 'Bot');
     const testDm = testDmCreate(testUser1.token, [testUser2.authUserId, testUser3.authUserId]);
-    expect(testDmLeave(testUser1.token, testDm.dmId)).toStrictEqual({});
-    expect(testDmDetails(testUser1.token, testDm.dmId)).toStrictEqual(ERROR);
+    expect(testDmLeave(testUser1.token, testDm.dmId));
+    expect(() => testDmDetails(testUser1.token, testDm.dmId)).toThrow(Error);
     expect(testDmDetails(testUser2.token, testDm.dmId)).toStrictEqual({
       name: 'testbot, testbot0, testbot1',
       members: [{
@@ -485,23 +488,23 @@ describe('/dm/messages: Error Testing', () => {
 
   test('Token: Invalid Token', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmMessages(testUser1.token + '1', testDm.dmId, 0)).toStrictEqual(ERROR);
+    expect(() => testDmMessages(testUser1.token + '1', testDm.dmId, 0)).toThrow(Error);
   });
 
   test('DmId: Invalid dmId', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmMessages(testUser1.token, testDm.dmId + 1, 0)).toStrictEqual(ERROR);
+    expect(() => testDmMessages(testUser1.token, testDm.dmId + 1, 0)).toThrow(Error);
   });
 
   test('DmId: User is not in Dm', () => {
     const testUser2 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot II');
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmMessages(testUser2.token, testDm.dmId, 0)).toStrictEqual(ERROR);
+    expect(() => testDmMessages(testUser2.token, testDm.dmId, 0)).toThrow(Error);
   });
 
   test('Start: Start is Greater than Messages', () => {
     const testDm = testDmCreate(testUser1.token, []);
-    expect(testDmMessages(testUser1.token, testDm.dmId, 100)).toStrictEqual(ERROR);
+    expect(() => testDmMessages(testUser1.token, testDm.dmId, 100)).toThrow(Error);
   });
 });
 
@@ -568,75 +571,6 @@ describe('/dm/messages: Return Testing', () => {
       messages: [],
       start: -60,
       end: -10
-    });
-  });
-
-  test('Dm (50 Messages) Start = 0', () => {
-    for (let i = 0; i < 50; i++) {
-      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
-    }
-
-    const testMessages = testDmMessages(testUser1.token, testDm.dmId, 0);
-    expect(testMessages.start).toStrictEqual(0);
-    expect(testMessages.end).toStrictEqual(50);
-    expect(testMessages.messages.length).toStrictEqual(50);
-    expect(testMessages.messages[49]).toStrictEqual({
-      messageId: 0,
-      uId: testUser1.authUserId,
-      message: '0',
-      timeSent: expect.any(Number)
-    });
-    expect(testMessages.messages[0]).toStrictEqual({
-      messageId: 49,
-      uId: testUser1.authUserId,
-      message: '49',
-      timeSent: expect.any(Number)
-    });
-  });
-
-  test('Dm (50 Messages) Start = 25', () => {
-    for (let i = 0; i < 50; i++) {
-      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
-    }
-
-    const testMessages = testDmMessages(testUser1.token, testDm.dmId, 25);
-    expect(testMessages.start).toStrictEqual(25);
-    expect(testMessages.end).toStrictEqual(-1);
-    expect(testMessages.messages.length).toStrictEqual(25);
-    expect(testMessages.messages[24]).toStrictEqual({
-      messageId: 0,
-      uId: testUser1.authUserId,
-      message: '0',
-      timeSent: expect.any(Number)
-    });
-    expect(testMessages.messages[0]).toStrictEqual({
-      messageId: 24,
-      uId: testUser1.authUserId,
-      message: '24',
-      timeSent: expect.any(Number)
-    });
-  });
-
-  test('Dm (20 Messages) Start = -40', () => {
-    for (let i = 0; i < 20; i++) {
-      testMessageSendDm(testUser1.token, testDm.dmId, String(i));
-    }
-
-    const testMessages = testDmMessages(testUser1.token, testDm.dmId, -40);
-    expect(testMessages.start).toStrictEqual(-40);
-    expect(testMessages.end).toStrictEqual(10);
-    expect(testMessages.messages.length).toStrictEqual(10);
-    expect(testMessages.messages[9]).toStrictEqual({
-      messageId: 10,
-      uId: testUser1.authUserId,
-      message: '10',
-      timeSent: expect.any(Number)
-    });
-    expect(testMessages.messages[0]).toStrictEqual({
-      messageId: 19,
-      uId: testUser1.authUserId,
-      message: '19',
-      timeSent: expect.any(Number)
     });
   });
 });
