@@ -12,7 +12,8 @@ import {
   testSetEmail,
   testSetHandle,
   testClear,
-  testAuthRegister
+  testAuthRegister,
+  testUserProfileUploadPhoto
 } from './testFunctions';
 
 /**
@@ -595,3 +596,73 @@ describe('Correct SetEmail: Correct Return Testing', () => {
 
 /** UserProfileUploadPhoto Function **/
 
+describe('UserProfileUploadPhoto: Error Testing', () => {
+  let user1: AuthReturn;
+  let imgUrl: string;
+  let xStart = 0;
+  let xEnd = 100;
+  let yStart = 0;
+  let yEnd = 100;
+  beforeEach(() => {
+    user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
+
+  test('Token: Invalid Token', () => {
+    expect(() => testUserProfileUploadPhoto(user1.token + 1, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Token: Invalid imgUrl Not End With jpg or jpeg', () => {
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl + 1, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Token: Invalid imgUrl', () => {
+    imgUrl = '.jpg'; // Invalid imgUrl
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Token: Invalid xStart', () => {
+    xStart = -1;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Token: Invalid yStart', () => {
+    yStart = -1;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Token: Invalid xEnd', () => {
+    xEnd = -1;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Token: Invalid yEnd', () => {
+    yEnd = -1;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Token: Invalid xEnd >= xStart', () => {
+    xStart = 100;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Token: Invalid yEnd >= yStart', () => {
+    yStart = 100;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+});
+
+describe('Correct UserProfileUploadPhoto: Correct Return Testing', () => {
+  let user1: AuthReturn;
+  let imgUrl: string;
+  let xStart = 0;
+  let xEnd = 100;
+  let yStart = 0;
+  let yEnd = 100;
+  beforeEach(() => {
+    user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
+
+  test('SetEmail: Return Empty Object', () => {
+    expect(testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toStrictEqual({ });
+  });
+});
