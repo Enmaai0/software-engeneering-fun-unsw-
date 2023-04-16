@@ -5,6 +5,7 @@
  */
 
 import { getHashOf, getData, setData } from './dataStore';
+import { channelMessageNotif } from './message'
 import HTTPError from 'http-errors';
 
 interface TimeFinish {
@@ -61,9 +62,13 @@ function standupStart(token: string, channelId: number, length: number) : TimeFi
 
   setTimeout(() => {
     channel.isActive = false;
+    if (channel.buffer != '') {
+      messageSend(token, channelId, channel.buffer);
+    }
+    channel.buffer = '';
     setData(data);
-    messageSend(token, channelId, channel.buffer);
-  }, length * 1000);
+  }, length * 1000)
+
 
   return {
     timeFinished: channel.timeFinish
@@ -281,6 +286,8 @@ function messageSend(token: string, channelId: number, message: string): Message
   };
 
   data.channels[channelId].messages.push(messageObj);
+
+  channelMessageNotif(userId, channelId, message);
 
   setData(data);
 

@@ -531,7 +531,7 @@ function messageUnPinV1(token: string, messageId: number): Record<string, never>
   }
 }
 
-export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1 };
+export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1, channelMessageNotif };
 
 /** Helper Functions **/
 
