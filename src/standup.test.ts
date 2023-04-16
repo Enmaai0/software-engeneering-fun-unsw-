@@ -49,7 +49,7 @@ afterAll(() => {
 describe('/standup/start: Error Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn;
-  const length = 5;
+  const length = 1;
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
     channel1 = testChannelsCreate(user1.token, 'channel1', true);
@@ -70,6 +70,7 @@ describe('/standup/start: Error Testing', () => {
   test('Standup: Standup is running', () => {
     testStandupStart(user1.token, channel1.channelId, length);
     expect(() => testStandupStart(user1.token, channel1.channelId, length)).toThrow(Error);
+    sleep(1010);
   });
 
   test('User: User is not in Channel', () => {
@@ -161,6 +162,7 @@ describe('/standup/active: Success Testing', () => {
 describe('/standup/send: Error Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn;
+  const length = 1;
   const message = 'Hello';
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
@@ -168,18 +170,21 @@ describe('/standup/send: Error Testing', () => {
   });
 
   test('AuthUserId: Invalid Token', () => {
-    testStandupStart(user1.token, channel1.channelId, 10);
+    testStandupStart(user1.token, channel1.channelId, length);
     expect(() => testStandupSend(user1.token + 1, channel1.channelId, message)).toThrow(Error);
+    sleep(1010);
   });
 
   test('ChannelId: Invalid ChannelId', () => {
-    testStandupStart(user1.token, channel1.channelId, 10);
+    testStandupStart(user1.token, channel1.channelId, length);
     expect(() => testStandupSend(user1.token, channel1.channelId + 1, message)).toThrow(Error);
+    sleep(1010);
   });
 
   test('Message: Message > 1000 Characters', () => {
     testStandupStart(user1.token, channel1.channelId, 10);
     expect(() => testStandupSend(user1.token, channel1.channelId, ONE_THOUSAND_CHARS)).toThrow(Error);
+    sleep(1010);
   });
 
   test('No standup has started', () => {
@@ -187,9 +192,10 @@ describe('/standup/send: Error Testing', () => {
   });
 
   test('User: User is not in Channel', () => {
-    testStandupStart(user1.token, channel1.channelId, 10);
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
+    testStandupStart(user1.token, channel1.channelId, length);
     expect(() => testStandupSend(user2.token, channel1.channelId, message)).toThrow(Error);
+    sleep(1010);
   });
 });
 

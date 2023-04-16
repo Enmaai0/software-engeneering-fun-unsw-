@@ -62,10 +62,12 @@ function standupStart(token: string, channelId: number, length: number) : TimeFi
 
   setTimeout(() => {
     channel.isActive = false;
-    setData(data);
     if (channel.buffer.length > 0) {
       messageSendV1(token, channelId, channel.buffer, true);
     }
+    channel.buffer = '';
+    setData(data);
+
   }, length * 1000);
 
   return {
