@@ -7,6 +7,8 @@
  * and appear under their respective area.
  */
 
+import crypto from 'crypto';
+
 interface Users {
   uId: number,
   email: string,
@@ -15,11 +17,25 @@ interface Users {
   handleStr: string,
 }
 
+interface React {
+  reactId: number;
+  uIds: number[];
+  isThisUserReacted: boolean;
+}
+
 interface Message {
   messageId: number;
   uId: number;
   message: string;
   timeSent: number;
+  reacts: React[];
+  isPinned: boolean;
+}
+
+interface Notification {
+  channelId: number,
+  dmId: number,
+  notificationMessage: string
 }
 interface User {
   uId: number,
@@ -30,6 +46,8 @@ interface User {
   userHandle: string,
   permissionId: number,
   tokens: string[],
+  notifications: Notification[]
+  resetCodes: string[]
 }
 
 interface Channel {
@@ -52,7 +70,8 @@ interface Dm {
 interface Data {
   users: User[],
   channels: Channel[],
-  dms: Dm[]
+  dms: Dm[],
+  globalMessageCounter: number
 }
 
 const FILE = 'src/persistenceDataStore.json';
@@ -62,7 +81,8 @@ import fs from 'fs';
 let data: Data = {
   users: [],
   channels: [],
-  dms: []
+  dms: [],
+  globalMessageCounter: 0
 };
 
 /**
@@ -108,9 +128,6 @@ function grabData() {
 function readData(): Data {
   const jsonData = fs.readFileSync(FILE, { flag: 'r' });
   const persData = JSON.parse(String(jsonData));
-  if (persData.length === 0) {
-    return data;
-  }
   return persData;
 }
 
@@ -123,4 +140,12 @@ function writeData(data: Data) {
   fs.writeFileSync(FILE, persData, { flag: 'w' });
 }
 
-export { getData, setData, saveData, grabData };
+/**
+ * When called utelises the 'crypto' node package to hash the string
+ * put as a parameter for the function.
+ */
+function getHashOf(string: string): string {
+  return crypto.createHash('sha512').update(string).digest('hex');
+}
+
+export { getData, setData, saveData, grabData, getHashOf };

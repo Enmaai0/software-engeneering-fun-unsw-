@@ -4,13 +4,9 @@
  * Contains the stub code functions of all users* functions.
  */
 
-import { getData, setData } from './dataStore';
+import { getData, getHashOf, setData } from './dataStore';
 import validator from 'validator';
-
-const MINNAMELENGTH = 1;
-const MAXNAMELENGTH = 50;
-const MINHANDLELENGTH = 3;
-const MAXHANDLELENGTH = 20;
+import HTTPError from 'http-errors';
 
 interface Error {
   error: string
@@ -32,6 +28,11 @@ interface UserArray {
   users: UserProfile[]
 }
 
+const MINNAMELENGTH = 1;
+const MAXNAMELENGTH = 50;
+const MINHANDLELENGTH = 3;
+const MAXHANDLELENGTH = 20;
+
 /**
  * userProfileV1
  *
@@ -45,11 +46,11 @@ function userProfileV1(token: string, uId: number) : Error | User {
   const data = getData();
 
   if (!isValidToken(token)) {
-    return { error: 'Invalid token (token not exist)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
-  if (uId >= data.users.length || uId < 0) {
-    return { error: 'Invalid user (uId not exist)' };
+  if (!isUserId(uId)) {
+    throw HTTPError(400, 'Invalid user (uId not exist)');
   }
 
   const user = data.users[uId];
@@ -75,16 +76,16 @@ function userProfileV1(token: string, uId: number) : Error | User {
  */
 function usersAllV1(token: string) : Error | UserArray {
   if (!isValidToken(token)) {
-    return { error: 'Invalid token (token not exist)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
   const data = getData();
   const users = data.users;
 
-  const returnArray = [];
+  const returnArray: UserProfile[] = [];
 
   for (const user of users) {
-    const userProfile = {
+    const userProfile: UserProfile = {
       uId: user.uId,
       email: user.email,
       nameFirst: user.nameFirst,
@@ -92,7 +93,9 @@ function usersAllV1(token: string) : Error | UserArray {
       handleStr: user.userHandle
     };
 
-    returnArray.push(userProfile);
+    if (user.nameFirst !== 'Removed' && user.nameFirst !== 'user') {
+      returnArray.push(userProfile);
+    }
   }
 
   return { users: returnArray };
@@ -100,19 +103,19 @@ function usersAllV1(token: string) : Error | UserArray {
 
 function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token (Enter a Valid Token)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
   if (nameFirst.length < MINNAMELENGTH || nameLast.length < MINNAMELENGTH) {
-    return { error: 'Invalid Name (Name Cannot be Empty)' };
+    throw HTTPError(400, 'Invalid Name (Name Cannot be Empty)');
   }
 
   if (nameFirst.length > MAXNAMELENGTH || nameLast.length > MAXNAMELENGTH) {
-    return { error: 'Invalid Name (Maximum 50 Characters)' };
+    throw HTTPError(400, 'Invalid Name (Maximum 50 Characters)');
   }
 
   const data = getData();
-  const uId = findUId(token);
+  const uId = getIdFromToken(token);
 
   data.users[uId].nameFirst = nameFirst;
   data.users[uId].nameLast = nameLast;
@@ -122,18 +125,18 @@ function userSetNameV1(token: string, nameFirst: string, nameLast: string) : Err
 
 function userSetEmailV1(token: string, email: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token (Enter a Valid Token)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
   if (!validator.isEmail(email)) {
-    return { error: 'Invalid Email (Enter a Valid Email)' };
+    throw HTTPError(400, 'Invalid Email (Enter a Valid Email)');
   }
 
   if (isRegisteredEmail(email)) {
-    return { error: 'Invalid Email (Email Already in Use)' };
+    throw HTTPError(400, 'Invalid Email (Email Already in Use)');
   }
 
-  const uId = findUId(token);
+  const uId = getIdFromToken(token);
 
   const data = getData();
   data.users[uId].email = email;
@@ -143,27 +146,27 @@ function userSetEmailV1(token: string, email: string) : Error | Record<string, n
 
 function userSetHandleV1(token: string, handle: string) : Error | Record<string, never> {
   if (!isValidToken(token)) {
-    return { error: 'Invalid Token (Enter a Valid Token)' };
+    throw HTTPError(403, 'Invalid token (token not exist)');
   }
 
   if (isUserHandleTaken(handle)) {
-    return { error: 'Invalid Handle (Handle Already Taken)' };
+    throw HTTPError(400, 'Invalid Handle (Handle Already Taken)');
   }
 
   if (handle.length < MINHANDLELENGTH) {
-    return { error: 'Invalid Handle (Minimum 3 Characters)' };
+    throw HTTPError(400, 'Invalid Handle (Minimum 3 Characters)');
   }
 
   if (handle.length > MAXHANDLELENGTH) {
-    return { error: 'Invalid Handle (Maximum 20 Characters)' };
+    throw HTTPError(400, 'Invalid Handle (Maximum 20 Characters)');
   }
 
   // Checks if the string has non-alphanumeric characters
-  if (handle.match(/^[0-9a-z]$/)) {
-    return { error: 'Invalid Handle (Must Contain Only Alphanumeric Characters' };
+  if (!/^[0-9a-z]+$/.test(handle)) {
+    throw HTTPError(400, 'Invalid Handle (Must Contain Only Alphanumeric Characters');
   }
 
-  const uId = findUId(token);
+  const uId = getIdFromToken(token);
 
   const data = getData();
   data.users[uId].userHandle = handle;
@@ -172,22 +175,27 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
   return {};
 }
 
+export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 };
+
+/** Helper Functions **/
+
 /**
  * isValidToken
  *
  * Given a token returns whether the token exists
  * within the dataStore or not.
  *
- * @param {string} token
- * @returns {boolean}
+ * @param { string } token
+ * @returns { boolean }
  */
 function isValidToken(token: string): boolean {
-  const users = getData().users;
-  for (const object of users) {
-    for (const theToken of object.tokens) {
-      if (theToken === token) {
-        return true;
-      }
+  const data = getData();
+  const hashedToken = getHashOf(token);
+
+  for (const user of data.users) {
+    const userTokenArray = user.tokens;
+    if (userTokenArray.includes(hashedToken)) {
+      return true;
     }
   }
   return false;
@@ -200,7 +208,7 @@ function isValidToken(token: string): boolean {
  * depending on whether the email is already
  * contained within dataStore under a user.
  *
- * @param {string} email
+ * @param { string } email
  * @return { boolean }
  */
 function isRegisteredEmail(email: string): boolean {
@@ -221,7 +229,7 @@ function isRegisteredEmail(email: string): boolean {
  * through the entire data base of users to
  * find if the userHandle already exists.
  *
- * @param {string} userHandle
+ * @param { string } userHandle
  * @return { boolean }
  */
 function isUserHandleTaken(userHandle: string): boolean {
@@ -236,23 +244,43 @@ function isUserHandleTaken(userHandle: string): boolean {
 }
 
 /**
- * findUId
+ * getIdFromToken
  *
- * Given a token, find the corresponding uId
+ * Given a token extracts the uId of the person
+ * associated with that token.
+ * Errors should not occur due to previous error test
  *
- * @param token
- * @returns {number} uId
+ * @param { string } token
+ * @returns { number }
  */
-function findUId(token: string): number {
+function getIdFromToken(token: string): number {
   const data = getData();
+  const hashedToken = getHashOf(token);
 
   for (const user of data.users) {
     const userTokenArray = user.tokens;
-    if (userTokenArray.includes(token)) {
+    if (userTokenArray.includes(hashedToken)) {
       return user.uId;
     }
   }
-  return -1;
 }
 
-export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 };
+/**
+ * isUserId
+ *
+ * Given a authUserId, checks if the authUserId
+ * is valid (exists in the dataStore)
+ *
+ * @param { number } uId
+ * @return { boolean }
+ */
+function isUserId(uId: number): boolean {
+  const data = getData();
+  const users = data.users;
+
+  if (users.some(user => user.uId === uId)) {
+    return true;
+  }
+
+  return false;
+}
