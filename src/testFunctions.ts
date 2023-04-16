@@ -214,3 +214,17 @@ export function testNotificationsGet(token: string) {
 export function testSearch(token: string, queryString: string) {
   return requestHelper('GET', '/search/v1', token, { queryString });
 }
+
+/** /standup/* Test Functions **/
+
+export function testStandupStart(token: string, channelId: number, length: number) {
+  return requestHelper('POST', '/standup/start/v1', token, { channelId, length });
+}
+
+export function testStandupActive(token: string, channelId: number) {
+  return requestHelper('GET', '/standup/active/v1', token, { channelId });
+}
+
+export function testStandupSend(token: string, channelId: number, message: string) {
+  return requestHelper('POST', '/standup/send/v1', token, { channelId, message });
+}
