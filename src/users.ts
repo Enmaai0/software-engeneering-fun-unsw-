@@ -11,7 +11,6 @@ import request from 'sync-request';
 import fs from 'fs';
 import Jimp from 'jimp';
 
-
 interface Error {
   error: string
 }
@@ -184,7 +183,7 @@ async function userProfileUploadPhoto(token: string, imgUrl: string, xStart: num
     throw HTTPError(403, 'Invalid Token');
   }
 
-  if (imgUrl.substring(imgUrl.length - 3) !== 'jpg' && imgUrl.substring(imgUrl.length - 3) !== 'jpeg') {
+  if (imgUrl.substring(imgUrl.length - 3) !== 'jpg' && imgUrl.substring(imgUrl.length - 4) !== 'jpeg') {
     throw HTTPError(400, 'Invalid image URL');
   }
 
