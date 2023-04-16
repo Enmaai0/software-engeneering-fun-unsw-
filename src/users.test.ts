@@ -654,10 +654,10 @@ describe('UserProfileUploadPhoto: Error Testing', () => {
 describe('Correct UserProfileUploadPhoto: Correct Return Testing', () => {
   let user1: AuthReturn;
   let imgUrl: string;
-  let xStart = 0;
-  let xEnd = 100;
-  let yStart = 0;
-  let yEnd = 100;
+  const xStart = 0;
+  const xEnd = 100;
+  const yStart = 0;
+  const yEnd = 100;
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
   });

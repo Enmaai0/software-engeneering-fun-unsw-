@@ -10,10 +10,7 @@ import HTTPError from 'http-errors';
 import request from 'sync-request';
 import fs from 'fs';
 import Jimp from 'jimp';
-import config from './config.json';
 
-const port = config.port;
-const url = config.url;
 
 interface Error {
   error: string
@@ -183,13 +180,12 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
 }
 
 async function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, yStart: number, xEnd: number, yEnd: number) {
-
   if (!isValidToken(token)) {
-    throw HTTPError(403, "Invalid Token");
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (imgUrl.substring(imgUrl.length - 3) !== 'jpg' && imgUrl.substring(imgUrl.length - 3) !== 'jpeg') {
-    throw HTTPError(400, "Invalid image URL");
+    throw HTTPError(400, 'Invalid image URL');
   }
 
   const res = request(
@@ -198,7 +194,7 @@ async function userProfileUploadPhoto(token: string, imgUrl: string, xStart: num
   );
 
   if (res.statusCode !== 200) {
-    throw HTTPError(400, "Invalid image URL");
+    throw HTTPError(400, 'Invalid image URL');
   }
 
   const image = await Jimp.read(imgUrl);
@@ -214,7 +210,7 @@ async function userProfileUploadPhoto(token: string, imgUrl: string, xStart: num
 
   const croppedImage = await image.crop(xStart, yStart, xEnd - xStart, yEnd - yStart);
   const ImageDta = await croppedImage.getBufferAsync(Jimp.MIME_JPEG);
-  fs.writeFileSync(`static/${token}.jpg`, ImageDta, {flag: 'w'});
+  fs.writeFileSync(`static/${token}.jpg`, ImageDta, { flag: 'w' });
 
   return {};
 }
