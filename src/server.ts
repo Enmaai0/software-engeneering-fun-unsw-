@@ -284,7 +284,6 @@ app.post('/message/unpin/v1', (req: Request, res: Response) => {
 });
 
 app.post('/message/react/v1', (req: Request, res: Response) => {
-  // For PUT/POST requests, data is transfered through the JSON body
   const { messageId, reactId } = req.body;
   const token = req.header('token');
   const result = messageReactV1(token, messageId, reactId);
@@ -292,7 +291,6 @@ app.post('/message/react/v1', (req: Request, res: Response) => {
 });
 
 app.post('/message/unreact/v1', (req: Request, res: Response) => {
-  // For PUT/POST requests, data is transfered through the JSON body
   const { messageId, reactId } = req.body;
   const token = req.header('token');
   const result = messageUnreactV1(token, messageId, reactId);
@@ -300,7 +298,6 @@ app.post('/message/unreact/v1', (req: Request, res: Response) => {
 });
 
 app.post('/message/share/v1', (req: Request, res: Response) => {
-  // For PUT/POST requests, data is transfered through the JSON body
   const { ogMessageId, message, channelId, dmId } = req.body;
   const token = req.header('token');
   const result = messageShareV1(token, ogMessageId, message, channelId, dmId);
