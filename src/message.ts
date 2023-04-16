@@ -622,10 +622,10 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
   const data = getData();
 
   // Checks the validity of channelId and dmId
-  if (channelId === -1 && dmId === -1){
+  if (channelId === -1 && dmId === -1) {
     throw HTTPError(400, 'channelId and dmId are not given');
   }
-  if (channelId !== -1 && dmId !== -1){
+  if (channelId !== -1 && dmId !== -1) {
     throw HTTPError(400, 'channelId and dmId invalid (both given)');
   }
   // Checks the token is valid and gives uId else returns error
@@ -636,12 +636,12 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
   let shareToChannel: boolean;
   if (checkChannelId(channelId)) {
     shareToChannel = true;
-    if (!isMemberChannel(userId, channelId)){
-       throw HTTPError(403, 'user is not in this channel');
+    if (!isMemberChannel(userId, channelId)) {
+      throw HTTPError(403, 'user is not in this channel');
     }
   } else if (isValidDmId(dmId)) {
     shareToChannel = false;
-    if (!isMemberDm(userId, dmId)){
+    if (!isMemberDm(userId, dmId)) {
       throw HTTPError(403, 'user is not in this dm');
     }
   } else {
@@ -650,7 +650,7 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
 
   // Check whether the messageId is valid
   const messageValid = checkMessageId(ogMessageId);
-  if (messageValid.route === 'empty'){
+  if (messageValid.route === 'empty') {
     throw HTTPError(400, 'invalid messageId');
   }
   const index1 = messageValid.index1;
@@ -658,7 +658,7 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
   const ogMessage = data[messageValid.route][index1].messages[index2].message;
 
   // Check valid message length
-  if (message.length > 1000){
+  if (message.length > 1000) {
     throw HTTPError(400, 'invalid message length');
   }
 

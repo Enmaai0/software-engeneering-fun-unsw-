@@ -1040,4 +1040,3 @@ describe('testing message/unreact', () => {
     expect(testMessageUnreact(token, message.messageId, 1)).toStrictEqual({ });
   });
 });
-
