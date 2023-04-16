@@ -19,6 +19,8 @@ import {
   testDmMessages,
   testMessagePin,
   testMessageUnPin,
+  testMessageSendDmLater,
+  testMessageSendLater,
 } from './testFunctions';
 const ONE_THOUSAND_CHARS = (
   'The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex nymphs. Waltz, bad nymph, for quick jigs vex!  Fox nymphs grab quick-jived waltz. Brick quiz whangs jumpy veldt fox. Bright vixens jump; dozy fowl quack. Quick wafting zephyrs vex bold Jim. Quick zephyrs blow, vexing daft Jim. Sex-charged fop blew my junk TV quiz. How quickly daft jumping zebras vex. Two driven jocks help fax my big quiz. Quick, Baz, get my woven flax jodhpurs! "Now fax quiz Jack!" my brave ghost pled. Five quacking zephyrs jolt my wax bed. Flummoxed by job, kvetching W. zaps Iraq. Cozy sphinx waves quart jug of bad milk. A very bad quack might jinx zippy fowls. Few quips galvanized the mock jury box. Quick brown dogs jump over the lazy fox. The jay, pig, fox, zebra, and my wolves quack! Blowzy red vixens fight for a quick jump. Joaquin Phoenix was gazed by MTV for luck. A wizards job is to vex chumps quickly in fog. Watch "Jeopardy!", Alex Trebeks fun TV quiz game. Woven silk pyjamas exchanged for blue quartz.'
@@ -773,5 +775,109 @@ describe('/message/unpin/v1: Return Testing', () => {
     testMessagePin(user1.token, message2.messageId);
 
     expect(testMessageUnPin(user1.token, message2.messageId)).toStrictEqual({});
+  });
+});
+
+/** message/sendlater/v1 Testing **/
+
+describe('/message/sendlater/v1: Error Testing', () => {
+  let user: AuthReturn, channel: ChannelsCreateReturn, timeSent: number;
+  beforeEach(() => {
+    user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    channel = testChannelsCreate(user.token, 'New Channel', true);
+    timeSent = Math.floor(Date.now() / 1000) + 2;
+  });
+
+  test('ChannelId: Invalid ChannelId', () => {
+    expect(() => testMessageSendLater(user.token, channel.channelId + 1, 'This message is valid', timeSent)).toThrow(Error);
+  });
+
+  test('Message: Invalid Length of Message (Empty)', () => {
+    expect(() => testMessageSendLater(user.token, channel.channelId, '', timeSent)).toThrow(Error);
+  });
+
+  test('Message: Invalid Length of Message (Over 1000 Characters)', () => {
+    expect(() => testMessageSendLater(user.token, channel.channelId, ONE_THOUSAND_CHARS, timeSent)).toThrow(Error);
+  });
+
+  test('Token: Token is Invalid', () => {
+    expect(() => testMessageSendLater(user.token + '1', channel.channelId, 'This message is valid', timeSent)).toThrow(Error);
+  });
+
+  test('Token: Not a Member of the Channel', () => {
+    const user2 = testAuthRegister('hello2@gmail.com', 'thisisapassword', 'James', 'Does');
+    expect(() => testMessageSendLater(user2.token, channel.channelId, 'This message is valid', timeSent)).toThrow(Error);
+  });
+
+  test('TimeSent: TimeSent is a time in the past', () => {
+    const timeSent2 = Math.floor(Date.now() / 1000) - 2;
+    expect(() => testMessageSendLater(user.token, channel.channelId, 'This message is valid', timeSent2)).toThrow(Error);
+  });
+});
+
+describe('/message/sendlater/v1: Correct Return Testing', () => {
+  let user1: AuthReturn, channel: ChannelsCreateReturn;
+  let timeSent: number;
+  beforeEach(() => {
+    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    channel = testChannelsCreate(user1.token, 'New Channel', true);
+  });
+
+  test('Correct Return: Sending Messages to Channel', () => {
+    timeSent = Math.floor(Date.now() / 1000) + 5;
+    expect(testMessageSendLater(user1.token, channel.channelId, 'First Message', timeSent)).toStrictEqual({ messageId: expect.any(Number) });
+  });
+});
+
+/** message/sendlaterdm/v1 Testing **/
+
+describe('/message/sendlaterdm/v1: Error Testing', () => {
+  let user1: AuthReturn, user2: AuthReturn, dm: DmCreateReturn, timeSent: number;
+  beforeEach(() => {
+    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    dm = testDmCreate(user1.token, [user2.authUserId]);
+    timeSent = Math.floor(Date.now() / 1000) + 2;
+  });
+
+  test('DmId: Invalid DmId', () => {
+    expect(() => testMessageSendDmLater(user1.token, dm.dmId + 1, 'This message is valid', timeSent)).toThrow(Error);
+  });
+
+  test('Message: Invalid Length of Message (Empty)', () => {
+    expect(() => testMessageSendDmLater(user1.token, dm.dmId, '', timeSent)).toThrow(Error);
+  });
+
+  test('Message: Invalid Length of Message (Over 1000 Characters)', () => {
+    expect(() => testMessageSendDmLater(user1.token, dm.dmId, ONE_THOUSAND_CHARS, timeSent)).toThrow(Error);
+  });
+
+  test('Token: Token is Invalid', () => {
+    expect(() => testMessageSendDmLater(user1.token + '1', dm.dmId, 'This message is valid', timeSent)).toThrow(Error);
+  });
+
+  test('Token: Not a Member of the Dm', () => {
+    const user3 = testAuthRegister('hello3@gmail.com', 'thisisapassword', 'unkonwn', 'Do');
+    expect(() => testMessageSendDmLater(user3.token, dm.dmId, 'This message is valid', timeSent)).toThrow(Error);
+  });
+
+  test('TimeSent: TimeSent is a time in the past', () => {
+    const timeSent2 = Math.floor(Date.now() / 1000) - 2;
+    expect(() => testMessageSendDmLater(user1.token, dm.dmId, 'This message is valid', timeSent2)).toThrow(Error);
+  });
+});
+
+describe('/message/sendlaterdm: Correct Return Testing', () => {
+  let user1: AuthReturn, user2: AuthReturn, dm: DmCreateReturn;
+  let timeSent: number;
+  beforeEach(() => {
+    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    dm = testDmCreate(user1.token, [user2.authUserId]);
+  });
+
+  test('Correct Return: Sending Messages to Channel', () => {
+    timeSent = Math.floor(Date.now() / 1000) + 5;
+    expect(testMessageSendDmLater(user1.token, dm.dmId, 'First Message', timeSent)).toStrictEqual({ messageId: expect.any(Number) });
   });
 });

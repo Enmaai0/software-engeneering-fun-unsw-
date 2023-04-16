@@ -171,6 +171,14 @@ export function testMessageUnPin(token: string, messageId: number) {
   return requestHelper('POST', '/message/unpin/v1', token, { messageId });
 }
 
+export function testMessageSendLater(token: string, channelId: number, message: string, timeSent: number) {
+  return requestHelper('POST', '/message/sendlater/v1', token, { channelId, message, timeSent });
+}
+
+export function testMessageSendDmLater(token: string, dmId: number, message: string, timeSent: number) {
+  return requestHelper('POST', '/message/sendlaterdm/v1', token, { dmId, message, timeSent });
+}
+
 /** /users/* Test Functions **/
 
 export function testUserProfile(token: string, uId: number) {

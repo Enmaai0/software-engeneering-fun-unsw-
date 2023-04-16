@@ -44,7 +44,7 @@ const MINMESSAGELENGTH = 1;
  * @param { string } message
  * @returns {{ messageId: number }}
  */
-function messageSendV1(token: string, channelId: number, message: string): MessageSendReturn | Error {
+function messageSendV1(token: string, channelId: number, message: string): MessageSendReturn {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -187,7 +187,7 @@ function getIdfromHandle(handle: string): number {
  * @param { string } message
  * @returns {{ messageId: number }}
  */
-function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn | Error {
+function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -475,11 +475,11 @@ function messagePinV1(token: string, messageId: number): Record<string, never> |
 
     data.dms[dmId].messages[messageIndex].isPinned = true;
     setData(data);
-    return {};
   }
+  return {};
 }
 
-function messageUnPinV1(token: string, messageId: number): Record<string, never> | Error {
+function messageUnPinV1(token: string, messageId: number): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -527,11 +527,33 @@ function messageUnPinV1(token: string, messageId: number): Record<string, never>
 
     data.dms[dmId].messages[messageIndex].isPinned = false;
     setData(data);
-    return {};
   }
+  return {};
 }
 
-export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1 };
+function messageSendLaterV1(token: string, channelId: number, message: string, timeSent: number): MessageSendReturn {
+  if (Math.floor(Date.now() / 1000) > timeSent) {
+    throw HTTPError(400, 'timeSent is a time in the past');
+  }
+
+  setTimeout(() => {
+    const messageId = messageSendV1(token, channelId, message);
+    return { messageId: messageId.messageId};
+  }, timeSent - Math.floor(Date.now() / 1000));
+}
+
+function messageSendLaterDmV1(token: string, dmId: number, message: string, timeSent: number): MessageSendReturn {
+  if (Math.floor(Date.now() / 1000) > timeSent) {
+    throw HTTPError(400, 'timeSent is a time in the past');
+  }
+
+  setTimeout(() => {
+    const messageId = messageSendDmV1(token, dmId, message);
+    return { messageId: messageId.messageId };
+  }, timeSent - Math.floor(Date.now() / 1000));
+}
+
+export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageSendLaterV1, messageSendLaterDmV1 };
 
 /** Helper Functions **/
 
