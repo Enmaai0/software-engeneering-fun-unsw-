@@ -37,7 +37,16 @@ interface DmCreateReturn {
   dmId: number;
 }
 
+/**
+ * Clears the dataStore before each test is ran. Ensures that
+ * tests do not rely on the results of others to ensure full
+ * functionality and correct implementation.
+*/
 beforeEach(() => {
+  testClear();
+});
+
+afterAll(() => {
   testClear();
 });
 

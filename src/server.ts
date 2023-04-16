@@ -13,6 +13,7 @@ import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandle
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
 import { channelsCreateV1, channelsListAllV1, channelsListV1 } from './channels';
 import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1, messagePinV1, messageUnPinV1 } from './message';
+import { standupStart, standupActive, standupSend } from './standup';
 
 // Set up web app
 const app = express();
@@ -343,6 +344,32 @@ app.get('/search/v1', (req: Request, res: Response) => {
   const token = req.header('token');
   const queryString = req.query.queryString as string;
   const returnMessage = search(token, queryString);
+  saveData();
+  res.json(returnMessage);
+});
+
+/** /standup/ Routes */
+
+app.post('/standup/start/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const { channelId, length } = req.body;
+  const returnMessage = standupStart(token, channelId, length);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.get('/standup/active/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const channelId = req.query.channelId as string;
+  const returnMessage = standupActive(token, Number(channelId));
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/standup/send/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const { channelId, message } = req.body;
+  const returnMessage = standupSend(token, channelId, message);
   saveData();
   res.json(returnMessage);
 });

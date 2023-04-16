@@ -57,6 +57,9 @@ interface Channel {
   owners: Users[],
   allMembers: Users[],
   messages: Message[],
+  isActive: boolean,
+  timeFinish: number,
+  buffer: string,
 }
 
 interface Dm {

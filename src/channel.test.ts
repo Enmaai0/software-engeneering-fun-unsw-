@@ -37,6 +37,10 @@ beforeEach(() => {
   testClear();
 });
 
+afterAll(() => {
+  testClear();
+});
+
 /** /channel/invite Testing **/
 
 describe('/channel/invite: Error Testing', () => {

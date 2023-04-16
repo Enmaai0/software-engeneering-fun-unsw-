@@ -31,6 +31,10 @@ beforeEach(() => {
   testClear();
 });
 
+afterAll(() => {
+  testClear();
+});
+
 /** channelsCreateV1 **/
 
 describe('/channels/create: Error Testing', () => {
