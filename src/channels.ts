@@ -32,6 +32,7 @@ interface Channel {
   allMembers: UserObject[];
   messages: Message[];
   isActive: boolean;
+  standupStarterId: number;
   timeFinish: number;
   buffer: string;
 }
@@ -84,6 +85,7 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): Chann
     allMembers: [userObject],
     messages: messageArray,
     isActive: false,
+    standupStarterId: -1,
     timeFinish: 0,
     buffer: '',
   };
