@@ -31,7 +31,8 @@ interface User {
   permissionId: number,
   tokens: string[],
   notifications: Notification[]
-  resetCodes: string[],
+  resetCodes: string[]
+  profileImg: string;
 }
 
 const MAXTOKEN = 10000000;
@@ -174,7 +175,8 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     permissionId: permissionId,
     tokens: [getHashOf(newToken)],
     notifications: [],
-    resetCodes: []
+    resetCodes: [],
+    profileImg: '',
   };
 
   data.users.push(userObject);

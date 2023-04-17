@@ -47,6 +47,7 @@ interface User {
   tokens: string[],
   notifications: Notification[]
   resetCodes: string[]
+  profileImg: string;
 }
 
 interface Channel {
