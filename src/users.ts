@@ -220,7 +220,12 @@ function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, y
         .crop(xStart, yStart, xEnd, yEnd)
         .write(imgPath);
     });
+  
+  const data = getData();
 
+  data.users[uId].profileImg = imgPath;
+
+  setData(data);
   return {};
 }
 
