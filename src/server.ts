@@ -303,6 +303,7 @@ app.post('/message/share/v1', (req: Request, res: Response) => {
   const token = req.header('token');
   const result = messageShareV1(token, ogMessageId, message, channelId, dmId);
   res.json(result);
+});
 
 app.post('/message/sendlater/v1', (req: Request, res: Response) => {
   const token = req.header('token');

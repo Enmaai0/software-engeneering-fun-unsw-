@@ -650,6 +650,7 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
   };
 }
 
+/**
  * messagePinV1
  *
  * Given a valid token and a messageId, pins that message in
@@ -711,7 +712,6 @@ function messagePinV1(token: string, messageId: number): Record<string, never> {
   }
 }
 
-=======
 /**
  * messageUnPinV1
  *
@@ -792,7 +792,7 @@ function messageSendLaterV1(token: string, channelId: number, message: string, t
     throw HTTPError(403, 'Invalid Token');
   }
 
-  if (!checkChannelId(channelId)) {
+  if (!isValidChannelId(channelId)) {
     throw HTTPError(400, 'Invalid ChannelId');
   }
 
@@ -866,7 +866,7 @@ function messageSendLaterDmV1(token: string, dmId: number, message: string, time
   return { messageId: data.globalMessageCounter };
 }
 
-export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageReactV1, messageUnreactV1, messageShareV1,  messageSendLaterV1, messageSendLaterDmV1 };
+export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageReactV1, messageUnreactV1, messageShareV1, messageSendLaterV1, messageSendLaterDmV1 };
 
 /** Helper Functions **/
 
