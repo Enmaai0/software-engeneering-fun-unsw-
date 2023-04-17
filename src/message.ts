@@ -439,7 +439,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
  */
 function messageReactV1(token : string, messageId : number, reactId : number): Record<never, never> {
   if (!isValidToken(token)) {
-    throw HTTPError(400, 'Invalid Token');
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (reactId !== 1) {
@@ -508,7 +508,7 @@ function messageReactV1(token : string, messageId : number, reactId : number): R
  */
 function messageUnreactV1(token : string, messageId : any, reactId : any): Record<never, never> {
   if (!isValidToken(token)) {
-    throw HTTPError(400, 'Invalid Token');
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (reactId !== 1) {
@@ -573,7 +573,7 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
   const data = getData();
 
   if (!isValidToken(token)) {
-    throw HTTPError(400, 'Invalid Token');
+    throw HTTPError(403, 'Invalid Token');
   }
 
   if (channelId === -1 && dmId === -1) {
