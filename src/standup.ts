@@ -55,8 +55,9 @@ function standupStart(token: string, channelId: number, length: number) : TimeFi
   if (!isMember(token, channelId)) {
     throw HTTPError(403, 'User is not a member (User is not a member of current channel)');
   }
-
+  const id = getIdFromToken(token);
   channel.isActive = true;
+  channel.standupStarterId = id;
   channel.timeFinish = Math.floor(Date.now() / 1000) + length;
   setData(data);
 

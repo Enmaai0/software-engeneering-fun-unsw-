@@ -16,7 +16,9 @@ import {
   testClear,
   testAuthRegister,
   testChannelsCreate,
-  testMessageSend
+  testMessageSend,
+  testStandupStart,
+  testStandupActive
 } from './testFunctions';
 
 interface AuthReturn {
@@ -431,7 +433,9 @@ describe('/channel/leave: Error Testing', () => {
     expect(() => testChannelLeave(user2.token, channel.channelId)).toThrow(Error);
   });
 
-  test('Invalid user: (User is the starter of this channel)', () => {
+  test('Invalid user: (User is the starter of the standup)', () => {
+    testStandupStart(user1.token, channel.channelId, 10);
+    testStandupActive(user1.token, channel.channelId);
     expect(() => testChannelLeave(user1.token, channel.channelId)).toThrow(Error);
   });
 });
