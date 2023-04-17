@@ -8,10 +8,6 @@
 import { getData, getHashOf, setData } from './dataStore';
 import HTTPError from 'http-errors';
 
-interface Error {
-  error: string
-}
-
 interface MessageSendReturn {
   messageId: number
 }
@@ -44,7 +40,7 @@ const MINMESSAGELENGTH = 1;
  * @param { string } message
  * @returns {{ messageId: number }}
  */
-function messageSendV1(token: string, channelId: number, message: string, standup?: boolean): MessageSendReturn | Error {
+function messageSendV1(token: string, channelId: number, message: string, standup?: boolean): MessageSendReturn {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -189,7 +185,7 @@ function getIdfromHandle(handle: string): number {
  * @param { string } message
  * @returns {{ messageId: number }}
  */
-function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn | Error {
+function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -296,7 +292,7 @@ function dmMessageNotif(uId: number, dmId: number, message: string) {
  * @param { string } message
  * @returns {{ }}
  */
-function messageEditV1(token: string, messageId: number, message: string): Record<string, never> | Error {
+function messageEditV1(token: string, messageId: number, message: string): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -376,7 +372,7 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
  * @param { number } messageId
  * @returns {{ }}
  */
-function messageRemoveV1(token: string, messageId: number): Record<string, never> | Error {
+function messageRemoveV1(token: string, messageId: number): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(400, 'Invalid Token');
   }
@@ -429,7 +425,17 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
   return {};
 }
 
-function messagePinV1(token: string, messageId: number): Record<string, never> | Error {
+/**
+ * messagePinV1
+ *
+ * Given a valid token and a messageId, pins that message in
+ * whereever the message is located (channel / dm).
+ *
+ * @param { string } token
+ * @param { string } messageId
+ * @returns {{ }}
+ */
+function messagePinV1(token: string, messageId: number): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -481,7 +487,17 @@ function messagePinV1(token: string, messageId: number): Record<string, never> |
   }
 }
 
-function messageUnPinV1(token: string, messageId: number): Record<string, never> | Error {
+/**
+ * messageUnPinV1
+ *
+ * Given a valid token and a messageId, unpins that message
+ * given it was already pinned.
+ *
+ * @param { string } token
+ * @param { string } messageId
+ * @returns {{ }}
+ */
+function messageUnPinV1(token: string, messageId: number): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -529,11 +545,103 @@ function messageUnPinV1(token: string, messageId: number): Record<string, never>
 
     data.dms[dmId].messages[messageIndex].isPinned = false;
     setData(data);
-    return {};
   }
+  return {};
 }
 
-export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1 };
+/**
+ * messageSendLaterV1
+ *
+ * Given a valid token, channelId, message and a time given in
+ * unix timestamp in seconds, sends the message to the given
+ * channel after the time has surpassed.
+ *
+ * @param { string } token
+ * @param { number } channelId
+ * @param { string } message
+ * @param { number } timeSent
+ * @returns {{ messageId: }}
+ */
+function messageSendLaterV1(token: string, channelId: number, message: string, timeSent: number): MessageSendReturn {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  if (!checkChannelId(channelId)) {
+    throw HTTPError(400, 'Invalid ChannelId');
+  }
+
+  if (message.length < MINMESSAGELENGTH || message.length > MAXMESSAGELENGTH) {
+    throw HTTPError(400, 'Invalid Message Length');
+  }
+
+  const userId = getIdFromToken(token);
+
+  if (!isMemberChannel(userId, channelId)) {
+    throw HTTPError(403, 'User is Not a Member of the Channel');
+  }
+
+  if (Math.floor(Date.now() / 1000) > timeSent) {
+    throw HTTPError(400, 'timeSent is a time in the past');
+  }
+
+  setTimeout(() => {
+    messageSendV1(token, channelId, message);
+  }, (timeSent * 1000) - Date.now());
+
+  const data = getData();
+  setData(data);
+
+  return { messageId: data.globalMessageCounter };
+}
+
+/**
+ * messageSendLaterDmV1
+ *
+ * Given a valid token, dmId, message and a time given in
+ * unix timestamp in seconds, sends the message to the given
+ * dm after the time has surpassed.
+ *
+ * @param { string } token
+ * @param { number } dmId
+ * @param { string } message
+ * @param { number } timeSent
+ * @returns {{ messageId: }}
+ */
+function messageSendLaterDmV1(token: string, dmId: number, message: string, timeSent: number): MessageSendReturn {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  if (!isValidDmId(dmId)) {
+    throw HTTPError(400, 'Invalid DmId');
+  }
+
+  if (message.length < MINMESSAGELENGTH || message.length > MAXMESSAGELENGTH) {
+    throw HTTPError(400, 'Invalid Message Length');
+  }
+
+  const userId = getIdFromToken(token);
+
+  if (!isMemberDm(userId, dmId)) {
+    throw HTTPError(403, 'User is Not a Member of the Dm');
+  }
+
+  if (Math.floor(Date.now() / 1000) > timeSent) {
+    throw HTTPError(400, 'timeSent is a time in the past');
+  }
+
+  setTimeout(() => {
+    messageSendDmV1(token, dmId, message);
+  }, (timeSent * 1000) - Date.now());
+
+  const data = getData();
+  setData(data);
+
+  return { messageId: data.globalMessageCounter };
+}
+
+export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageSendLaterV1, messageSendLaterDmV1 };
 
 /** Helper Functions **/
 

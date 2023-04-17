@@ -12,7 +12,7 @@ import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
 import { channelsCreateV1, channelsListAllV1, channelsListV1 } from './channels';
-import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1, messagePinV1, messageUnPinV1 } from './message';
+import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageSendLaterV1, messageSendLaterDmV1 } from './message';
 import { standupStart, standupActive, standupSend } from './standup';
 
 // Set up web app
@@ -280,6 +280,22 @@ app.post('/message/unpin/v1', (req: Request, res: Response) => {
   const token = req.header('token');
   const { messageId } = req.body;
   const returnMessage = messageUnPinV1(token, messageId);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/message/sendlater/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const { channelId, message, timeSent } = req.body;
+  const returnMessage = messageSendLaterV1(token, channelId, message, timeSent);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/message/sendlaterdm/v1', (req:Request, res: Response) => {
+  const token = req.header('token');
+  const { dmId, message, timeSent } = req.body;
+  const returnMessage = messageSendLaterDmV1(token, dmId, message, timeSent);
   saveData();
   res.json(returnMessage);
 });
