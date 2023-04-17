@@ -345,7 +345,7 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
   }
 
   if (!userAllowed) {
-    throw HTTPError(400, 'User does not have Permission to Edit this Message');
+    throw HTTPError(403, 'User does not have Permission to Edit this Message');
   }
 
   // If the message is empty it simply calls message remove
@@ -373,7 +373,7 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
  */
 function messageRemoveV1(token: string, messageId: number): Record<string, never> {
   if (!isValidToken(token)) {
-    throw HTTPError(400, 'Invalid Token');
+    throw HTTPError(403, 'Invalid Token');
   }
 
   const channelId = checkMessageInChannels(messageId);
@@ -397,7 +397,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
     messageObj = data.channels[channelId].messages[messageIndex];
 
     if (!isChannelOwner(userId, channelId) && userId !== messageObj.uId) {
-      throw HTTPError(400, 'User does not have Permission to Edit this Message');
+      throw HTTPError(403, 'User does not have Permission to Edit this Message');
     }
 
     data.channels[channelId].messages.splice(messageIndex, 1);
@@ -412,7 +412,7 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
     messageObj = data.dms[dmId].messages[messageIndex];
 
     if (!isDmOwner(userId, dmId) && userId !== messageObj.uId) {
-      throw HTTPError(400, 'User does not have Permission to Edit this Message');
+      throw HTTPError(403, 'User does not have Permission to Edit this Message');
     }
 
     data.dms[dmId].messages.splice(messageIndex, 1);
