@@ -198,14 +198,14 @@ function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, y
   }
 
   const uId = getIdFromToken(token);
-  const imgPath = 'static/' + String(uId) + 'ProfileImage.jpg'
+  const imgPath = 'static/' + String(uId) + 'ProfileImage.jpg';
 
   // Grabs the file from the internet and saves it
   // inside the /static folder.
   const res = request(
     'GET',
-    imgUrl,
-  )
+    imgUrl
+  );
 
   if (res.statusCode !== 200) {
     throw HTTPError(400, 'Could not GET Image');
@@ -219,9 +219,9 @@ function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, y
   Jimp.read(imgPath)
     .then((image) => {
       return image
-      .crop(xStart, yStart, xEnd, yEnd)
-      .write(imgPath)
-  });
+        .crop(xStart, yStart, xEnd, yEnd)
+        .write(imgPath);
+    });
 
   return {};
 }

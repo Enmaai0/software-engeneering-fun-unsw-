@@ -16,8 +16,6 @@ import {
   testUserProfileUploadPhoto
 } from './testFunctions';
 
-const sleep = require('atomic-sleep');
-
 /**
  * Clears the dataStore before each test is ran. Ensures that
  * tests do not rely on the results of others to ensure full
@@ -600,7 +598,7 @@ describe('Correct SetEmail: Correct Return Testing', () => {
 
 describe('UserProfileUploadPhoto: Error Testing', () => {
   let user1: AuthReturn;
-  let imgUrl = 'image.png';
+  const imgUrl = 'image.png';
   let xStart = 0;
   let xEnd = 100;
   let yStart = 0;
@@ -660,7 +658,7 @@ describe('UserProfileUploadPhoto: Error Testing', () => {
 
 describe('Correct UserProfileUploadPhoto: Correct Return Testing', () => {
   test('UserProfileUploadPhoto: Return Empty Object', () => {
-    const user1 =  testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    const user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
     const imgUrl = 'http://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Rufous_Hummingbird%2C_male_01.jpg/1280px-Rufous_Hummingbird%2C_male_01.jpg';
     const xStart = 0;
     const xEnd = 100;
