@@ -52,7 +52,7 @@ function messageSendV1(token: string, channelId: number, message: string, standu
     throw HTTPError(400, 'Invalid Message Length');
   }
 
-  if (message.length > MINMESSAGELENGTH && (typeof standup === 'undefined')) {
+  if (message.length > MAXMESSAGELENGTH && (typeof standup === 'undefined')) {
     throw HTTPError(400, 'Invalid Message Length');
   }
 

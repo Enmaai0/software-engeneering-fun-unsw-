@@ -59,6 +59,7 @@ interface Channel {
   isActive: boolean,
   timeFinish: number,
   buffer: string,
+  standupStarterId: number,
 }
 
 interface Dm {
