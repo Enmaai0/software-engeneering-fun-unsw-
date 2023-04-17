@@ -298,7 +298,7 @@ function channelLeaveV1(token: string, channelId: number): Error | Record<string
   const channel = data.channels[channelId];
   const id = getIdFromToken(token);
 
-  if (channel.owners[0].uId === id) {
+  if (channel.isActive && channel.standupStarterId === id) {
     throw HTTPError(400, 'Invalid user (User is the starter of this channel)');
   }
 

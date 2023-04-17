@@ -8,18 +8,13 @@
 import { getData, getHashOf, setData } from './dataStore';
 import HTTPError from 'http-errors';
 
-interface Error {
-  error: string
-}
-
 interface MessageSendReturn {
   messageId: number
 }
 
 interface React {
   reactId: number;
-  uIds: number[];
-  isThisUserReacted: boolean;
+  uId: number;
 }
 
 interface Message {
@@ -44,12 +39,12 @@ const MINMESSAGELENGTH = 1;
  * @param { string } message
  * @returns {{ messageId: number }}
  */
-function messageSendV1(token: string, channelId: number, message: string): MessageSendReturn | Error {
+function messageSendV1(token: string, channelId: number, message: string, standup?: boolean): MessageSendReturn {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
 
-  if (!checkChannelId(channelId)) {
+  if (!isValidChannelId(channelId)) {
     throw HTTPError(400, 'Invalid ChannelId');
   }
 
@@ -81,7 +76,9 @@ function messageSendV1(token: string, channelId: number, message: string): Messa
 
   data.channels[channelId].messages.push(messageObj);
 
-  channelMessageNotif(userId, channelId, message);
+  if (typeof standup === 'undefined') {
+    channelMessageNotif(userId, channelId, message);
+  }
 
   setData(data);
 
@@ -187,7 +184,7 @@ function getIdfromHandle(handle: string): number {
  * @param { string } message
  * @returns {{ messageId: number }}
  */
-function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn | Error {
+function messageSendDmV1(token: string, dmId: number, message: string): MessageSendReturn {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -294,7 +291,7 @@ function dmMessageNotif(uId: number, dmId: number, message: string) {
  * @param { string } message
  * @returns {{ }}
  */
-function messageEditV1(token: string, messageId: number, message: string): Record<string, never> | Error {
+function messageEditV1(token: string, messageId: number, message: string): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -374,7 +371,7 @@ function messageEditV1(token: string, messageId: number, message: string): Recor
  * @param { number } messageId
  * @returns {{ }}
  */
-function messageRemoveV1(token: string, messageId: number): Record<string, never> | Error {
+function messageRemoveV1(token: string, messageId: number): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(400, 'Invalid Token');
   }
@@ -427,7 +424,243 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
   return {};
 }
 
-function messagePinV1(token: string, messageId: number): Record<string, never> | Error {
+/**
+<<<<<<< src/message.ts
+ * messageReactV1
+ *
+ * Given a messageId and a reactId, adds a reaction
+ * to that message from the user
+ *
+ * @param { string } token
+ * @param { number } messageId
+ * @param { number } reactId
+ *
+ * @returns {{ }}
+ */
+function messageReactV1(token : string, messageId : number, reactId : number): Record<never, never> {
+  if (!isValidToken(token)) {
+    throw HTTPError(400, 'Invalid Token');
+  }
+
+  if (reactId !== 1) {
+    throw HTTPError(400, 'Invalid reactId');
+  }
+
+  const channelId = checkMessageInChannels(messageId);
+  const dmId = checkMessageInDms(messageId);
+
+  if (channelId === -1 && dmId === -1) {
+    throw HTTPError(400, 'Invalid Message Id');
+  }
+
+  const userId = getIdFromToken(token);
+
+  const data = getData();
+  let messageObj: Message, messageIndex;
+
+  if (channelId > -1 && dmId === -1) {
+    if (!isMemberChannel(userId, channelId)) {
+      throw HTTPError(400, 'User is not a Member of the Channel');
+    }
+
+    messageIndex = getMessageIndex(messageId, channelId, 'channel');
+    messageObj = data.channels[channelId].messages[messageIndex];
+  }
+
+  if (dmId > -1 && channelId === -1) {
+    if (!isMemberDm(userId, dmId)) {
+      throw HTTPError(400, 'User is not a Member of the Dm');
+    }
+
+    messageIndex = getMessageIndex(messageId, dmId, 'dm');
+    messageObj = data.dms[dmId].messages[messageIndex];
+  }
+
+  for (const reaction of messageObj.reacts) {
+    if (reaction.uId === userId && reaction.reactId === reactId) {
+      throw HTTPError(400, 'Message already has this reaction from the user');
+    }
+  }
+
+  const newReact = {
+    reactId: reactId,
+    uId: userId
+  };
+
+  messageObj.reacts.push(newReact);
+
+  setData(data);
+
+  return {};
+}
+
+/**
+ * messageUnreactV1
+ *
+ * Given a messageId and a reactId, removes that reaction
+ * from that message from the user
+ *
+ * @param { String } token
+ * @param { int } messageId
+ * @param { int } reactId
+ *
+ * @returns {{ }}
+ */
+function messageUnreactV1(token : string, messageId : any, reactId : any): Record<never, never> {
+  if (!isValidToken(token)) {
+    throw HTTPError(400, 'Invalid Token');
+  }
+
+  if (reactId !== 1) {
+    throw HTTPError(400, 'Invalid reactId');
+  }
+
+  const channelId = checkMessageInChannels(messageId);
+  const dmId = checkMessageInDms(messageId);
+
+  if (channelId === -1 && dmId === -1) {
+    throw HTTPError(400, 'Invalid Message Id');
+  }
+
+  const userId = getIdFromToken(token);
+
+  const data = getData();
+  let messageObj: Message, messageIndex;
+
+  if (channelId > -1 && dmId === -1) {
+    if (!isMemberChannel(userId, channelId)) {
+      throw HTTPError(400, 'User is not a Member of the Channel');
+    }
+
+    messageIndex = getMessageIndex(messageId, channelId, 'channel');
+    messageObj = data.channels[channelId].messages[messageIndex];
+  }
+
+  if (dmId > -1 && channelId === -1) {
+    if (!isMemberDm(userId, dmId)) {
+      throw HTTPError(400, 'User is not a Member of the Dm');
+    }
+
+    messageIndex = getMessageIndex(messageId, dmId, 'dm');
+    messageObj = data.dms[dmId].messages[messageIndex];
+  }
+
+  for (const reaction of messageObj.reacts) {
+    if (reaction.uId === userId && reaction.reactId === reactId) {
+      messageObj.reacts.splice(messageObj.reacts.indexOf(reaction), 1);
+      setData(data);
+      return {};
+    }
+  }
+
+  throw HTTPError(400, 'Message has not been reacted to by that user with that reactId');
+}
+
+/**
+ * messageShareV1
+ *
+ * Shares a message to another channel/dm
+ *
+ * @param { string } token
+ * @param { number } ogMessageId
+ * @param { string } message
+ * @param { number } channelId
+ * @param { number } dmId
+ * @returns {{ sharedMessageId: number }}
+ */
+function messageShareV1(token: string, ogMessageId: number, message: string, channelId: number, dmId: number): { sharedMessageId: number } {
+  const userId = getIdFromToken(token);
+  const data = getData();
+
+  if (!isValidToken(token)) {
+    throw HTTPError(400, 'Invalid Token');
+  }
+
+  if (channelId === -1 && dmId === -1) {
+    throw HTTPError(400, 'channelId and dmId are not given');
+  }
+
+  if (channelId !== -1 && dmId !== -1) {
+    throw HTTPError(400, 'channelId and dmId invalid (both given)');
+  }
+
+  if (message.length > 1000) {
+    throw HTTPError(400, 'Message cannot exceed 1000 characters');
+  }
+
+  if (dmId > -1 && channelId === -1) {
+    if (!isValidDmId(dmId)) {
+      throw HTTPError(400, 'Invalid dmId');
+    }
+
+    if (!isMemberDm(userId, dmId)) {
+      throw HTTPError(403, 'User is not a member of the receiver Dm');
+    }
+  }
+
+  if (channelId > -1 && dmId === -1) {
+    if (!isValidChannelId(channelId)) {
+      throw HTTPError(400, 'Invalid channelId');
+    }
+
+    if (!isMemberChannel(userId, channelId)) {
+      throw HTTPError(403, 'User is not a member of the receiver Channel');
+    }
+  }
+
+  const ogDmIndex = checkMessageInDms(ogMessageId);
+  const ogChannelIndex = checkMessageInChannels(ogMessageId);
+
+  if (ogChannelIndex === -1 && ogDmIndex === -1) {
+    throw HTTPError(400, 'No message with this Id');
+  }
+
+  let ogMessage, ogMessageIndex;
+
+  if (ogChannelIndex === -1 && ogDmIndex > -1) {
+    if (!isMemberDm(userId, ogDmIndex)) {
+      throw HTTPError(403, 'User is not a member of the sending Dm');
+    }
+
+    ogMessageIndex = getMessageIndex(ogMessageId, ogDmIndex, 'dm');
+    ogMessage = data.dms[ogDmIndex].messages[ogMessageIndex];
+  }
+
+  if (ogChannelIndex > -1 && ogDmIndex === -1) {
+    if (!isMemberChannel(userId, ogChannelIndex)) {
+      throw HTTPError(403, 'User is not a member of the sending Channel');
+    }
+
+    ogMessageIndex = getMessageIndex(ogMessageId, ogChannelIndex, 'channel');
+    ogMessage = data.channels[ogChannelIndex].messages[ogMessageIndex];
+  }
+
+  let sharedMessageId;
+
+  if (dmId > -1) {
+    sharedMessageId = messageSendDmV1(token, dmId, `Shared: ${ogMessage.message}. Added: ${message}`);
+  }
+
+  if (channelId > -1) {
+    sharedMessageId = messageSendV1(token, channelId, `Shared: ${ogMessage.message}. Added: ${message}`);
+  }
+
+  return {
+    sharedMessageId: sharedMessageId.messageId,
+  };
+}
+
+/**
+ * messagePinV1
+ *
+ * Given a valid token and a messageId, pins that message in
+ * whereever the message is located (channel / dm).
+ *
+ * @param { string } token
+ * @param { string } messageId
+ * @returns {{ }}
+ */
+function messagePinV1(token: string, messageId: number): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -479,7 +712,17 @@ function messagePinV1(token: string, messageId: number): Record<string, never> |
   }
 }
 
-function messageUnPinV1(token: string, messageId: number): Record<string, never> | Error {
+/**
+ * messageUnPinV1
+ *
+ * Given a valid token and a messageId, unpins that message
+ * given it was already pinned.
+ *
+ * @param { string } token
+ * @param { string } messageId
+ * @returns {{ }}
+ */
+function messageUnPinV1(token: string, messageId: number): Record<string, never> {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
@@ -527,11 +770,103 @@ function messageUnPinV1(token: string, messageId: number): Record<string, never>
 
     data.dms[dmId].messages[messageIndex].isPinned = false;
     setData(data);
-    return {};
   }
+  return {};
 }
 
-export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1 };
+/**
+ * messageSendLaterV1
+ *
+ * Given a valid token, channelId, message and a time given in
+ * unix timestamp in seconds, sends the message to the given
+ * channel after the time has surpassed.
+ *
+ * @param { string } token
+ * @param { number } channelId
+ * @param { string } message
+ * @param { number } timeSent
+ * @returns {{ messageId: }}
+ */
+function messageSendLaterV1(token: string, channelId: number, message: string, timeSent: number): MessageSendReturn {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  if (!isValidChannelId(channelId)) {
+    throw HTTPError(400, 'Invalid ChannelId');
+  }
+
+  if (message.length < MINMESSAGELENGTH || message.length > MAXMESSAGELENGTH) {
+    throw HTTPError(400, 'Invalid Message Length');
+  }
+
+  const userId = getIdFromToken(token);
+
+  if (!isMemberChannel(userId, channelId)) {
+    throw HTTPError(403, 'User is Not a Member of the Channel');
+  }
+
+  if (Math.floor(Date.now() / 1000) > timeSent) {
+    throw HTTPError(400, 'timeSent is a time in the past');
+  }
+
+  setTimeout(() => {
+    messageSendV1(token, channelId, message);
+  }, (timeSent * 1000) - Date.now());
+
+  const data = getData();
+  setData(data);
+
+  return { messageId: data.globalMessageCounter };
+}
+
+/**
+ * messageSendLaterDmV1
+ *
+ * Given a valid token, dmId, message and a time given in
+ * unix timestamp in seconds, sends the message to the given
+ * dm after the time has surpassed.
+ *
+ * @param { string } token
+ * @param { number } dmId
+ * @param { string } message
+ * @param { number } timeSent
+ * @returns {{ messageId: }}
+ */
+function messageSendLaterDmV1(token: string, dmId: number, message: string, timeSent: number): MessageSendReturn {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  if (!isValidDmId(dmId)) {
+    throw HTTPError(400, 'Invalid DmId');
+  }
+
+  if (message.length < MINMESSAGELENGTH || message.length > MAXMESSAGELENGTH) {
+    throw HTTPError(400, 'Invalid Message Length');
+  }
+
+  const userId = getIdFromToken(token);
+
+  if (!isMemberDm(userId, dmId)) {
+    throw HTTPError(403, 'User is Not a Member of the Dm');
+  }
+
+  if (Math.floor(Date.now() / 1000) > timeSent) {
+    throw HTTPError(400, 'timeSent is a time in the past');
+  }
+
+  setTimeout(() => {
+    messageSendDmV1(token, dmId, message);
+  }, (timeSent * 1000) - Date.now());
+
+  const data = getData();
+  setData(data);
+
+  return { messageId: data.globalMessageCounter };
+}
+
+export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageReactV1, messageUnreactV1, messageShareV1, messageSendLaterV1, messageSendLaterDmV1 };
 
 /** Helper Functions **/
 
@@ -587,7 +922,7 @@ function getIdFromToken(token: string): number {
  * @param { number } channelId
  * @returns { boolean }
  */
-function checkChannelId(channelId: number): boolean {
+function isValidChannelId(channelId: number): boolean {
   const data = getData();
 
   for (const channel of data.channels) {

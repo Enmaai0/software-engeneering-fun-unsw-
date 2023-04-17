@@ -19,8 +19,7 @@ interface Users {
 
 interface React {
   reactId: number;
-  uIds: number[];
-  isThisUserReacted: boolean;
+  uId: number;
 }
 
 interface Message {
@@ -57,6 +56,9 @@ interface Channel {
   owners: Users[],
   allMembers: Users[],
   messages: Message[],
+  isActive: boolean,
+  timeFinish: number,
+  buffer: string,
 }
 
 interface Dm {

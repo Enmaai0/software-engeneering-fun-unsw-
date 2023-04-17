@@ -31,6 +31,10 @@ interface Channel {
   owners: UserObject[];
   allMembers: UserObject[];
   messages: Message[];
+  isActive: boolean;
+  standupStarterId: number;
+  timeFinish: number;
+  buffer: string;
 }
 
 interface Channels {
@@ -80,6 +84,10 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): Chann
     owners: [userObject],
     allMembers: [userObject],
     messages: messageArray,
+    isActive: false,
+    standupStarterId: -1,
+    timeFinish: 0,
+    buffer: '',
   };
 
   data.channels.push(channel);

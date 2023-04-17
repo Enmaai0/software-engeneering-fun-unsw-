@@ -171,6 +171,26 @@ export function testMessageUnPin(token: string, messageId: number) {
   return requestHelper('POST', '/message/unpin/v1', token, { messageId });
 }
 
+export function testMessageReact(token: string, messageId: number, reactId: number) {
+  return requestHelper('POST', '/message/react/v1', token, { messageId, reactId });
+}
+
+export function testMessageUnreact(token: string, messageId: number, reactId: number) {
+  return requestHelper('POST', '/message/unreact/v1', token, { messageId, reactId });
+}
+
+export function testMessageShare(token: string, ogMessageId: number, message: string, channelId: number, dmId: number) {
+  return requestHelper('POST', '/message/share/v1', token, { ogMessageId, message, channelId, dmId });
+}
+
+export function testMessageSendLater(token: string, channelId: number, message: string, timeSent: number) {
+  return requestHelper('POST', '/message/sendlater/v1', token, { channelId, message, timeSent });
+}
+
+export function testMessageSendDmLater(token: string, dmId: number, message: string, timeSent: number) {
+  return requestHelper('POST', '/message/sendlaterdm/v1', token, { dmId, message, timeSent });
+}
+
 /** /users/* Test Functions **/
 
 export function testUserProfile(token: string, uId: number) {
@@ -209,4 +229,18 @@ export function testNotificationsGet(token: string) {
 
 export function testSearch(token: string, queryString: string) {
   return requestHelper('GET', '/search/v1', token, { queryString });
+}
+
+/** /standup/* Test Functions **/
+
+export function testStandupStart(token: string, channelId: number, length: number) {
+  return requestHelper('POST', '/standup/start/v1', token, { channelId, length });
+}
+
+export function testStandupActive(token: string, channelId: number) {
+  return requestHelper('GET', '/standup/active/v1', token, { channelId });
+}
+
+export function testStandupSend(token: string, channelId: number, message: string) {
+  return requestHelper('POST', '/standup/send/v1', token, { channelId, message });
 }

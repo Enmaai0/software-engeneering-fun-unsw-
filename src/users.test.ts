@@ -25,6 +25,10 @@ beforeEach(() => {
   testClear();
 });
 
+afterAll(() => {
+  testClear();
+});
+
 interface AuthReturn {
   token: string;
   authUserId: number;

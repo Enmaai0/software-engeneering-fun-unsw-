@@ -9,6 +9,7 @@
         "posttest": "pkill -f 'node_modules/sync-rpc/lib/worker.js' > /dev/null 2>&1"
     },
     "dependencies": {
+        "atomic-sleep": "^1.0.0",
         "cors": "^2.8.5",
         "express": "^4.18.0",
         "http-errors": "^2.0.0",

@@ -12,7 +12,8 @@ import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1, userProfileUploadPhoto } from './users';
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
 import { channelsCreateV1, channelsListAllV1, channelsListV1 } from './channels';
-import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1, messagePinV1, messageUnPinV1 } from './message';
+import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageReactV1, messageUnreactV1, messageShareV1, messageSendLaterV1, messageSendLaterDmV1 } from './message';
+import { standupStart, standupActive, standupSend } from './standup';
 
 // Set up web app
 const app = express();
@@ -285,6 +286,43 @@ app.post('/message/unpin/v1', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
+app.post('/message/react/v1', (req: Request, res: Response) => {
+  const { messageId, reactId } = req.body;
+  const token = req.header('token');
+  const result = messageReactV1(token, messageId, reactId);
+  res.json(result);
+});
+
+app.post('/message/unreact/v1', (req: Request, res: Response) => {
+  const { messageId, reactId } = req.body;
+  const token = req.header('token');
+  const result = messageUnreactV1(token, messageId, reactId);
+  res.json(result);
+});
+
+app.post('/message/share/v1', (req: Request, res: Response) => {
+  const { ogMessageId, message, channelId, dmId } = req.body;
+  const token = req.header('token');
+  const result = messageShareV1(token, ogMessageId, message, channelId, dmId);
+  res.json(result);
+});
+
+app.post('/message/sendlater/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const { channelId, message, timeSent } = req.body;
+  const returnMessage = messageSendLaterV1(token, channelId, message, timeSent);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/message/sendlaterdm/v1', (req:Request, res: Response) => {
+  const token = req.header('token');
+  const { dmId, message, timeSent } = req.body;
+  const returnMessage = messageSendLaterDmV1(token, dmId, message, timeSent);
+  saveData();
+  res.json(returnMessage);
+});
+
 /** /user/* Routes **/
 
 app.get('/user/profile/v3', (req: Request, res: Response) => {
@@ -353,6 +391,32 @@ app.get('/search/v1', (req: Request, res: Response) => {
   const token = req.header('token');
   const queryString = req.query.queryString as string;
   const returnMessage = search(token, queryString);
+  saveData();
+  res.json(returnMessage);
+});
+
+/** /standup/ Routes */
+
+app.post('/standup/start/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const { channelId, length } = req.body;
+  const returnMessage = standupStart(token, channelId, length);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.get('/standup/active/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const channelId = req.query.channelId as string;
+  const returnMessage = standupActive(token, Number(channelId));
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/standup/send/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const { channelId, message } = req.body;
+  const returnMessage = standupSend(token, channelId, message);
   saveData();
   res.json(returnMessage);
 });
