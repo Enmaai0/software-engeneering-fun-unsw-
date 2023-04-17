@@ -187,7 +187,7 @@ function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, y
     throw HTTPError(400, 'Invalid image URL (Must be jpg or jpeg)');
   }
 
-  if (imgUrl.startsWith('https')) {
+  if (!imgUrl.startsWith('http') || imgUrl.startsWith('https')) {
     throw HTTPError(400, 'Invalid image URL (Must begin with http://)');
   }
 

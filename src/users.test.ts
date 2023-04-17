@@ -616,17 +616,22 @@ describe('UserProfileUploadPhoto: Error Testing', () => {
   });
 
   test('URL: Invalid imgUrl', () => {
-    const testImgUrl = '.jpg'; // Invalid imgUrl
+    const testImgUrl = '.jpg';
     expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
   test('URL: Invalid imgUrl', () => {
-    const testImgUrl = '.jpeg'; // Invalid imgUrl
+    const testImgUrl = '.jpeg';
     expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
   test('URL: Invalid imgUrl (URL starts with https)', () => {
-    const testImgUrl = 'https://image.jpg'; // Invalid imgUrl
+    const testImgUrl = 'https://image.jpg';
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('URL: Invalid imgUrl (URL doesnt start with http)', () => {
+    const testImgUrl = 'image.jpg';
     expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
