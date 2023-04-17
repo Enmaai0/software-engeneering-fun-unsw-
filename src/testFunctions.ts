@@ -187,7 +187,7 @@ export function testMessageSendLater(token: string, channelId: number, message: 
   return requestHelper('POST', '/message/sendlater/v1', token, { channelId, message, timeSent });
 }
 
-export function testMessageSendLaterDm(token: string, dmId: number, message: string, timeSent: number) {
+export function testMessageSendDmLater(token: string, dmId: number, message: string, timeSent: number) {
   return requestHelper('POST', '/message/sendlaterdm/v1', token, { dmId, message, timeSent });
 }
 
