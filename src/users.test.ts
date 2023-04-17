@@ -620,6 +620,11 @@ describe('UserProfileUploadPhoto: Error Testing', () => {
     expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
+  test('URL: Invalid imgUrl', () => {
+    const testImgUrl = '.jpeg'; // Invalid imgUrl
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
   test('URL: Invalid imgUrl (URL starts with https)', () => {
     const testImgUrl = 'https://image.jpg'; // Invalid imgUrl
     expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
