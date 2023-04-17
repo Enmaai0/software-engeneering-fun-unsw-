@@ -364,7 +364,7 @@ app.put('/user/profile/sethandle/v2', (req: Request, res: Response) => {
   res.json(returnMessage);
 });
 
-app.post('user/profile/uploadphoto/v1', (req: Request, res: Response) => {
+app.post('/user/profile/uploadphoto/v1', (req: Request, res: Response) => {
   const token = req.header('token');
   const { imgUrl, xStart, yStart, xEnd, yEnd } = req.body;
   const returnMessage = userProfileUploadPhoto(token, imgUrl, xStart, yStart, xEnd, yEnd);

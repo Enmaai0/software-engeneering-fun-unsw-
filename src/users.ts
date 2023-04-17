@@ -8,8 +8,8 @@ import { getData, getHashOf, setData } from './dataStore';
 import validator from 'validator';
 import HTTPError from 'http-errors';
 import request from 'sync-request';
-import fs from 'fs';
 import Jimp from 'jimp';
+import fs from 'fs';
 
 interface Error {
   error: string
@@ -178,38 +178,50 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
   return {};
 }
 
-async function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, yStart: number, xEnd: number, yEnd: number) {
+function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, yStart: number, xEnd: number, yEnd: number) {
   if (!isValidToken(token)) {
     throw HTTPError(403, 'Invalid Token');
   }
 
-  if (imgUrl.substring(imgUrl.length - 3) !== 'jpg' && imgUrl.substring(imgUrl.length - 4) !== 'jpeg') {
+  if (!imgUrl.endsWith('.jpg')) {
     throw HTTPError(400, 'Invalid image URL');
   }
 
+  if (imgUrl.startsWith('https')) {
+    throw HTTPError(400, 'Invalid image URL');
+  }
+
+  if (imgUrl.endsWith('.jpg')) {
+    if (imgUrl.substring(0, imgUrl.length - 4).length === 0) {
+      throw HTTPError(400, 'Invalid image URL Cannot be Empty');
+    }
+  }
+
+  const uId = getIdFromToken(token);
+  const imgPath = 'static/' + String(uId) + 'ProfileImage.jpg'
+
+  // Grabs the file from the internet and saves it
+  // inside the /static folder.
   const res = request(
     'GET',
-    imgUrl
-  );
+    imgUrl,
+  )
 
   if (res.statusCode !== 200) {
-    throw HTTPError(400, 'Invalid image URL');
+    throw HTTPError(400, 'Could not GET Image');
   }
 
-  const image = await Jimp.read(imgUrl);
-  const { width, height } = image.bitmap;
+  const body = res.getBody();
 
-  if (xStart < 0 || xEnd > width || yStart < 0 || yEnd > height) {
-    throw HTTPError(400, 'The provided coordinates are not within the dimensions of the image.');
-  }
+  fs.writeFileSync(imgPath, body, { flag: 'w' });
 
-  if (xStart >= xEnd || yStart >= yEnd) {
-    throw HTTPError(400, 'The provided coordinates are not valid');
-  }
-
-  const croppedImage = await image.crop(xStart, yStart, xEnd - xStart, yEnd - yStart);
-  const ImageDta = await croppedImage.getBufferAsync(Jimp.MIME_JPEG);
-  fs.writeFileSync(`static/${token}.jpg`, ImageDta, { flag: 'w' });
+  // Reads the previously saved file and crops it
+  Jimp.read(imgPath)
+    .then((image) => {
+      return image
+      .crop(xStart, yStart, xEnd, yEnd)
+      .write(imgPath)
+  });
 
   return {};
 }

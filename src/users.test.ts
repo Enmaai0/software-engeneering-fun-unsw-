@@ -16,16 +16,14 @@ import {
   testUserProfileUploadPhoto
 } from './testFunctions';
 
+const sleep = require('atomic-sleep');
+
 /**
  * Clears the dataStore before each test is ran. Ensures that
  * tests do not rely on the results of others to ensure full
  * functionality and correct implementation.
 */
 beforeEach(() => {
-  testClear();
-});
-
-afterAll(() => {
   testClear();
 });
 
@@ -602,7 +600,7 @@ describe('Correct SetEmail: Correct Return Testing', () => {
 
 describe('UserProfileUploadPhoto: Error Testing', () => {
   let user1: AuthReturn;
-  let imgUrl: string;
+  let imgUrl = 'image.png';
   let xStart = 0;
   let xEnd = 100;
   let yStart = 0;
@@ -615,58 +613,59 @@ describe('UserProfileUploadPhoto: Error Testing', () => {
     expect(() => testUserProfileUploadPhoto(user1.token + 1, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
-  test('Token: Invalid imgUrl Not End With jpg or jpeg', () => {
+  test('URL: Invalid imgUrl Not End With jpg or jpeg', () => {
     expect(() => testUserProfileUploadPhoto(user1.token, imgUrl + 1, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
-  test('Token: Invalid imgUrl', () => {
-    imgUrl = '.jpg'; // Invalid imgUrl
-    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  test('URL: Invalid imgUrl', () => {
+    const testImgUrl = '.jpg'; // Invalid imgUrl
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
-  test('Token: Invalid xStart', () => {
+  test('URL: Invalid imgUrl (URL starts with https)', () => {
+    const testImgUrl = 'https://image.jpg'; // Invalid imgUrl
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Crop: Invalid xStart', () => {
     xStart = -1;
     expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
-  test('Token: Invalid yStart', () => {
+  test('Crop: Invalid yStart', () => {
     yStart = -1;
     expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
-  test('Token: Invalid xEnd', () => {
+  test('Crop: Invalid xEnd', () => {
     xEnd = -1;
     expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
-  test('Token: Invalid yEnd', () => {
+  test('Crop: Invalid yEnd', () => {
     yEnd = -1;
     expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
-  test('Token: Invalid xEnd >= xStart', () => {
+  test('Crop: Invalid xEnd >= xStart', () => {
     xStart = 100;
     expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
-  test('Token: Invalid yEnd >= yStart', () => {
+  test('Crop: Invalid yEnd >= yStart', () => {
     yStart = 100;
     expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 });
 
 describe('Correct UserProfileUploadPhoto: Correct Return Testing', () => {
-  let user1: AuthReturn;
-  let imgUrl: string;
-  const xStart = 0;
-  const xEnd = 100;
-  const yStart = 0;
-  const yEnd = 100;
-  beforeEach(() => {
-    user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
-  });
-
-  test('SetEmail: Return Empty Object', () => {
-    expect(testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toStrictEqual({ });
+  test('UserProfileUploadPhoto: Return Empty Object', () => {
+    const user1 =  testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    const imgUrl = 'http://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Rufous_Hummingbird%2C_male_01.jpg/1280px-Rufous_Hummingbird%2C_male_01.jpg';
+    const xStart = 0;
+    const xEnd = 100;
+    const yStart = 0;
+    const yEnd = 100;
+    expect(testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toStrictEqual({});
   });
 });
