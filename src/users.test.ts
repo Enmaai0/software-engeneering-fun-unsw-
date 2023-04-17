@@ -12,7 +12,8 @@ import {
   testSetEmail,
   testSetHandle,
   testClear,
-  testAuthRegister
+  testAuthRegister,
+  testUserProfileUploadPhoto
 } from './testFunctions';
 
 /**
@@ -21,10 +22,6 @@ import {
  * functionality and correct implementation.
 */
 beforeEach(() => {
-  testClear();
-});
-
-afterAll(() => {
   testClear();
 });
 
@@ -594,5 +591,89 @@ describe('Correct SetEmail: Correct Return Testing', () => {
         handleStr: 'testbot0',
       }]
     });
+  });
+});
+
+/** UserProfileUploadPhoto Function **/
+
+describe('UserProfileUploadPhoto: Error Testing', () => {
+  let user1: AuthReturn;
+  const imgUrl = 'image.png';
+  let xStart = 0;
+  let xEnd = 100;
+  let yStart = 0;
+  let yEnd = 100;
+  beforeEach(() => {
+    user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+  });
+
+  test('Token: Invalid Token', () => {
+    expect(() => testUserProfileUploadPhoto(user1.token + 1, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('URL: Invalid imgUrl Not End With jpg or jpeg', () => {
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl + 1, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('URL: Invalid imgUrl', () => {
+    const testImgUrl = '.jpg';
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('URL: Invalid imgUrl', () => {
+    const testImgUrl = '.jpeg';
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('URL: Invalid imgUrl (URL starts with https)', () => {
+    const testImgUrl = 'https://image.jpg';
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('URL: Invalid imgUrl (URL doesnt start with http)', () => {
+    const testImgUrl = 'image.jpg';
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Crop: Invalid xStart', () => {
+    xStart = -1;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Crop: Invalid yStart', () => {
+    yStart = -1;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Crop: Invalid xEnd', () => {
+    xEnd = -1;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Crop: Invalid yEnd', () => {
+    yEnd = -1;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Crop: Invalid xEnd >= xStart', () => {
+    xStart = 100;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('Crop: Invalid yEnd >= yStart', () => {
+    yStart = 100;
+    expect(() => testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+});
+
+describe('Correct UserProfileUploadPhoto: Correct Return Testing', () => {
+  test('UserProfileUploadPhoto: Return Empty Object', () => {
+    const user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
+    const imgUrl = 'http://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Rufous_Hummingbird%2C_male_01.jpg/1280px-Rufous_Hummingbird%2C_male_01.jpg';
+    const xStart = 0;
+    const xEnd = 100;
+    const yStart = 0;
+    const yEnd = 100;
+    expect(testUserProfileUploadPhoto(user1.token, imgUrl, xStart, yStart, xEnd, yEnd)).toStrictEqual({});
   });
 });

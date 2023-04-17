@@ -213,6 +213,10 @@ export function testSetHandle(token: string, handleStr: string) {
   return requestHelper('PUT', '/user/profile/sethandle/v2', token, { handleStr });
 }
 
+export function testUserProfileUploadPhoto(token: string, imgUrl: string, xStart: number, yStart: number, xEnd: number, yEnd: number) {
+  return requestHelper('POST', '/user/profile/uploadphoto/v1', token, { imgUrl, xStart, yStart, xEnd, yEnd });
+}
+
 /** /other/* Test Functions **/
 
 export function testClear() {

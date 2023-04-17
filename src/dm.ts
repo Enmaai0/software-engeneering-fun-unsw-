@@ -19,7 +19,21 @@ interface Member {
   handleStr: string;
 }
 
+interface React {
+  reactId: number;
+  uId: number;
+}
+
 interface Message {
+  messageId: number;
+  uId: number;
+  message: string;
+  timeSent: number;
+  reacts: React[];
+  isPinned: boolean;
+}
+
+interface Messages {
   messageId: number;
   uId: number;
   message: string;
@@ -49,7 +63,7 @@ interface DmDetails {
 }
 
 interface DmMessages {
-  messages: Message[];
+  messages: Messages[];
   start: number;
   end: number;
 }
@@ -324,7 +338,7 @@ function dmMessages(token: string, dmId: number, start: number): DmMessages {
     };
   }
 
-  const returnMessages: Message[] = [];
+  const returnMessages: Messages[] = [];
   const returnEnd = (start + FIFTY_MESSAGES > dm.messages.length) ? NO_MORE_MESSAGES : start + FIFTY_MESSAGES;
 
   // As messages are returned from most recent (greatest index) to least recent (lowest index)

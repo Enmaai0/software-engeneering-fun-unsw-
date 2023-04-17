@@ -10,31 +10,39 @@ import HTTPError from 'http-errors';
 interface Error {
   error: string
 }
+
+interface React {
+  reactId: number;
+  uId: number;
+}
+
 interface Message {
   messageId: number;
   uId: number;
   message: string;
   timeSent: number;
+  reacts: React[];
+  isPinned: boolean;
 }
 
-interface UserObject {
-  uId: number;
-  email: string;
-  nameFirst: string;
-  nameLast: string;
-  handleStr: string;
+interface Users {
+  uId: number,
+  email: string,
+  nameFirst: string,
+  nameLast: string,
+  handleStr: string,
 }
 interface Channel {
-  channelId: number;
-  name: string;
-  isPublic: boolean;
-  owners: UserObject[];
-  allMembers: UserObject[];
-  messages: Message[];
-  isActive: boolean;
-  standupStarterId: number;
-  timeFinish: number;
-  buffer: string;
+  channelId: number,
+  name: string,
+  isPublic: boolean,
+  owners: Users[],
+  allMembers: Users[],
+  messages: Message[],
+  isActive: boolean,
+  timeFinish: number,
+  buffer: string,
+  standupStarterId: number,
 }
 
 interface Channels {
@@ -215,11 +223,11 @@ function getIdFromToken(token: string): number {
  * @param { number } uId
  * @returns { UserObject }
  */
-function createUserObject(uId: number): UserObject {
+function createUserObject(uId: number): Users {
   const data = getData();
   const user = data.users[uId];
 
-  const userObject: UserObject = {
+  const userObject: Users = {
     uId: uId,
     email: user.email,
     nameFirst: user.nameFirst,

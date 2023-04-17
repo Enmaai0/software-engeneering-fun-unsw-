@@ -9,7 +9,7 @@ import { saveData, grabData } from './dataStore';
 import { authLoginV1, authLogoutV1, authRegisterV1, authPasswordResetRequest, authPasswordResetReset } from './auth';
 import { adminUserRemove, adminUserPermissionChange } from './admin';
 import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm';
-import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
+import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1, userProfileUploadPhoto } from './users';
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
 import { channelsCreateV1, channelsListAllV1, channelsListV1 } from './channels';
 import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageReactV1, messageUnreactV1, messageShareV1, messageSendLaterV1, messageSendLaterDmV1 } from './message';
@@ -23,6 +23,8 @@ app.use(json());
 app.use(cors());
 // for logging errors (print to terminal)
 app.use(morgan('dev'));
+// for upload image
+app.use('/static', express.static('static'));
 
 const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || 'localhost';
@@ -358,6 +360,14 @@ app.put('/user/profile/sethandle/v2', (req: Request, res: Response) => {
   const token = req.header('token');
   const { handleStr } = req.body;
   const returnMessage = userSetHandleV1(token, handleStr);
+  saveData();
+  res.json(returnMessage);
+});
+
+app.post('/user/profile/uploadphoto/v1', (req: Request, res: Response) => {
+  const token = req.header('token');
+  const { imgUrl, xStart, yStart, xEnd, yEnd } = req.body;
+  const returnMessage = userProfileUploadPhoto(token, imgUrl, xStart, yStart, xEnd, yEnd);
   saveData();
   res.json(returnMessage);
 });

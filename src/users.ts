@@ -1,12 +1,15 @@
 /**
  * users.ts
  *
- * Contains the function implementation of all users* functions.
+ * Contains the stub code functions of all users* functions.
  */
 
 import { getData, getHashOf, setData } from './dataStore';
 import validator from 'validator';
 import HTTPError from 'http-errors';
+import request from 'sync-request';
+import Jimp from 'jimp';
+import fs from 'fs';
 
 interface Error {
   error: string
@@ -82,10 +85,10 @@ function usersAllV1(token: string) : Error | UserArray {
   const data = getData();
   const users = data.users;
 
-  const returnArray = [];
+  const returnArray: UserProfile[] = [];
 
   for (const user of users) {
-    const userProfile = {
+    const userProfile: UserProfile = {
       uId: user.uId,
       email: user.email,
       nameFirst: user.nameFirst,
@@ -175,7 +178,61 @@ function userSetHandleV1(token: string, handle: string) : Error | Record<string,
   return {};
 }
 
-export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 };
+function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, yStart: number, xEnd: number, yEnd: number) {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  if (!imgUrl.endsWith('.jpg') && !imgUrl.endsWith('.jpeg')) {
+    throw HTTPError(400, 'Invalid image URL (Must be jpg or jpeg)');
+  }
+
+  if (!imgUrl.startsWith('http') || imgUrl.startsWith('https')) {
+    throw HTTPError(400, 'Invalid image URL (Must begin with http://)');
+  }
+
+  if (imgUrl.endsWith('.jpg')) {
+    if (imgUrl.substring(0, imgUrl.length - 4).length === 0) {
+      throw HTTPError(400, 'Invalid image URL Cannot be Empty');
+    }
+  }
+
+  if (imgUrl.endsWith('.jpeg')) {
+    if (imgUrl.substring(0, imgUrl.length - 5).length === 0) {
+      throw HTTPError(400, 'Invalid image URL Cannot be Empty');
+    }
+  }
+
+  const uId = getIdFromToken(token);
+  const imgPath = 'static/' + String(uId) + 'ProfileImage.jpg';
+
+  // Grabs the file from the internet and saves it
+  // inside the /static folder.
+  const res = request(
+    'GET',
+    imgUrl
+  );
+
+  if (res.statusCode !== 200) {
+    throw HTTPError(400, 'Could not GET Image');
+  }
+
+  const body = res.getBody();
+
+  fs.writeFileSync(imgPath, body, { flag: 'w' });
+
+  // Reads the previously saved file and crops it
+  Jimp.read(imgPath)
+    .then((image) => {
+      return image
+        .crop(xStart, yStart, xEnd, yEnd)
+        .write(imgPath);
+    });
+
+  return {};
+}
+
+export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1, userProfileUploadPhoto };
 
 /** Helper Functions **/
 
