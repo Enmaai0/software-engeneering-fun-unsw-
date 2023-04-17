@@ -82,7 +82,7 @@ describe('/standup/start: Error Testing', () => {
 describe('/standup/start: Success Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn;
-  const length = 1;
+  const length = 0.1;
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
     channel1 = testChannelsCreate(user1.token, 'channel1', true);
@@ -90,7 +90,7 @@ describe('/standup/start: Success Testing', () => {
 
   test('Success return', () => {
     expect(testStandupStart(user1.token, channel1.channelId, length)).toStrictEqual({ timeFinished: expect.any(Number) });
-    sleep(1010);
+    sleep(100);
   });
 });
 
@@ -153,7 +153,6 @@ describe('/standup/active: Success Testing', () => {
       isActive: false,
       timeFinished: null,
     });
-    sleep(1010);
   });
 });
 
@@ -162,7 +161,7 @@ describe('/standup/active: Success Testing', () => {
 describe('/standup/send: Error Testing', () => {
   let user1: AuthReturn;
   let channel1: ChannelsCreateReturn;
-  const length = 1;
+  const length = 0.5;
   const message = 'Hello';
   beforeEach(() => {
     user1 = testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot I');
@@ -172,19 +171,19 @@ describe('/standup/send: Error Testing', () => {
   test('AuthUserId: Invalid Token', () => {
     testStandupStart(user1.token, channel1.channelId, length);
     expect(() => testStandupSend(user1.token + 1, channel1.channelId, message)).toThrow(Error);
-    sleep(1010);
+    sleep(510);
   });
 
   test('ChannelId: Invalid ChannelId', () => {
     testStandupStart(user1.token, channel1.channelId, length);
     expect(() => testStandupSend(user1.token, channel1.channelId + 1, message)).toThrow(Error);
-    sleep(1010);
+    sleep(510);
   });
 
   test('Message: Message > 1000 Characters', () => {
-    testStandupStart(user1.token, channel1.channelId, 10);
+    testStandupStart(user1.token, channel1.channelId, length);
     expect(() => testStandupSend(user1.token, channel1.channelId, ONE_THOUSAND_CHARS)).toThrow(Error);
-    sleep(1010);
+    sleep(510);
   });
 
   test('No standup has started', () => {
@@ -195,7 +194,7 @@ describe('/standup/send: Error Testing', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
     testStandupStart(user1.token, channel1.channelId, length);
     expect(() => testStandupSend(user2.token, channel1.channelId, message)).toThrow(Error);
-    sleep(1010);
+    sleep(510);
   });
 });
 
@@ -211,6 +210,11 @@ describe('/standup/send: Success Testing', () => {
   test('One Standup Message Sent', () => {
     testStandupStart(user1.token, channel1.channelId, 1);
     expect(testStandupSend(user1.token, channel1.channelId, message)).toStrictEqual({});
+    expect(testChannelMessages(user1.token, channel1.channelId, 0)).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1
+    });
     sleep(1100);
     expect(testChannelMessages(user1.token, channel1.channelId, 0)).toStrictEqual({
       messages: [{
@@ -231,6 +235,11 @@ describe('/standup/send: Success Testing', () => {
     testStandupStart(user1.token, channel1.channelId, 1);
     expect(testStandupSend(user1.token, channel1.channelId, message)).toStrictEqual({});
     expect(testStandupSend(user2.token, channel1.channelId, 'Another One')).toStrictEqual({});
+    expect(testChannelMessages(user1.token, channel1.channelId, 0)).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1
+    });
     sleep(1100);
     expect(testChannelMessages(user1.token, channel1.channelId, 0)).toStrictEqual({
       messages: [{

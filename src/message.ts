@@ -235,7 +235,7 @@ function messageSendDmV1(token: string, dmId: number, message: string): MessageS
 }
 
 /**
- * channelMessageNotif
+ * dmMessageNotif
  *
  * Given a uId, channelId, and message, creates a notification for
  * all user that have been tagged in the message.
@@ -429,7 +429,6 @@ function messageRemoveV1(token: string, messageId: number): Record<string, never
 }
 
 /**
-<<<<<<< src/message.ts
  * messageReactV1
  *
  * Given a messageId and a reactId, adds a reaction
@@ -460,7 +459,7 @@ function messageReactV1(token : string, messageId : number, reactId : number): R
   const userId = getIdFromToken(token);
 
   const data = getData();
-  let messageObj: Message, messageIndex;
+  let messageObj: Message, messageIndex, routeId;
 
   if (channelId > -1 && dmId === -1) {
     if (!isMemberChannel(userId, channelId)) {
@@ -469,6 +468,7 @@ function messageReactV1(token : string, messageId : number, reactId : number): R
 
     messageIndex = getMessageIndex(messageId, channelId, 'channel');
     messageObj = data.channels[channelId].messages[messageIndex];
+    routeId = channelId;
   }
 
   if (dmId > -1 && channelId === -1) {
@@ -478,7 +478,10 @@ function messageReactV1(token : string, messageId : number, reactId : number): R
 
     messageIndex = getMessageIndex(messageId, dmId, 'dm');
     messageObj = data.dms[dmId].messages[messageIndex];
+    routeId = dmId;
   }
+
+  const messageSenderId = messageObj.uId;
 
   for (const reaction of messageObj.reacts) {
     if (reaction.uId === userId && reaction.reactId === reactId) {
@@ -491,11 +494,53 @@ function messageReactV1(token : string, messageId : number, reactId : number): R
     uId: userId
   };
 
+  if (dmId > -1 && channelId === -1) {
+    messageReactNotif(userId, routeId, messageSenderId, 'dm');
+  }
+
+  if (dmId === -1 && channelId > -1) {
+    messageReactNotif(userId, routeId, messageSenderId, 'channel');
+  }
+
   messageObj.reacts.push(newReact);
 
   setData(data);
 
   return {};
+}
+
+/**
+ * messageReactNotif
+ *
+ * Given a reactorId, routeId, uId, and route, creates a notification
+ * for the reaction and sends it to the sender of the message reacted to.
+ *
+ * @param { string } token
+ * @param { number } channelId
+ * @param { number } uId
+ */
+function messageReactNotif(reactorId: number, routeId: number, uId: number, route: string) {
+  const data = getData();
+
+  let notification;
+
+  if (route === 'dm') {
+    notification = {
+      channelId: -1,
+      dmId: routeId,
+      notificationMessage: `@${data.users[reactorId].userHandle} reacted to your message in ${data.dms[routeId].name}`
+    };
+  }
+
+  if (route === 'channel') {
+    notification = {
+      channelId: routeId,
+      dmId: -1,
+      notificationMessage: `@${data.users[reactorId].userHandle} reacted to your message in ${data.channels[routeId].name}`
+    };
+  }
+
+  data.users[uId].notifications.push(notification);
 }
 
 /**

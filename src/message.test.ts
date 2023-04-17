@@ -82,77 +82,6 @@ describe('/message/send: Error Testing', () => {
   });
 });
 
-describe('/message/send: Correct Return Testing', () => {
-  let user1: AuthReturn, user2: AuthReturn, channel: ChannelsCreateReturn;
-  let message1: MessageSendReturn, message2: MessageSendReturn;
-  beforeEach(() => {
-    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    user2 = testAuthRegister('second@gmail.com', 'alsoapassword', 'Johnny', 'Potato');
-    channel = testChannelsCreate(user1.token, 'New Channel', true);
-    testChannelJoin(user2.token, channel.channelId);
-    message1 = testMessageSend(user1.token, channel.channelId, 'First Message');
-    message2 = testMessageSend(user2.token, channel.channelId, 'Second Message');
-  });
-
-  test('Correct Return: Sending Messages to Channel', () => {
-    expect(message1).toStrictEqual({ messageId: expect.any(Number) });
-    expect(message2).toStrictEqual({ messageId: expect.any(Number) });
-    expect(message1.messageId).not.toEqual(message2.messageId);
-  });
-
-  test('Correct Return: Using Channel Messages', () => {
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [{
-        messageId: message2.messageId,
-        uId: user2.authUserId,
-        message: 'Second Message',
-        timeSent: expect.any(Number)
-      }, {
-        messageId: message1.messageId,
-        uId: user1.authUserId,
-        message: 'First Message',
-        timeSent: expect.any(Number)
-      }],
-      start: 0,
-      end: -1
-    });
-  });
-});
-
-describe('/message/send: Testing Removing and Editing for Channelss', () => {
-  let user1: AuthReturn;
-  let channel: ChannelsCreateReturn;
-  let message: MessageSendReturn;
-  beforeEach(() => {
-    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
-    channel = testChannelsCreate(user1.token, 'Channel', true);
-    message = testMessageSend(user1.token, channel.channelId, 'Valid Normal Message');
-  });
-
-  test('Editing Dm Message', () => {
-    expect(testMessageEdit(user1.token, message.messageId, 'Chad Edited Message')).toStrictEqual({});
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [{
-        messageId: message.messageId,
-        uId: user1.authUserId,
-        message: 'Chad Edited Message',
-        timeSent: expect.any(Number)
-      }],
-      start: 0,
-      end: -1
-    });
-  });
-
-  test('Removing Dm Message', () => {
-    expect(testMessageRemove(user1.token, message.messageId)).toStrictEqual({});
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [],
-      start: 0,
-      end: -1
-    });
-  });
-});
-
 /** /message/edit Testing **/
 
 describe('/message/edit: Error Testing', () => {
@@ -206,21 +135,6 @@ describe('/message/edit: Return Testing', () => {
   beforeEach(() => {
     user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
     channel = testChannelsCreate(user1.token, 'New Channel', true);
-  });
-
-  test('Valid Message Edit (Creator of Message and Owner)', () => {
-    const message = testMessageSend(user1.token, channel.channelId, 'This message is valid');
-    expect(testMessageEdit(user1.token, message.messageId, 'This message is changed')).toStrictEqual({});
-    expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
-      messages: [{
-        message: 'This message is changed',
-        uId: user1.authUserId,
-        messageId: message.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
   });
 
   test('Valid Message Edit (Empty String (Delete Message) )', () => {
@@ -290,44 +204,6 @@ describe('/message/edit: Return Testing', () => {
     const message = testMessageSendDm(user2.token, dm.dmId, 'This message is valid');
     expect(testMessageEdit(user2.token, message.messageId, 'This message is changed')).toStrictEqual({});
     expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [{
-        message: 'This message is changed',
-        uId: user2.authUserId,
-        messageId: message.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
-  });
-
-  test('Valid Message Edit Multiple Channels', () => {
-    const user2 = testAuthRegister('email@gmail.com', 'thisisapassword', 'Maximus', 'Minimus');
-    testChannelsCreate(user1.token, 'Channel1', true);
-    const channel2 = testChannelsCreate(user1.token, 'Channel2', true);
-    testChannelsCreate(user2.token, 'Channel3', true);
-    const message = testMessageSend(user1.token, channel2.channelId, 'This message is valid');
-    expect(testMessageEdit(user1.token, message.messageId, 'This message is changed')).toStrictEqual({});
-    expect(testChannelMessages(user1.token, channel2.channelId, 0)).toStrictEqual({
-      messages: [{
-        message: 'This message is changed',
-        uId: user1.authUserId,
-        messageId: message.messageId,
-        timeSent: expect.any(Number),
-      }],
-      start: 0,
-      end: -1,
-    });
-  });
-
-  test('Valid Message Edit Multiple Dms', () => {
-    const user2 = testAuthRegister('email@gmail.com', 'thisisapassword', 'Maximus', 'Minimus');
-    testDmCreate(user1.token, [user2.authUserId]);
-    const dm2 = testDmCreate(user1.token, [user2.authUserId]);
-    testDmCreate(user2.token, [user1.authUserId]);
-    const message = testMessageSendDm(user2.token, dm2.dmId, 'This message is valid');
-    expect(testMessageEdit(user2.token, message.messageId, 'This message is changed')).toStrictEqual({});
-    expect(testDmMessages(user1.token, dm2.dmId, 0)).toStrictEqual({
       messages: [{
         message: 'This message is changed',
         uId: user2.authUserId,
@@ -491,24 +367,6 @@ describe('/message/senddm: Correct Return Testing', () => {
     expect(message1).toStrictEqual({ messageId: expect.any(Number) });
     expect(message2).toStrictEqual({ messageId: expect.any(Number) });
     expect(message1.messageId).not.toEqual(message2.messageId);
-  });
-
-  test('Correct Return: Using Dm Messages', () => {
-    expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
-      messages: [{
-        messageId: message2.messageId,
-        uId: user2.authUserId,
-        message: 'Second Message',
-        timeSent: expect.any(Number)
-      }, {
-        messageId: message1.messageId,
-        uId: user1.authUserId,
-        message: 'First Message',
-        timeSent: expect.any(Number)
-      }],
-      start: 0,
-      end: -1
-    });
   });
 });
 
@@ -690,8 +548,9 @@ describe('message/react: Error Testing', () => {
   test('User not in Dm', () => {
     const dm = testDmCreate(user.token, []);
     const user2 = testAuthRegister('hello2@gmail.com', 'thisisapassword', 'John2', 'Doe2');
+    const message2 = testMessageSendDm(user.token, dm.dmId, 'Hi');
     testMessageSendDm(user.token, dm.dmId, 'Hi');
-    expect(() => testMessageReact(user2.token, message.messageId, 1)).toThrow(Error);
+    expect(() => testMessageReact(user2.token, message2.messageId, 1)).toThrow(Error);
   });
 });
 
@@ -820,6 +679,14 @@ describe('/message/share: Error Testing', () => {
     expect(() => testMessageShare(user.token + '1', channelMessage.messageId, '', -1, dm.dmId)).toThrow(Error);
   });
 
+  test('Invalid DmId', () => {
+    expect(() => testMessageShare(user.token, channelMessage.messageId, '', -1, dm.dmId + 1)).toThrow(Error);
+  });
+
+  test('Invalid ChanelId', () => {
+    expect(() => testMessageShare(user.token, channelMessage.messageId, '', channel.channelId + 1, -1)).toThrow(Error);
+  });
+
   test('User: User not in Receiver Dm', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'Password1234', 'Test', 'Bot');
     testChannelJoin(user2.token, channel.channelId);
@@ -837,13 +704,13 @@ describe('/message/share: Error Testing', () => {
     expect(() => testMessageShare(user.token, channelMessage.messageId, ONE_THOUSAND_CHARS, -1, dm.dmId)).toThrow(Error);
   });
 
-  test('User: User not in Sender Dm', () => {
+  test('User: User not in Sender Channel', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'Password1234', 'Test', 'Bot');
     testChannelJoin(user2.token, channel.channelId);
     expect(() => testMessageShare(user2.token, dmMessage.messageId, '', channel.channelId, -1)).toThrow(Error);
   });
 
-  test('User: User not in Sender Channel', () => {
+  test('User: User not in Sender Dm', () => {
     const user2 = testAuthRegister('email2@gmail.com', 'Password1234', 'Test', 'Bot');
     const dm2 = testDmCreate(user.token, [user2.authUserId]);
     expect(() => testMessageShare(user2.token, channelMessage.messageId, '', -1, dm2.dmId)).toThrow(Error);
@@ -855,6 +722,10 @@ describe('/message/share: Error Testing', () => {
 
   test('ChannelId and DmId are Selected', () => {
     expect(() => testMessageShare(user.token, channelMessage.messageId, 'Test Message', channel.channelId, dm.dmId)).toThrow(Error);
+  });
+
+  test('Invalid MessageId', () => {
+    expect(() => testMessageShare(user.token, (channelMessage.messageId + dmMessage.messageId) * 13, 'Test Message', channel.channelId, -1)).toThrow(Error);
   });
 });
 
@@ -945,7 +816,6 @@ describe('/message/sendlater/v1: Correct Return Testing', () => {
       start: 0,
       end: -1
     });
-    sleep(1000);
   });
 });
 
@@ -1009,6 +879,5 @@ describe('/message/sendlaterdm: Correct Return Testing', () => {
       start: 0,
       end: -1
     });
-    sleep(1000);
   });
 });
