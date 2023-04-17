@@ -19,8 +19,7 @@ interface Users {
 
 interface React {
   reactId: number;
-  uIds: number[];
-  isThisUserReacted: boolean;
+  uId: number;
 }
 
 interface Message {

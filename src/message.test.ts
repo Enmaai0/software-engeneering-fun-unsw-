@@ -1,24 +1,20 @@
-/**
- * message.test.ts
- *
- * File contains all of the jest testing for the HTTP layer for
- * all /message/* routes.
- */
-
 import {
+  testMessageSend,
+  testClear,
   testMessageEdit,
   testMessageRemove,
-  testMessageSend,
-  testMessageSendDm,
-  testClear,
   testAuthRegister,
   testChannelsCreate,
+  testMessageSendDm,
   testChannelJoin,
-  testChannelMessages,
   testDmCreate,
+  testChannelMessages,
   testDmMessages,
   testMessagePin,
   testMessageUnPin,
+  testMessageReact,
+  testMessageUnreact,
+  testMessageShare,
   testMessageSendDmLater,
   testMessageSendLater,
 } from './testFunctions';
@@ -650,6 +646,246 @@ describe('/message/unpin/v1: Return Testing', () => {
   });
 });
 
+/** /message/react Testing **/
+
+describe('message/react: Error Testing', () => {
+  let user: AuthReturn;
+  let channel: ChannelsCreateReturn;
+  let message: MessageSendReturn;
+  beforeEach(() => {
+    user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    channel = testChannelsCreate(user.token, 'test', true);
+    message = testMessageSend(user.token, channel.channelId, 'Hi');
+  });
+
+  test('Token: Invalid Token', () => {
+    expect(() => testMessageReact(user.token + '1', message.messageId, 1)).toThrow(Error);
+  });
+
+  test('MessageId: Invalid MessageId', () => {
+    expect(() => testMessageReact(user.token, message.messageId + 1, 1)).toThrow(Error);
+  });
+
+  test('ReactId: Invalid ReactId', () => {
+    expect(() => testMessageReact(user.token, message.messageId, 5)).toThrow(Error);
+  });
+
+  test('Invalid React: Already Reacted to Message (Channel)', () => {
+    testMessageReact(user.token, message.messageId, 1);
+    expect(() => testMessageReact(user.token, message.messageId, 1)).toThrow(Error);
+  });
+
+  test('Invalid React: Already Reacted to Message (DM)', () => {
+    const dm = testDmCreate(user.token, []);
+    testMessageSendDm(user.token, dm.dmId, 'Hi');
+    testMessageReact(user.token, message.messageId, 1);
+    expect(() => testMessageReact(user.token, message.messageId, 1)).toThrow(Error);
+  });
+
+  test('User not in Channel', () => {
+    const user2 = testAuthRegister('hello2@gmail.com', 'thisisapassword', 'John2', 'Doe2');
+    expect(() => testMessageReact(user2.token, message.messageId, 1)).toThrow(Error);
+  });
+
+  test('User not in Dm', () => {
+    const dm = testDmCreate(user.token, []);
+    const user2 = testAuthRegister('hello2@gmail.com', 'thisisapassword', 'John2', 'Doe2');
+    testMessageSendDm(user.token, dm.dmId, 'Hi');
+    expect(() => testMessageReact(user2.token, message.messageId, 1)).toThrow(Error);
+  });
+});
+
+describe('/message/react: Return Testing', () => {
+  let user: AuthReturn, user2: AuthReturn;
+  beforeEach(() => {
+    user = testAuthRegister('hello@gmail.com', 'thisisapassword', 'John', 'Doe');
+    user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+  });
+
+  test('Testing success reactId in channel', () => {
+    const channel = testChannelsCreate(user.token, 'Channel', true);
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testChannelJoin(user2.token, channel.channelId);
+    expect(testMessageReact(user.token, message.messageId, 1)).toStrictEqual({});
+    expect(testMessageReact(user2.token, message.messageId, 1)).toStrictEqual({});
+  });
+
+  test('Testing success reactId in dm', () => {
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    expect(testMessageReact(user.token, message.messageId, 1)).toStrictEqual({});
+    expect(testMessageReact(user2.token, message.messageId, 1)).toStrictEqual({});
+  });
+});
+
+/** /message/unreact Testing **/
+
+describe('message/unreact: Error Testing', () => {
+  let user: AuthReturn;
+  let channel: ChannelsCreateReturn;
+  beforeEach(() => {
+    user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
+    channel = testChannelsCreate(user.token, 'Channel', true);
+  });
+
+  test('Token: Invalid Token', () => {
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testMessageReact(user.token, message.messageId, 1);
+    expect(() => testMessageUnreact(user.token + '1', message.messageId, 1)).toThrow(Error);
+  });
+
+  test('MessageId: Invalid MessageId', () => {
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testMessageReact(user.token, message.messageId, 1);
+    expect(() => testMessageUnreact(user.token, message.messageId + 1, 1)).toThrow(Error);
+  });
+
+  test('ReactId: Invalid ReactId (Dm)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    testMessageReact(user2.token, message.messageId, 1);
+    expect(() => testMessageUnreact(user2.token, message.messageId, 5)).toThrow(Error);
+  });
+
+  test('ReactId: Invalid ReactId (Channel)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    testChannelJoin(user2.token, channel.channelId);
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testMessageReact(user2.token, message.messageId, 1);
+    expect(() => testMessageUnreact(user2.token, message.messageId, 5)).toThrow(Error);
+  });
+
+  test('Unreact: Message has not been Reacted to (Channel)', () => {
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    expect(() => testMessageUnreact(user.token, message.messageId, 1)).toThrow(Error);
+  });
+
+  test('Unreact: Message has not been Reacted to (Dm)', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    expect(() => testMessageUnreact(user.token, message.messageId, 1)).toThrow(Error);
+  });
+
+  test('User not in Dm', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const dm = testDmCreate(user.token, []);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    expect(() => testMessageUnreact(user2.token, message.messageId, 1)).toThrow(Error);
+  });
+
+  test('User not in Channel', () => {
+    const user2 = testAuthRegister('hello22@gmail.com', 'thisisapassword', 'James', 'Does');
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    expect(() => testMessageUnreact(user2.token, message.messageId, 1)).toThrow(Error);
+  });
+});
+
+describe('/message/unreact: Return Testing', () => {
+  let user: AuthReturn, user2: AuthReturn;
+  beforeEach(() => {
+    user = testAuthRegister('cool@hotmail.com', 'password', 'Joe', 'Bloggs');
+    user2 = testAuthRegister('cool2@gmail.com', 'password', 'Joe1', 'Bloggs1');
+  });
+
+  test('Testing success reactId in channel', () => {
+    const channel = testChannelsCreate(user.token, 'test', true);
+    const message = testMessageSend(user.token, channel.channelId, 'Hi');
+    testChannelJoin(user2.token, channel.channelId);
+    testMessageReact(user2.token, message.messageId, 1);
+    expect(testMessageUnreact(user2.token, message.messageId, 1)).toStrictEqual({});
+  });
+
+  test('Testing success reactId in dm', () => {
+    const dm = testDmCreate(user.token, [user2.authUserId]);
+    const message = testMessageSendDm(user.token, dm.dmId, 'Hi');
+    testMessageReact(user2.token, message.messageId, 1);
+    expect(testMessageUnreact(user2.token, message.messageId, 1)).toStrictEqual({});
+  });
+});
+
+describe('/message/share: Error Testing', () => {
+  let user: AuthReturn, channel: ChannelsCreateReturn, dm: DmCreateReturn;
+  let dmMessage: MessageSendReturn, channelMessage: MessageSendReturn;
+  beforeEach(() => {
+    user = testAuthRegister('email@gmail.com', 'Password1234', 'Test', 'Bot');
+    channel = testChannelsCreate(user.token, 'Channel', true);
+    channelMessage = testMessageSend(user.token, channel.channelId, 'Message sent to Channel');
+    dm = testDmCreate(user.token, []);
+    dmMessage = testMessageSendDm(user.token, dm.dmId, 'Message sent to DM');
+  });
+
+  test('Token: Invalid Token', () => {
+    expect(() => testMessageShare(user.token + '1', channelMessage.messageId, '', -1, dm.dmId)).toThrow(Error);
+  });
+
+  test('User: User not in Receiver Dm', () => {
+    const user2 = testAuthRegister('email2@gmail.com', 'Password1234', 'Test', 'Bot');
+    testChannelJoin(user2.token, channel.channelId);
+    expect(() => testMessageShare(user2.token, channelMessage.messageId, '', -1, dm.dmId)).toThrow(Error);
+  });
+
+  test('User: User not in Receiver Channel', () => {
+    const user2 = testAuthRegister('email2@gmail.com', 'Password1234', 'Test', 'Bot');
+    const dm2 = testDmCreate(user.token, [user2.authUserId]);
+    const dmMessage2 = testMessageSendDm(user.token, dm2.dmId, 'Second Dm Test Message');
+    expect(() => testMessageShare(user2.token, dmMessage2.messageId, '', channel.channelId, -1)).toThrow(Error);
+  });
+
+  test('Message: Message Length > 1000', () => {
+    expect(() => testMessageShare(user.token, channelMessage.messageId, ONE_THOUSAND_CHARS, -1, dm.dmId)).toThrow(Error);
+  });
+
+  test('User: User not in Sender Dm', () => {
+    const user2 = testAuthRegister('email2@gmail.com', 'Password1234', 'Test', 'Bot');
+    testChannelJoin(user2.token, channel.channelId);
+    expect(() => testMessageShare(user2.token, dmMessage.messageId, '', channel.channelId, -1)).toThrow(Error);
+  });
+
+  test('User: User not in Sender Channel', () => {
+    const user2 = testAuthRegister('email2@gmail.com', 'Password1234', 'Test', 'Bot');
+    const dm2 = testDmCreate(user.token, [user2.authUserId]);
+    expect(() => testMessageShare(user2.token, channelMessage.messageId, '', -1, dm2.dmId)).toThrow(Error);
+  });
+
+  test('Both ChannelId and DmId are -1', () => {
+    expect(() => testMessageShare(user.token, channelMessage.messageId, 'Test Message', -1, -1)).toThrow(Error);
+  });
+
+  test('ChannelId and DmId are Selected', () => {
+    expect(() => testMessageShare(user.token, channelMessage.messageId, 'Test Message', channel.channelId, dm.dmId)).toThrow(Error);
+  });
+});
+
+describe('/message/share: Return Testing', () => {
+  let user: AuthReturn, channel: ChannelsCreateReturn, dm: DmCreateReturn;
+  let dmMessage: MessageSendReturn, channelMessage: MessageSendReturn;
+  beforeEach(() => {
+    user = testAuthRegister('email@gmail.com', 'Password1234', 'Test', 'Bot');
+    channel = testChannelsCreate(user.token, 'Test Channel', true);
+    channelMessage = testMessageSend(user.token, channel.channelId, 'Message sent to Channel');
+    dm = testDmCreate(user.token, []);
+    dmMessage = testMessageSendDm(user.token, dm.dmId, 'Message sent to DM');
+  });
+
+  test('Shared Message from Channel to Dm', () => {
+    const sharedMessage = testMessageShare(user.token, channelMessage.messageId, 'Shared!', -1, dm.dmId);
+    expect(sharedMessage).toStrictEqual({ sharedMessageId: expect.any(Number) });
+    const testMessages = testDmMessages(user.token, dm.dmId, 0);
+    expect(testMessages.messages[0].message).toContain('Message sent to Channel');
+    expect(testMessages.messages[0].message).toContain('Shared!');
+  });
+
+  test('Shared Message from Dm to Channel', () => {
+    const sharedMessage = testMessageShare(user.token, dmMessage.messageId, 'Shared!', channel.channelId, -1);
+    expect(sharedMessage).toStrictEqual({ sharedMessageId: expect.any(Number) });
+    const testMessages = testChannelMessages(user.token, channel.channelId, 0);
+    expect(testMessages.messages[0].message).toContain('Message sent to DM');
+    expect(testMessages.messages[0].message).toContain('Shared!');
+  });
+});
+
 /** message/sendlater/v1 Testing **/
 
 describe('/message/sendlater/v1: Error Testing', () => {
@@ -695,10 +931,10 @@ describe('/message/sendlater/v1: Correct Return Testing', () => {
   });
 
   test('Correct Return: Sending Messages to Channel', () => {
-    const timeSent = Math.floor(Date.now() / 1000) + 1;
+    const timeSent = Math.floor(Date.now() / 1000) + 2;
     expect(testMessageSendLater(user1.token, channel.channelId, 'First Message', timeSent)).toStrictEqual({ messageId: expect.any(Number) });
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({ messages: [], start: 0, end: -1 });
-    sleep(1500);
+    sleep(2010);
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
       messages: [{
         messageId: expect.any(Number),
@@ -759,10 +995,10 @@ describe('/message/sendlaterdm: Correct Return Testing', () => {
   });
 
   test('Correct Return: Sending Messages to Dm', () => {
-    const timeSent = Math.floor(Date.now() / 1000) + 1;
+    const timeSent = Math.floor(Date.now() / 1000) + 2;
     expect(testMessageSendDmLater(user1.token, dm.dmId, 'First Message', timeSent)).toStrictEqual({ messageId: expect.any(Number) });
     expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({ messages: [], start: 0, end: -1 });
-    sleep(1500);
+    sleep(2010);
     expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
       messages: [{
         messageId: expect.any(Number),

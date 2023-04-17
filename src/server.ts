@@ -12,7 +12,7 @@ import { dmCreate, dmList, dmDetails, dmLeave, dmMessages, dmRemove } from './dm
 import { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1 } from './users';
 import { channelRemoveOwnerV1, channelAddOwnerV1, channelDetailsV1, channelJoinV1, channelLeaveV1, channelInviteV1, channelMessagesV1 } from './channel';
 import { channelsCreateV1, channelsListAllV1, channelsListV1 } from './channels';
-import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageSendLaterV1, messageSendLaterDmV1 } from './message';
+import { messageEditV1, messageRemoveV1, messageSendV1, messageSendDmV1, messagePinV1, messageUnPinV1, messageReactV1, messageUnreactV1, messageShareV1, messageSendLaterV1, messageSendLaterDmV1 } from './message';
 import { standupStart, standupActive, standupSend } from './standup';
 
 // Set up web app
@@ -282,6 +282,27 @@ app.post('/message/unpin/v1', (req: Request, res: Response) => {
   const returnMessage = messageUnPinV1(token, messageId);
   saveData();
   res.json(returnMessage);
+});
+
+app.post('/message/react/v1', (req: Request, res: Response) => {
+  const { messageId, reactId } = req.body;
+  const token = req.header('token');
+  const result = messageReactV1(token, messageId, reactId);
+  res.json(result);
+});
+
+app.post('/message/unreact/v1', (req: Request, res: Response) => {
+  const { messageId, reactId } = req.body;
+  const token = req.header('token');
+  const result = messageUnreactV1(token, messageId, reactId);
+  res.json(result);
+});
+
+app.post('/message/share/v1', (req: Request, res: Response) => {
+  const { ogMessageId, message, channelId, dmId } = req.body;
+  const token = req.header('token');
+  const result = messageShareV1(token, ogMessageId, message, channelId, dmId);
+  res.json(result);
 });
 
 app.post('/message/sendlater/v1', (req: Request, res: Response) => {

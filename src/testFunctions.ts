@@ -171,6 +171,18 @@ export function testMessageUnPin(token: string, messageId: number) {
   return requestHelper('POST', '/message/unpin/v1', token, { messageId });
 }
 
+export function testMessageReact(token: string, messageId: number, reactId: number) {
+  return requestHelper('POST', '/message/react/v1', token, { messageId, reactId });
+}
+
+export function testMessageUnreact(token: string, messageId: number, reactId: number) {
+  return requestHelper('POST', '/message/unreact/v1', token, { messageId, reactId });
+}
+
+export function testMessageShare(token: string, ogMessageId: number, message: string, channelId: number, dmId: number) {
+  return requestHelper('POST', '/message/share/v1', token, { ogMessageId, message, channelId, dmId });
+}
+
 export function testMessageSendLater(token: string, channelId: number, message: string, timeSent: number) {
   return requestHelper('POST', '/message/sendlater/v1', token, { channelId, message, timeSent });
 }
