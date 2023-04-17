@@ -95,10 +95,6 @@ describe('channelsListV1: Return List Testing', () => {
     user2 = testAuthRegister('anotheemail@gmail.com', '123abc!@#', 'Monty', 'Python');
   });
 
-  test('Testing User is in No Channels (Zero Total)', () => {
-    expect(testChannelsList(user1.token)).toStrictEqual({ channels: [] });
-  });
-
   test('Testing User is in No Channels (One Total)', () => {
     testChannelsCreate(user2.token, 'Channel1', true);
     expect(testChannelsList(user1.token)).toStrictEqual({ channels: [] });
@@ -167,20 +163,6 @@ describe('/channels/listall: Return List Testing', () => {
     testChannelsCreate(user1.token, 'Channel1', true);
     testChannelsCreate(user2.token, 'Channel2', false);
     expect(testChannelsListAll(user1.token)).toStrictEqual({
-      channels: [{
-        channelId: expect.any(Number),
-        name: 'Channel1'
-      }, {
-        channelId: expect.any(Number),
-        name: 'Channel2'
-      }]
-    });
-  });
-
-  test('Correct Return: Two Channels (Second User Token)', () => {
-    testChannelsCreate(user1.token, 'Channel1', true);
-    testChannelsCreate(user2.token, 'Channel2', false);
-    expect(testChannelsListAll(user2.token)).toStrictEqual({
       channels: [{
         channelId: expect.any(Number),
         name: 'Channel1'

@@ -183,24 +183,16 @@ function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, y
     throw HTTPError(403, 'Invalid Token');
   }
 
+  if (imgUrl.length === 0) {
+    throw HTTPError(400, 'ImgUrl cannot be empty');
+  }
+
   if (!imgUrl.endsWith('.jpg') && !imgUrl.endsWith('.jpeg')) {
     throw HTTPError(400, 'Invalid image URL (Must be jpg or jpeg)');
   }
 
   if (!imgUrl.startsWith('http') || imgUrl.startsWith('https')) {
     throw HTTPError(400, 'Invalid image URL (Must begin with http://)');
-  }
-
-  if (imgUrl.endsWith('.jpg')) {
-    if (imgUrl.substring(0, imgUrl.length - 4).length === 0) {
-      throw HTTPError(400, 'Invalid image URL Cannot be Empty');
-    }
-  }
-
-  if (imgUrl.endsWith('.jpeg')) {
-    if (imgUrl.substring(0, imgUrl.length - 5).length === 0) {
-      throw HTTPError(400, 'Invalid image URL Cannot be Empty');
-    }
   }
 
   const uId = getIdFromToken(token);

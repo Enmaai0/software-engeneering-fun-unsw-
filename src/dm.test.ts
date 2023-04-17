@@ -60,7 +60,7 @@ describe('/dm/create: Error Testing', () => {
   });
 
   test('uIds: Invalid uIds (Only Invalid)', () => {
-    expect(() => testDmCreate(testUser1.token, [testUser2.authUserId + 1])).toThrow(Error);
+    expect(() => testDmCreate(testUser1.token, [404])).toThrow(Error);
   });
 
   test('uIds: Invalid uIds (Mixed Invalid)', () => {

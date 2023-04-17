@@ -615,6 +615,10 @@ describe('UserProfileUploadPhoto: Error Testing', () => {
     expect(() => testUserProfileUploadPhoto(user1.token, imgUrl + 1, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 
+  test('URL: Empty imgUrl', () => {
+    expect(() => testUserProfileUploadPhoto(user1.token, '', xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
   test('URL: Invalid imgUrl', () => {
     const testImgUrl = '.jpg';
     expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
@@ -632,6 +636,11 @@ describe('UserProfileUploadPhoto: Error Testing', () => {
 
   test('URL: Invalid imgUrl (URL doesnt start with http)', () => {
     const testImgUrl = 'image.jpg';
+    expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
+  });
+
+  test('URL: Invalid imgUrl (Cannot get Image)', () => {
+    const testImgUrl = 'http://destoryedURL(*&&@#(*FBAFKONWA)#&@F).jpg';
     expect(() => testUserProfileUploadPhoto(user1.token, testImgUrl, xStart, yStart, xEnd, yEnd)).toThrow(Error);
   });
 

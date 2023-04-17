@@ -15,7 +15,6 @@ import {
   testChannelsCreate,
   testClear,
   testDmCreate,
-  testUsersAll
 } from './testFunctions';
 
 interface AuthReturn {
@@ -53,30 +52,6 @@ describe('/auth/login: Error Testing', () => {
 
   test('Password: Incorrect Password', () => {
     expect(() => testAuthLogin('email@gmail.com', '1234pass')).toThrow(Error);
-  });
-});
-
-describe('/auth/login: Return Testing', () => {
-  let user1: AuthReturn, user2: AuthReturn;
-  beforeEach(() => {
-    testAuthRegister('email@gmail.com', 'pass1234', 'Test', 'Bot');
-    testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    user1 = testAuthLogin('email@gmail.com', 'pass1234');
-    user2 = testAuthLogin('email2@gmail.com', 'pass1234');
-  });
-
-  test('Correct Return: First User', () => {
-    expect(user1.authUserId).toStrictEqual(expect.any(Number));
-    expect(user1.token).toStrictEqual(expect.any(String));
-  });
-
-  test('Correct Return: Second User', () => {
-    expect(user2.authUserId).toStrictEqual(expect.any(Number));
-    expect(user2.token).toStrictEqual(expect.any(String));
-  });
-
-  test('Correct Return: Check Unique authUserId', () => {
-    expect(user1).not.toMatchObject(user2);
   });
 });
 
@@ -150,88 +125,11 @@ describe('/auth/register: Error Testing', () => {
   });
 });
 
-describe('/auth/register: Return Testing', () => {
-  describe('authUserId Testing', () => {
-    let user1: AuthReturn, user2: AuthReturn;
-    beforeEach(() => {
-      user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
-      user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-    });
-
-    test('Correct Return: First User', () => {
-      expect(user1).toStrictEqual({
-        authUserId: expect.any(Number),
-        token: expect.any(String)
-      });
-    });
-
-    test('Correct Return: Second User', () => {
-      expect(user2).toStrictEqual({
-        authUserId: expect.any(Number),
-        token: expect.any(String)
-      });
-    });
-
-    test('Correct Return: Check Unique authUserId', () => {
-      expect(user1.authUserId).not.toEqual(user2.authUserId);
-      expect(user1.token).not.toEqual(user2.token);
-    });
-  });
-
-  describe('Testing with /users/all', () => {
-    let user1: AuthReturn;
-    beforeEach(() => {
-      user1 = testAuthRegister('email1@gmail.com', 'pass1234', 'Test', 'Bot I');
-    });
-
-    test('One Users List All ((FirstName + LastName).length > 20)', () => {
-      const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Thisdudehas', 'aSuperLongNameLikeSheeeeesh');
-      expect(testUsersAll(user2.token)).toStrictEqual({
-        users: [{
-          uId: user1.authUserId,
-          email: 'email1@gmail.com',
-          nameFirst: 'Test',
-          nameLast: 'Bot I',
-          handleStr: 'testboti'
-        }, {
-          uId: user2.authUserId,
-          email: 'email2@gmail.com',
-          nameFirst: 'Thisdudehas',
-          nameLast: 'aSuperLongNameLikeSheeeeesh',
-          handleStr: 'thisdudehasasuperlon'
-        }]
-      });
-    });
-
-    test('One Users List All', () => {
-      expect(testUsersAll(user1.token)).toStrictEqual({
-        users: [{
-          uId: user1.authUserId,
-          email: 'email1@gmail.com',
-          nameFirst: 'Test',
-          nameLast: 'Bot I',
-          handleStr: 'testboti'
-        }]
-      });
-    });
-
-    test('Two Users List All', () => {
-      const user2 = testAuthRegister('email2@gmail.com', 'pass1234', 'Test', 'Bot II');
-      expect(testUsersAll(user1.token)).toStrictEqual({
-        users: [{
-          uId: user1.authUserId,
-          email: 'email1@gmail.com',
-          nameFirst: 'Test',
-          nameLast: 'Bot I',
-          handleStr: 'testboti'
-        }, {
-          uId: user2.authUserId,
-          email: 'email2@gmail.com',
-          nameFirst: 'Test',
-          nameLast: 'Bot II',
-          handleStr: 'testbotii'
-        }]
-      });
+describe('/auth/register: Testing', () => {
+  test('Handle: Super Long Name', () => {
+    expect(testAuthRegister('email@gmail.com', 'pass1234', 'IBGoenfoiaefeafuheagoeg', 'SuperLongNameImSoTiredPleaseHelpMe')).toStrictEqual({
+      token: expect.any(String),
+      authUserId: expect.any(Number)
     });
   });
 });

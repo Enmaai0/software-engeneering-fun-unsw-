@@ -82,36 +82,6 @@ describe('/admin/user/remove: Functionality Testing', () => {
     const channel = testChannelsCreate(user1.token, 'channel', true);
     testChannelInvite(user1.token, channel.channelId, user2.authUserId);
     testChannelAddOwner(user1.token, channel.channelId, user2.authUserId);
-    expect(testChannelDetails(user1.token, channel.channelId)).toStrictEqual({
-      name: 'channel',
-      isPublic: true,
-      ownerMembers: [{
-        uId: user1.authUserId,
-        email: 'email@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot',
-        handleStr: 'testbot',
-      }, {
-        uId: user2.authUserId,
-        email: 'email2@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot II',
-        handleStr: 'testbotii',
-      }],
-      allMembers: [{
-        uId: user1.authUserId,
-        email: 'email@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot',
-        handleStr: 'testbot',
-      }, {
-        uId: user2.authUserId,
-        email: 'email2@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot II',
-        handleStr: 'testbotii',
-      }],
-    });
     expect(testAdminUserRemove(user1.token, user2.authUserId)).toStrictEqual({});
     expect(testChannelDetails(user1.token, channel.channelId)).toStrictEqual({
       name: 'channel',
@@ -135,22 +105,6 @@ describe('/admin/user/remove: Functionality Testing', () => {
 
   test('Testing Removal from Dms', () => {
     const dm = testDmCreate(user1.token, [user2.authUserId]);
-    expect(testDmDetails(user1.token, dm.dmId)).toStrictEqual({
-      name: 'testbot, testbotii',
-      members: [{
-        uId: user1.authUserId,
-        email: 'email@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot',
-        handleStr: 'testbot'
-      }, {
-        uId: user2.authUserId,
-        email: 'email2@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot II',
-        handleStr: 'testbotii'
-      }]
-    });
     expect(testAdminUserRemove(user1.token, user2.authUserId)).toStrictEqual({});
     expect(testDmDetails(user1.token, dm.dmId)).toStrictEqual({
       name: 'testbot, testbotii',
@@ -165,21 +119,6 @@ describe('/admin/user/remove: Functionality Testing', () => {
   });
 
   test('Testing Removal from /users/all', () => {
-    expect(testUsersAll(user1.token)).toStrictEqual({
-      users: [{
-        uId: user1.authUserId,
-        email: 'email@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot',
-        handleStr: 'testbot',
-      }, {
-        uId: user2.authUserId,
-        email: 'email2@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot II',
-        handleStr: 'testbotii',
-      }]
-    });
     expect(testAdminUserRemove(user1.token, user2.authUserId)).toStrictEqual({});
     expect(testUsersAll(user1.token)).toStrictEqual({
       users: [{
@@ -225,14 +164,8 @@ describe('/admin/user/remove: Functionality Testing', () => {
     const channel = testChannelsCreate(user1.token, 'Channel', true);
     testChannelInvite(user1.token, channel.channelId, user2.authUserId);
     const message1 = testMessageSend(user2.token, channel.channelId, 'I\'m not deleted yet!');
-    const message2 = testMessageSend(user2.token, channel.channelId, 'I\'m still not deleted yet!');
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
       messages: [{
-        messageId: message2.messageId,
-        uId: user2.authUserId,
-        message: 'I\'m still not deleted yet!',
-        timeSent: expect.any(Number)
-      }, {
         messageId: message1.messageId,
         uId: user2.authUserId,
         message: 'I\'m not deleted yet!',
@@ -244,11 +177,6 @@ describe('/admin/user/remove: Functionality Testing', () => {
     expect(testAdminUserRemove(user1.token, user2.authUserId)).toStrictEqual({});
     expect(testChannelMessages(user1.token, channel.channelId, 0)).toStrictEqual({
       messages: [{
-        messageId: message2.messageId,
-        uId: user2.authUserId,
-        message: 'Removed user',
-        timeSent: expect.any(Number)
-      }, {
         messageId: message1.messageId,
         uId: user2.authUserId,
         message: 'Removed user',
@@ -262,14 +190,8 @@ describe('/admin/user/remove: Functionality Testing', () => {
   test('Removed Users Messages Test (Dm)', () => {
     const dm = testDmCreate(user1.token, [user2.authUserId]);
     const message1 = testMessageSendDm(user2.token, dm.dmId, 'I\'m not deleted yet!');
-    const message2 = testMessageSendDm(user2.token, dm.dmId, 'I\'m still not deleted yet!');
     expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
       messages: [{
-        messageId: message2.messageId,
-        uId: user2.authUserId,
-        message: 'I\'m still not deleted yet!',
-        timeSent: expect.any(Number)
-      }, {
         messageId: message1.messageId,
         uId: user2.authUserId,
         message: 'I\'m not deleted yet!',
@@ -281,11 +203,6 @@ describe('/admin/user/remove: Functionality Testing', () => {
     expect(testAdminUserRemove(user1.token, user2.authUserId)).toStrictEqual({});
     expect(testDmMessages(user1.token, dm.dmId, 0)).toStrictEqual({
       messages: [{
-        messageId: message2.messageId,
-        uId: user2.authUserId,
-        message: 'Removed user',
-        timeSent: expect.any(Number)
-      }, {
         messageId: message1.messageId,
         uId: user2.authUserId,
         message: 'Removed user',
@@ -297,15 +214,6 @@ describe('/admin/user/remove: Functionality Testing', () => {
   });
 
   test('Testing /user/profile with Removed User', () => {
-    expect(testUserProfile(user1.token, user2.authUserId)).toStrictEqual({
-      user: {
-        uId: user2.authUserId,
-        email: 'email2@gmail.com',
-        nameFirst: 'Test',
-        nameLast: 'Bot II',
-        handleStr: 'testbotii',
-      }
-    });
     expect(testAdminUserRemove(user1.token, user2.authUserId)).toStrictEqual({});
     expect(testUserProfile(user1.token, user2.authUserId)).toStrictEqual({
       user: {

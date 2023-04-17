@@ -76,7 +76,7 @@ function notificationsGet(token: string): Notifications | { error: string } {
   const user = getData().users[uId];
 
   const userNotifications = user.notifications;
-  const sortedUserNotifications = userNotifications.reverse();
+  const sortedUserNotifications = [...userNotifications.reverse()];
   const returnNotifications: Notification[] = [];
 
   for (const notification of sortedUserNotifications) {
