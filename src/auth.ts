@@ -263,7 +263,7 @@ function authPasswordResetReset(resetCode: string, newPassword: string): Record<
     throw HTTPError(400, 'Invalid Reset Code');
   }
 
-  data.users[uId].password = newPassword;
+  data.users[uId].password = getHashOf(newPassword);
   data.users[uId].resetCodes.splice(resetCodeIndex, 1);
 
   setData(data);
