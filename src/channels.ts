@@ -10,12 +10,6 @@ import HTTPError from 'http-errors';
 interface Error {
   error: string
 }
-interface Messages {
-  messageId: number;
-  uId: number;
-  message: string;
-  timeSent: number;
-}
 
 interface React {
   reactId: number;
