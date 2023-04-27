@@ -45,6 +45,18 @@ function clearV1(): Record<string, never> {
     users: [],
     channels: [],
     dms: [],
+    userStats: {
+      channelsJoined: [],
+      dmsJoined: [],
+      messagesSent: [],
+      involvementRate: 0,
+    },
+    WorkspaceStats: {
+      channelsExist: [],
+      dmsExist: [],
+      messagesExist: [],
+      utilizationRate: 0,
+    },
     globalMessageCounter: 0
   };
 

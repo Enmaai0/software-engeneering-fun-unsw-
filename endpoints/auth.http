@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:3222
+
+@urlPath = /auth/register/v3
+
+###
+POST {{baseUrl}}/{{urlPath}}/authRegister
+Content-Type: application/json
+Accept: application/json
+
+{
+    "email": "email1@gmail.com",
+    "password": "pass1234",
+    "nameFirst": "Test",
+    "nameLast": "Bot I",
+}

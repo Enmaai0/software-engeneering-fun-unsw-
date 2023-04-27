@@ -57,6 +57,50 @@ interface ChannelId {
   channelId: number
 }
 
+interface UserChannelStats {
+  numChannelsJoined: number;
+  timeStamp: number;
+}
+
+interface UserDMStats {
+  numDmsJoined: number;
+  timeStamp: number;
+}
+
+interface UserMessageStats {
+  numMessagesSent: number;
+  timeStamp: number;
+}
+
+interface UserStats {
+  channelsJoined: UserChannelStats[];
+  dmsJoined: UserDMStats[];
+  messagesSent: UserMessageStats[];
+  involvementRate: number;
+}
+
+interface AllChannelStats {
+  numChannelsExist: number;
+  timeStamp: number;
+}
+
+interface AllDMStats {
+  numDmsExist: number;
+  timeStamp: number;
+}
+
+interface AllMessageStats {
+  numMessagesExist: number;
+  timeStamp: number;
+}
+
+interface WorkSpaceStats {
+  channelsExist: AllChannelStats[];
+  dmsExist: AllDMStats[];
+  messagesExist: AllMessageStats[];
+  utilizationRate: number;
+}
+
 /**
  * channelsCreateV1
  *
@@ -98,7 +142,19 @@ function channelsCreateV1(token: string, name: string, isPublic: boolean): Chann
     buffer: '',
   };
 
+  const channelStat: AllChannelStats = {
+    numChannelsExist: data.WorkspaceStats.channelsExist.length + 1,
+    timeStamp: Date.now()
+  };
+  const workspace: WorkSpaceStats = data.WorkspaceStats;
+  workspace.channelsExist.push(channelStat);
+
   data.channels.push(channel);
+
+  const userChannelStat: UserChannelStats = { numChannelsJoined: data.users[uId].userStat.channelsJoined.length + 1, timeStamp: Date.now() };
+  const userStat: UserStats = data.users[uId].userStat;
+  userStat.channelsJoined.push(userChannelStat);
+
   setData(data);
 
   return { channelId: channelId };

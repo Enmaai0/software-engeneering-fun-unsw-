@@ -217,6 +217,14 @@ export function testUserProfileUploadPhoto(token: string, imgUrl: string, xStart
   return requestHelper('POST', '/user/profile/uploadphoto/v1', token, { imgUrl, xStart, yStart, xEnd, yEnd });
 }
 
+export function testUsersstats(token: string) {
+  return requestHelper('GET', '/users/stats/v1', token, { });
+}
+
+export function testUserstats(token: string) {
+  return requestHelper('GET', '/user/stats/v1', token, { });
+}
+
 /** /other/* Test Functions **/
 
 export function testClear() {

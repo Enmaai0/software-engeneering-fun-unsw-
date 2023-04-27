@@ -13,8 +13,14 @@ import {
   testSetHandle,
   testClear,
   testAuthRegister,
-  testUserProfileUploadPhoto
+  testUserProfileUploadPhoto,
+  testChannelsCreate,
+  testChannelJoin,
+  testMessageSend,
+  testMessageSendDm,
+  testUserstats,
 } from './testFunctions';
+import { userStats } from './users';
 
 /**
  * Clears the dataStore before each test is ran. Ensures that
@@ -28,6 +34,18 @@ beforeEach(() => {
 interface AuthReturn {
   token: string;
   authUserId: number;
+}
+
+interface ChannelsCreateReturn {
+  channelId: number;
+}
+
+interface MessageSendReturn {
+  messageId: number;
+}
+
+interface DmCreateReturn {
+  dmId: number;
 }
 
 /* UserProfileV1 Function */
@@ -590,6 +608,31 @@ describe('Correct SetEmail: Correct Return Testing', () => {
         nameLast: 'Bot',
         handleStr: 'testbot0',
       }]
+    });
+  });
+});
+
+/** Userstats Function **/
+describe('/user/stats/v1', () => {
+  let user1: AuthReturn, channel: ChannelsCreateReturn;
+  beforeEach(() => {
+    user1 = testAuthRegister('hello@gmail.com', 'thisisapassword', 'john', 'doe');
+    channel = testChannelsCreate(user1.token, 'New Channel', true);
+    testMessageSend(user1.token, channel.channelId, 'This message is valid');
+  });
+
+  test('Token: Invalid Token', () => {
+    expect(() => testUserstats(user1.token).toThrow(Error));
+  });
+
+  test('correct return', () => {
+    const user2 = testAuthRegister('hello2@gmail.com', 'thisisapassword2', 'joh', 'do');
+    testChannelJoin(user2.token, channel.channelId);
+    expect(testUserstats(user1.token)).toStrictEqual({
+      channelsJoined: [{ numChannelsJoined: 1, timeStamp: expect.any(Number) }],
+      dmsJoined: [{ numDmsJoined: 0, timeStamp: 0 }],
+      messagesSent: [{ numMessagesSent: 1, timeStamp: expect.any(Number) }],
+      involvementRate: expect.any(Number),
     });
   });
 });

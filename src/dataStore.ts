@@ -36,19 +36,6 @@ interface Notification {
   dmId: number,
   notificationMessage: string
 }
-interface User {
-  uId: number,
-  email: string,
-  password: string,
-  nameFirst: string,
-  nameLast: string,
-  userHandle: string,
-  permissionId: number,
-  tokens: string[],
-  notifications: Notification[]
-  resetCodes: string[]
-  profileImg: string;
-}
 
 interface Channel {
   channelId: number,
@@ -71,10 +58,71 @@ interface Dm {
   messages: Message[],
 }
 
+interface UserChannelStats {
+  numChannelsJoined: number;
+  timeStamp: number;
+}
+
+interface UserDMStats {
+  numDmsJoined: number;
+  timeStamp: number;
+}
+
+interface UserMessageStats {
+  numMessagesSent: number;
+  timeStamp: number;
+}
+
+interface UserStats {
+  channelsJoined: UserChannelStats[];
+  dmsJoined: UserDMStats[];
+  messagesSent: UserMessageStats[];
+  involvementRate: number;
+}
+
+interface AllChannelStats {
+  numChannelsExist: number;
+  timeStamp: number;
+}
+
+interface AllDMStats {
+  numDmsExist: number;
+  timeStamp: number;
+}
+
+interface AllMessageStats {
+  numMessagesExist: number;
+  timeStamp: number;
+}
+
+interface WorkSpaceStats {
+  channelsExist: AllChannelStats[];
+  dmsExist: AllDMStats[];
+  messagesExist: AllMessageStats[];
+  utilizationRate: number;
+}
+
+interface User {
+  uId: number,
+  email: string,
+  password: string,
+  nameFirst: string,
+  nameLast: string,
+  userHandle: string,
+  permissionId: number,
+  tokens: string[],
+  notifications: Notification[]
+  resetCodes: string[]
+  profileImg: string;
+  userStat: UserStats
+}
+
 interface Data {
   users: User[],
   channels: Channel[],
   dms: Dm[],
+  userStats: UserStats,
+  WorkspaceStats: WorkSpaceStats,
   globalMessageCounter: number
 }
 
@@ -86,6 +134,18 @@ let data: Data = {
   users: [],
   channels: [],
   dms: [],
+  userStats: {
+    channelsJoined: [],
+    dmsJoined: [],
+    messagesSent: [],
+    involvementRate: 0,
+  },
+  WorkspaceStats: {
+    channelsExist: [],
+    dmsExist: [],
+    messagesExist: [],
+    utilizationRate: 0,
+  },
   globalMessageCounter: 0
 };
 

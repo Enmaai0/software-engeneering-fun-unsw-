@@ -21,6 +21,28 @@ interface Notification {
   notificationMessage: string
 }
 
+interface UserChannelStats {
+  numChannelsJoined: number;
+  timeStamp: number;
+}
+
+interface UserDMStats {
+  numDmsJoined: number;
+  timeStamp: number;
+}
+
+interface UserMessageStats {
+  numMessagesSent: number;
+  timeStamp: number;
+}
+
+interface UserStats {
+  channelsJoined: UserChannelStats[];
+  dmsJoined: UserDMStats[];
+  messagesSent: UserMessageStats[];
+  involvementRate: number;
+}
+
 interface User {
   uId: number,
   email: string,
@@ -33,6 +55,7 @@ interface User {
   notifications: Notification[]
   resetCodes: string[]
   profileImg: string;
+  userStat: UserStats;
 }
 
 const MAXTOKEN = 10000000;
@@ -177,6 +200,12 @@ function authRegisterV1(email: string, password: string, nameFirst: string, name
     notifications: [],
     resetCodes: [],
     profileImg: '',
+    userStat: {
+      channelsJoined: [],
+      dmsJoined: [],
+      messagesSent: [],
+      involvementRate: 0,
+    }
   };
 
   data.users.push(userObject);

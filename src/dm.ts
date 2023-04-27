@@ -68,6 +68,50 @@ interface DmMessages {
   end: number;
 }
 
+interface UserChannelStats {
+  numChannelsJoined: number;
+  timeStamp: number;
+}
+
+interface UserDMStats {
+  numDmsJoined: number;
+  timeStamp: number;
+}
+
+interface UserMessageStats {
+  numMessagesSent: number;
+  timeStamp: number;
+}
+
+interface UserStats {
+  channelsJoined: UserChannelStats[];
+  dmsJoined: UserDMStats[];
+  messagesSent: UserMessageStats[];
+  involvementRate: number;
+}
+
+interface AllChannelStats {
+  numChannelsExist: number;
+  timeStamp: number;
+}
+
+interface AllDMStats {
+  numDmsExist: number;
+  timeStamp: number;
+}
+
+interface AllMessageStats {
+  numMessagesExist: number;
+  timeStamp: number;
+}
+
+interface WorkSpaceStats {
+  channelsExist: AllChannelStats[];
+  dmsExist: AllDMStats[];
+  messagesExist: AllMessageStats[];
+  utilizationRate: number;
+}
+
 const NO_MORE_MESSAGES = -1;
 const FIFTY_MESSAGES = 50;
 
@@ -111,6 +155,23 @@ function dmCreate(token: string, uIds: number[]): DmId {
     members: memberIds,
     messages: [],
   };
+
+  const dmStat: AllDMStats = {
+    numDmsExist: data.WorkspaceStats.dmsExist.length + 1,
+    timeStamp: Date.now()
+  };
+  const workspace: WorkSpaceStats = data.WorkspaceStats;
+  workspace.dmsExist.push(dmStat);
+
+  const userDmStat: UserDMStats = { numDmsJoined: data.users[ownerId].userStat.channelsJoined.length + 1, timeStamp: Date.now() };
+  const userStat: UserStats = data.users[ownerId].userStat;
+  userStat.dmsJoined.push(userDmStat);
+
+  for (const user of uIds) {
+    const userDmStat: UserDMStats = { numDmsJoined: data.users[user].userStat.channelsJoined.length + 1, timeStamp: Date.now() };
+    const userStat: UserStats = data.users[user].userStat;
+    userStat.dmsJoined.push(userDmStat);
+  }
 
   data.dms.push(dmObject);
 

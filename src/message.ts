@@ -26,6 +26,50 @@ interface Message {
   isPinned: boolean;
 }
 
+interface UserChannelStats {
+  numChannelsJoined: number;
+  timeStamp: number;
+}
+
+interface UserDMStats {
+  numDmsJoined: number;
+  timeStamp: number;
+}
+
+interface UserMessageStats {
+  numMessagesSent: number;
+  timeStamp: number;
+}
+
+interface UserStats {
+  channelsJoined: UserChannelStats[];
+  dmsJoined: UserDMStats[];
+  messagesSent: UserMessageStats[];
+  involvementRate: number;
+}
+
+interface AllChannelStats {
+  numChannelsExist: number;
+  timeStamp: number;
+}
+
+interface AllDMStats {
+  numDmsExist: number;
+  timeStamp: number;
+}
+
+interface AllMessageStats {
+  numMessagesExist: number;
+  timeStamp: number;
+}
+
+interface WorkSpaceStats {
+  channelsExist: AllChannelStats[];
+  dmsExist: AllDMStats[];
+  messagesExist: AllMessageStats[];
+  utilizationRate: number;
+}
+
 const MAXMESSAGELENGTH = 1000;
 const MINMESSAGELENGTH = 1;
 
@@ -79,6 +123,17 @@ function messageSendV1(token: string, channelId: number, message: string, standu
   };
 
   data.channels[channelId].messages.push(messageObj);
+
+  const messageStat: AllMessageStats = {
+    numMessagesExist: data.WorkspaceStats.messagesExist.length + 1,
+    timeStamp: Date.now()
+  };
+  const workspace: WorkSpaceStats = data.WorkspaceStats;
+  workspace.messagesExist.push(messageStat);
+
+  const userMessageStat: UserMessageStats = { numMessagesSent: data.users[userId].userStat.messagesSent.length + 1, timeStamp: Date.now() };
+  const userStat: UserStats = data.users[userId].userStat;
+  userStat.messagesSent.push(userMessageStat);
 
   if (typeof standup === 'undefined') {
     channelMessageNotif(userId, channelId, message);
@@ -226,6 +281,17 @@ function messageSendDmV1(token: string, dmId: number, message: string): MessageS
   data.dms[dmId].messages.push(messageObj);
 
   dmMessageNotif(userId, dmId, message);
+
+  const messageStat: AllMessageStats = {
+    numMessagesExist: data.WorkspaceStats.messagesExist.length + 1,
+    timeStamp: Date.now()
+  };
+  const workspace: WorkSpaceStats = data.WorkspaceStats;
+  workspace.messagesExist.push(messageStat);
+
+  const userMessageStat: UserMessageStats = { numMessagesSent: data.users[userId].userStat.messagesSent.length + 1, timeStamp: Date.now() };
+  const userStat: UserStats = data.users[userId].userStat;
+  userStat.messagesSent.push(userMessageStat);
 
   setData(data);
 

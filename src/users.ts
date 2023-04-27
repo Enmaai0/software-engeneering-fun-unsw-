@@ -31,6 +31,50 @@ interface UserArray {
   users: UserProfile[]
 }
 
+interface UserChannelStats {
+  numChannelsJoined: number;
+  timeStamp: number;
+}
+
+interface UserDMStats {
+  numDmsJoined: number;
+  timeStamp: number;
+}
+
+interface UserMessageStats {
+  numMessagesSent: number;
+  timeStamp: number;
+}
+
+interface UserStats {
+  channelsJoined: UserChannelStats[];
+  dmsJoined: UserDMStats[];
+  messagesSent: UserMessageStats[];
+  involvementRate: number;
+}
+
+interface AllChannelStats {
+  numChannelsExist: number;
+  timeStamp: number;
+}
+
+interface AllDMStats {
+  numDmsExist: number;
+  timeStamp: number;
+}
+
+interface AllMessageStats {
+  numMessagesExist: number;
+  timeStamp: number;
+}
+
+interface WorkSpaceStats {
+  channelsExist: AllChannelStats[];
+  dmsExist: AllDMStats[];
+  messagesExist: AllMessageStats[];
+  utilizationRate: number;
+}
+
 const MINNAMELENGTH = 1;
 const MAXNAMELENGTH = 50;
 const MINHANDLELENGTH = 3;
@@ -229,7 +273,37 @@ function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, y
   return {};
 }
 
-export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1, userProfileUploadPhoto };
+function userStats(token: string): UserStats {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+
+  const stats = getData().userStats;
+  return {
+    channelsJoined: stats.channelsJoined,
+    dmsJoined: stats.dmsJoined,
+    messagesSent: stats.messagesSent,
+    involvementRate: stats.involvementRate
+  };
+}
+
+function usersStats(token: string): WorkSpaceStats {
+  if (!isValidToken(token)) {
+    throw HTTPError(403, 'Invalid Token');
+  }
+  const data = getData();
+  let userWithoutChannel = 0;
+  for (const user of data.users) {
+    if (!userStats(user.tokens[0]).channelsJoined && !userStats(token).dmsJoined) {
+      userWithoutChannel += 1;
+    }
+    data.WorkspaceStats.utilizationRate = userWithoutChannel / data.users.length;
+    setData(data);
+  }
+  return data.WorkspaceStats;
+}
+
+export { userProfileV1, usersAllV1, userSetNameV1, userSetEmailV1, userSetHandleV1, userProfileUploadPhoto, userStats, usersStats };
 
 /** Helper Functions **/
 

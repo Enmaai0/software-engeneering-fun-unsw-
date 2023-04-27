@@ -39,6 +39,28 @@ interface DetailReturn {
   allMembers: Member[];
 }
 
+interface UserChannelStats {
+  numChannelsJoined: number;
+  timeStamp: number;
+}
+
+interface UserDMStats {
+  numDmsJoined: number;
+  timeStamp: number;
+}
+
+interface UserMessageStats {
+  numMessagesSent: number;
+  timeStamp: number;
+}
+
+interface UserStats {
+  channelsJoined: UserChannelStats[];
+  dmsJoined: UserDMStats[];
+  messagesSent: UserMessageStats[];
+  involvementRate: number;
+}
+
 const NO_MORE_MESSAGES = -1;
 const FIFTY_MESSAGES = 50;
 const GLOBALMEMBER = 2;
@@ -118,6 +140,9 @@ function channelJoinV1(token: string, channelId: number) : Error | Record<string
 
   channel.allMembers.push(userObject);
 
+  const channelStat: UserChannelStats = { numChannelsJoined: data.users[authUserId].userStat.channelsJoined.length + 1, timeStamp: Date.now() };
+  const userStat: UserStats = data.users[authUserId].userStat;
+  userStat.channelsJoined.push(channelStat);
   setData(data);
 
   return {};
@@ -171,6 +196,10 @@ function channelInviteV1(token: string, channelId: number, uId: number) : Error 
 
   // Creates a notification for the channel invite
   channelInviteNotif(token, channelId, uId);
+
+  const channelStat: UserChannelStats = { numChannelsJoined: data.users[uId].userStat.channelsJoined.length + 1, timeStamp: Date.now() };
+  const userStat: UserStats = data.users[uId].userStat;
+  userStat.channelsJoined.push(channelStat);
 
   setData(data);
 
